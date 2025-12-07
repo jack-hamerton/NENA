@@ -1,24 +1,26 @@
 import styled from 'styled-components';
 import LeftNav from './LeftNav';
+import { Outlet } from 'react-router-dom';
 
 const LayoutContainer = styled.div`
   display: flex;
   height: 100vh;
-  background-color: ${props => props.theme.colors.background};
+  background-color: ${props => props.theme.background};
 `;
 
 const MainContent = styled.main`
   flex-grow: 1;
   overflow-y: auto;
+  padding: 20px;
 `;
 
-const MainLayout = ({ children }) => {
+export const MainLayout = () => {
   return (
     <LayoutContainer>
       <LeftNav />
-      <MainContent>{children}</MainContent>
+      <MainContent>
+        <Outlet />
+      </MainContent>
     </LayoutContainer>
   );
 };
-
-export default MainLayout;

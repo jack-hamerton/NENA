@@ -25,3 +25,5 @@ shortuuid
 pandas
 scikit-learn
 nltk
+websockets
+requests
