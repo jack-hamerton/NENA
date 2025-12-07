@@ -10,6 +10,7 @@ import RoomsPage from './rooms/RoomsPage';
 import StudyPage from './study/StudyPage';
 import MusicPodcastPage from './pages/MusicPodcastPage';
 import PodcastHubPage from './pages/PodcastHubPage';
+import SplashScreen from './layout/SplashScreen/SplashScreen'; // Assuming you have this component
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="music" element={<MusicPodcastPage />} />
             <Route path="podcasts" element={<PodcastHubPage />} />
           </Route>
+          <Route path="/splash" element={<SplashScreen />} />
         </Routes>
       </Router>
     </ThemeProvider>
