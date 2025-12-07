@@ -1,18 +1,14 @@
 export const xiaoGenshin = {
-  primary: '#4CAF50', // A vibrant, nature-inspired green
-  secondary: '#FFC107', // A warm, secondary amber
-  background: '#35424C', // A deep, mysterious charcoal
-  text: '#FFFFFF', // Clear, crisp white for readability
-  accent1: '#8BC34A', // A lighter, complementary green
-  accent2: '#FF9800', // A richer, more intense orange
-  // Additional shades for depth and variety
-  lightGreen: '#A5D6A7',
-  darkGreen: '#2E7D32',
-  lightAmber: '#FFECB3',
-  darkAmber: '#FFA000',
+  primary: '#73beb0',       // A calm, muted teal
+  secondary: '#427973',     // A deeper, earthy green
+  background: '#35424c',   // A dark, slate gray
+  text: '#FFFFFF',         // Clear, crisp white for readability
+  accent1: '#5d838a',       // A cool, moody blue-gray
+  accent2: '#4a5969',       // A solid, darker gray-blue
   // Grayscale for balance
-  lightGray: '#F5F5F5',
+  lightGray: '#F5F5F5',    // Keeping for light-themed components or highlights
   mediumGray: '#9E9E9E',
-  darkGray: '#424242',
-  font: 'sans-serif',
+  darkGray: '#212121',     // A very dark gray for deeper contrast
+  font: ''Inter', sans-serif',
+  codeFont: ''Source Code Pro', monospace',
 };
