@@ -1,3 +1,4 @@
+
 fastapi
 uvicorn[standard]
 sqlalchemy
@@ -6,15 +7,8 @@ alembic
 passlib[bcrypt]
 python-jose[cryptography]
 python-multipart
-redis
+boto3
 kafka-python
-aioredis
+redis
 requests
-openai
-twilio
-
-# For E2EE
-olm
-
-# For SFrame
-libsrtp
+fastapi-mail
