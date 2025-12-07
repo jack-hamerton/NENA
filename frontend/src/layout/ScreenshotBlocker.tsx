@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
-const ScreenshotBlocker = () => {
+const ScreenshotBlocker: React.FC = () => {
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'PrintScreen' || (e.ctrlKey && e.shiftKey && e.key === 'S')) {
-        e.preventDefault();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'PrintScreen') {
+        event.preventDefault();
         alert('Screenshots are disabled on this page.');
       }
     };

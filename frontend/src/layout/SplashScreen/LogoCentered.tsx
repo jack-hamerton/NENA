@@ -1,23 +1,26 @@
-import styled from 'styled-components';
+import React from 'react';
+import { Box } from '@mui/material';
 import { motion } from 'framer-motion';
 
-const LogoContainer = styled(motion.div)`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-`;
-
-const LogoCentered = () => {
+const LogoCentered: React.FC = () => {
   return (
-    <LogoContainer
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1.5 }}
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+      }}
     >
-      {/* Placeholder for a logo */}
-      <h1 style={{ color: 'white', fontSize: '4em' }}>NENA</h1>
-    </LogoContainer>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* You can replace this with your actual logo */}
+        <img src="/logo.png" alt="Nena Logo" width="200" />
+      </motion.div>
+    </Box>
   );
 };
 

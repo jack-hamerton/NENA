@@ -1,16 +1,29 @@
-import styled from 'styled-components';
+import React, { useState } from 'react';
+import { TextField, Box } from '@mui/material';
 
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 1em;
-  margin-bottom: 20px;
-`;
+interface GlobalSearchBoxProps {
+  onSearch: (query: string) => void;
+}
 
-const GlobalSearchBox = () => {
-  return <SearchInput placeholder="Search for profiles, skills, interests..." />;
+const GlobalSearchBox: React.FC<GlobalSearchBoxProps> = ({ onSearch }) => {
+  const [query, setQuery] = useState('');
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
+    onSearch(event.target.value);
+  };
+
+  return (
+    <Box sx={{ mb: 4 }}>
+      <TextField
+        fullWidth
+        variant="outlined"
+        placeholder="Search for people, posts, rooms..."
+        value={query}
+        onChange={handleChange}
+      />
+    </Box>
+  );
 };
 
 export default GlobalSearchBox;
