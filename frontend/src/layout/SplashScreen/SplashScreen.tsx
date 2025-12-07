@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import LogoCentered from './LogoCentered';
 import TaglineFadeIn from './TaglineFadeIn';
 import TransitionAnimation from './TransitionAnimation';
@@ -16,6 +17,7 @@ const SplashScreenContainer = styled.div`
 const SplashScreen = () => {
   const [showTagline, setShowTagline] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const taglineTimer = setTimeout(() => {
@@ -31,6 +33,16 @@ const SplashScreen = () => {
       clearTimeout(transitionTimer);
     };
   }, []);
+
+  useEffect(() => {
+    if (showTransition) {
+      const navigateTimer = setTimeout(() => {
+        navigate('/app');
+      }, 1000); // Delay for the transition animation
+
+      return () => clearTimeout(navigateTimer);
+    }
+  }, [showTransition, navigate]);
 
   return (
     <SplashScreenContainer>
