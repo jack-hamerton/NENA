@@ -1,24 +1,23 @@
-import styled from 'styled-components';
-import UserCard from './UserCard';
+import React from 'react';
+import { Grid, Card, CardContent, Typography } from '@mui/material';
+import { DiscoverResult } from '../types/discover';
 
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-`;
+interface ResultsGridProps {
+  results: DiscoverResult[];
+}
 
-const ResultsGrid = () => {
-  // Dummy data - replace with actual search results
-  const users = [
-    { id: 1, name: 'Alice', bio: 'Loves coding and coffee' },
-    { id: 2, name: 'Bob', bio: 'Music enthusiast and gamer' },
-    // ... more users
-  ];
-
+const ResultsGrid: React.FC<ResultsGridProps> = ({ results }) => {
   return (
-    <Grid>
-      {users.map(user => (
-        <UserCard key={user.id} user={user} />
+    <Grid container spacing={2}>
+      {results.map((result) => (
+        <Grid item xs={12} sm={6} md={4} key={result.id}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">{result.title}</Typography>
+              <Typography variant="body2">{result.summary}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
       ))}
     </Grid>
   );
