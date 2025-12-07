@@ -1,0 +1,103 @@
+
+:root {
+    --primary-color: #0052cc; /* Royal Blue */
+    --secondary-color: #f4f5f7; /* Soft Accent */
+    --text-color: #172b4d; /* Crisp Text */
+    --card-bg: #ffffff;
+    --card-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    --card-hover-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    margin: 0;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+}
+
+.app-header {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: var(--primary-color);
+}
+
+.feed-container {
+    width: 100%;
+    max-width: 600px;
+}
+
+.notification-bar {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    z-index: 1000;
+    font-weight: 500;
+}
+
+.post-card {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: transform 250ms ease-in-out, box-shadow 250ms ease-in-out;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    object-fit: cover;
+}
+
+.author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-name {
+    font-weight: 600;
+}
+
+.post-time {
+    font-size: 0.8rem;
+    color: #6b778c;
+}
+
+.sponsored-badge {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #505f79;
+    background-color: #dfe1e6;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.post-content {
+    font-size: 1rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
