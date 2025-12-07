@@ -15,3 +15,6 @@ class User(Base):
     posts = relationship("Post", back_populates="owner")
     followers = relationship("Follower", foreign_keys=["Follower.followed_id"], back_populates="followed")
     following = relationship("Follower", foreign_keys=["Follower.follower_id"], back_populates="follower")
+
+    events = relationship("Event", back_populates="owner")
+    event_participations = relationship("EventParticipant", back_populates="user")

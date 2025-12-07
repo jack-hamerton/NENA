@@ -1,8 +1,12 @@
+
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routes import auth, profiles, discover, collaboration, messages, comments, rooms, study, analytics, health, music_podcast_routes
+from app.routes import (auth, profiles, discover, collaboration, messages, 
+                        comments, rooms, study, analytics, health, 
+                        music_podcast_routes)
+from app.routes.api.v1 import calendar
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -30,7 +34,9 @@ app.include_router(study.router, prefix=settings.API_V1_STR, tags=["study"])
 app.include_router(analytics.router, prefix=settings.API_V1_STR, tags=["analytics"])
 app.include_router(health.router, prefix=settings.API_V1_STR, tags=["health"])
 app.include_router(music_podcast_routes.router, prefix=settings.API_V1_STR, tags=["music_podcast"])
+app.include_router(calendar.router, prefix=f"{settings.API_V1_STR}/calendar", tags=["calendar"])
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Nena API"}
+
