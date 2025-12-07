@@ -1,22 +1,19 @@
+
 import React from 'react';
-import { Avatar, Box, Typography, Button } from '@mui/material';
-import { User } from '../types/user';
+import './ProfileHeader.css';
 
-interface ProfileHeaderProps {
-  user: User;
-}
-
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-      <Avatar sx={{ width: 100, height: 100, mr: 2 }} />
-      <Box>
-        <Typography variant="h4">{user.name}</Typography>
-        <Typography variant="body1">{user.bio}</Typography>
-        <Button variant="contained" sx={{ mt: 2 }}>Follow</Button>
-      </Box>
-    </Box>
-  );
+const ProfileHeader = () => {
+    return (
+        <div className="profile-header">
+            <div className="profile-picture">
+                <img src="https://via.placeholder.com/150" alt="Profile" />
+            </div>
+            <div className="profile-info">
+                <h2>User Name</h2>
+                <p>User Bio</p>
+            </div>
+        </div>
+    );
 };
 
 export default ProfileHeader;
