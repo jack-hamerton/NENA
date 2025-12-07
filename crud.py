@@ -1,6 +1,7 @@
 
 from sqlalchemy.orm import Session
 from models import chat as models
+from models.chat import RoomRole
 import schemas
 
 def get_user(db: Session, user_id: int):
@@ -26,11 +27,20 @@ def get_room(db: Session, room_id: int):
 def get_rooms(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Room).offset(skip).limit(limit).all()
 
-def create_room(db: Session, room: schemas.RoomCreate):
+def create_room(db: Session, room: schemas.RoomCreate, user_id: int):
     db_room = models.Room(name=room.name)
     db.add(db_room)
     db.commit()
     db.refresh(db_room)
+
+    # Add the creator as the owner of the room
+    db_membership = models.RoomMembership(
+        user_id=user_id, room_id=db_room.id, role=RoomRole.OWNER
+    )
+    db.add(db_membership)
+    db.commit()
+    db.refresh(db_room)
+
     return db_room
 
 def get_messages(db: Session, room_id: int, skip: int = 0, limit: int = 100):
@@ -43,10 +53,23 @@ def create_message(db: Session, message: schemas.MessageCreate):
     db.refresh(db_message)
     return db_message
 
-def add_user_to_room(db: Session, user_id: int, room_id: int):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    room = db.query(models.Room).filter(models.Room.id == room_id).first()
-    room.members.append(user)
+def add_user_to_room(db: Session, user_id: int, room_id: int, role: RoomRole = RoomRole.MEMBER):
+    membership = models.RoomMembership(user_id=user_id, room_id=room_id, role=role)
+    db.add(membership)
     db.commit()
-    db.refresh(room)
-    return room
+    db.refresh(membership)
+    return membership
+
+def get_room_members(db: Session, room_id: int):
+    return db.query(models.RoomMembership).filter(models.RoomMembership.room_id == room_id).all()
+
+def create_post(db: Session, post: schemas.PostCreate, author_id: int):
+    db_post = models.Post(**post.dict(), author_id=author_id)
+    db.add(db_post)
+    db.commit()
+    db.refresh(db_post)
+    return db_post
+
+def get_posts(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Post).order_by(models.Post.created_at.desc()).offset(skip).limit(limit).all()
+

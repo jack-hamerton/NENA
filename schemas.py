@@ -1,6 +1,8 @@
 
 from pydantic import BaseModel
 import datetime
+from typing import List
+from models.chat import UserRole, RoomRole
 
 class MessageBase(BaseModel):
     content: str
@@ -13,21 +15,6 @@ class Message(MessageBase):
     id: int
     timestamp: datetime.datetime
     user: 'User'
-    room: 'Room'
-
-    class Config:
-        orm_mode = True
-
-class RoomBase(BaseModel):
-    name: str
-
-class RoomCreate(RoomBase):
-    pass
-
-class Room(RoomBase):
-    id: int
-    messages: list[Message] = []
-    members: list['User'] = []
 
     class Config:
         orm_mode = True
@@ -41,9 +28,43 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
-    messages: list[Message] = []
-    rooms: list[Room] = []
+    role: UserRole
+    messages: List[Message] = []
 
+    class Config:
+        orm_mode = True
+
+class RoomMembershipSchema(BaseModel):
+    role: RoomRole
+    user: User
+
+    class Config:
+        orm_mode = True
+
+class RoomBase(BaseModel):
+    name: str
+
+class RoomCreate(RoomBase):
+    pass
+
+class Room(RoomBase):
+    id: int
+    messages: List[Message] = []
+    member_associations: List['RoomMembershipSchema'] = []
+
+    class Config:
+        orm_mode = True
+
+class PostBase(BaseModel):
+    content: str
+
+class PostCreate(PostBase):
+    pass
+
+class Post(PostBase):
+    id: int
+    created_at: datetime.datetime
+    author: User
 
     class Config:
         orm_mode = True
@@ -52,3 +73,5 @@ class User(UserBase):
 User.update_forward_refs()
 Room.update_forward_refs()
 Message.update_forward_refs()
+RoomMembershipSchema.update_forward_refs()
+Post.update_forward_refs()

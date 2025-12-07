@@ -1,5 +1,6 @@
 
 import datetime
+import enum
 from sqlalchemy import (
     Column,
     Integer,
@@ -7,17 +8,29 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Table,
+    Enum,
+    Text,
 )
 from sqlalchemy.orm import relationship
 from .base import Base
 
-# Association table for the many-to-many relationship between users and rooms
-room_membership_table = Table(
-    "room_memberships",
-    Base.metadata,
-    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
-    Column("room_id", Integer, ForeignKey("rooms.id"), primary_key=True),
-)
+class UserRole(enum.Enum):
+    ADMIN = "admin"
+    USER = "user"
+
+class RoomRole(enum.Enum):
+    OWNER = "owner"
+    ADMIN = "admin"
+    MEMBER = "member"
+
+class RoomMembership(Base):
+    __tablename__ = 'room_memberships'
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    room_id = Column(Integer, ForeignKey('rooms.id'), primary_key=True)
+    role = Column(Enum(RoomRole), default=RoomRole.MEMBER, nullable=False)
+    user = relationship("User", back_populates="room_associations")
+    room = relationship("Room", back_populates="member_associations")
+
 
 class User(Base):
     __tablename__ = "users"
@@ -25,10 +38,10 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(120), unique=True, nullable=False)
     password_hash = Column(String(128))
+    role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
     messages = relationship("Message", back_populates="user")
-    rooms = relationship(
-        "Room", secondary=room_membership_table, back_populates="members"
-    )
+    room_associations = relationship("RoomMembership", back_populates="user")
+    posts = relationship("Post", back_populates="author")
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -38,9 +51,12 @@ class Room(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     messages = relationship("Message", back_populates="room")
-    members = relationship(
-        "User", secondary=room_membership_table, back_populates="rooms"
-    )
+    member_associations = relationship("RoomMembership", back_populates="room")
+
+    @property
+    def members(self):
+        return [association.user for association in self.member_associations]
+
 
     def __repr__(self):
         return f"<Room {self.name}>"
@@ -57,3 +73,14 @@ class Message(Base):
 
     def __repr__(self):
         return f"<Message {self.id}>"
+
+class Post(Base):
+    __tablename__ = "posts"
+    id = Column(Integer, primary_key=True, index=True)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    author_id = Column(Integer, ForeignKey("users.id"))
+    author = relationship("User", back_populates="posts")
+
+    def __repr__(self):
+        return f"<Post {self.id}>"
