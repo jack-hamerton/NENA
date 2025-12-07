@@ -1,9 +1,10 @@
-from app.db.base_class import Base
-from app.models.user import User
-from app.models.post import Post
-from app.models.follower import Follower
-from app.models.collaboration import Collaboration
-from app.models.message import Message
-from app.models.comment import Comment
-from app.models.room import Room, RoomParticipant
-from app.models.study import Study, StudyQuestion, StudyResponse
+
+from .base_class import Base
+from .models.user import User
+from .models.post import Post
+from .models.comment import Comment
+from .models.follower import Follower
+from .models.message import Message
+from .models.room import Room, RoomParticipant
+from .models.study import Study, Question, Answer
+from .models.collaboration import Challenge, Mitigation, Impact

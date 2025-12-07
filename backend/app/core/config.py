@@ -1,4 +1,4 @@
-import os
+
 from pydantic import BaseSettings
 
 class Settings(BaseSettings):
@@ -6,41 +6,42 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # Database
-    POSTGRES_USER: str = os.getenv("POSTGRES_USER")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB")
-    POSTGRES_HOST: str = os.getenv("POSTGRES_HOST")
-    DATABASE_URL: str = os.getenv("DATABASE_URL")
+    POSTGRES_SERVER: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    DATABASE_URL: str
 
     # Security
-    SECRET_KEY: str = os.getenv("SECRET_KEY")
-    ALGORITHM: str = os.getenv("ALGORITHM")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+
+    # SMTP
+    SMTP_TLS: bool
+    SMTP_PORT: int
+    SMTP_HOST: str
+    SMTP_USER: str
+    SMTP_PASSWORD: str
 
     # Redis
-    REDIS_HOST: str = os.getenv("REDIS_HOST")
-    REDIS_PORT: int = os.getenv("REDIS_PORT")
+    REDIS_HOST: str
+    REDIS_PORT: int
 
     # Kafka
-    KAFKA_BOOTSTRAP_SERVERS: str = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
+    KAFKA_BOOTSTRAP_SERVERS: str
 
-    # SMTP for email notifications
-    SMTP_SERVER: str = os.getenv("SMTP_SERVER")
-    SMTP_PORT: int = os.getenv("SMTP_PORT")
-    SMTP_USER: str = os.getenv("SMTP_USER")
-    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD")
-    EMAILS_FROM_EMAIL: str = os.getenv("EMAILS_FROM_EMAIL")
-
-    # AI Services
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
-
-    # Twilio for PNV (Phone Number Verification)
-    TWILIO_ACCOUNT_SID: str = os.getenv("TWILIO_ACCOUNT_SID")
-    TWILIO_AUTH_TOKEN: str = os.getenv("TWILIO_AUTH_TOKEN")
-
-    BACKEND_CORS_ORIGINS: list = ["http://localhost:3000"]
+    # AWS
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_REGION: str
+    S3_BUCKET_NAME: str
+    
+    # CORS
+    BACKEND_CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:8080"]
 
     class Config:
         case_sensitive = True
+        env_file = ".env"
 
 settings = Settings()
