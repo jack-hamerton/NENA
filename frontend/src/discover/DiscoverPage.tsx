@@ -1,15 +1,16 @@
 import styled from 'styled-components';
+import GlobalSearchBox from './GlobalSearchBox';
+import ResultsGrid from './ResultsGrid';
 
 const DiscoverContainer = styled.div`
-  padding: 2rem;
-  color: ${props => props.theme.text};
+  padding: 20px;
 `;
 
 const DiscoverPage = () => {
   return (
     <DiscoverContainer>
-      <h1>Discover</h1>
-      <p>Discover new content and connect with people.</p>
+      <GlobalSearchBox />
+      <ResultsGrid />
     </DiscoverContainer>
   );
 };
