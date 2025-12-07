@@ -13,6 +13,7 @@ import MessagesPage from './messages/MessagesPage';
 import RoomsPage from './rooms/RoomsPage';
 import StudyPage from './study/StudyPage';
 import SettingsPage from './settings/SettingsPage';
+import Analytics from './pages/Analytics';
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -38,6 +39,7 @@ const App = () => {
                   <Route path="/rooms" element={<RoomsPage />} />
                   <Route path="/study" element={<StudyPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/analytics" element={<Analytics />} />
                 </Routes>
               </AppLayout>
             </Router>

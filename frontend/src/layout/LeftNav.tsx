@@ -7,6 +7,7 @@ import MessageIcon from '@mui/icons-material/Message';
 import GroupIcon from '@mui/icons-material/Group';
 import SchoolIcon from '@mui/icons-material/School';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
 
 const navItems = [
   { path: '/', icon: <HomeIcon />, text: 'Feed' },
@@ -16,6 +17,7 @@ const navItems = [
   { path: '/rooms', icon: <GroupIcon />, text: 'Rooms' },
   { path: '/study', icon: <SchoolIcon />, text: 'Study' },
   { path: '/music', icon: <MusicNoteIcon />, text: 'Music' },
+  { path: '/analytics', icon: <AnalyticsIcon />, text: 'Analytics' },
 ];
 
 const LeftNav = () => {
