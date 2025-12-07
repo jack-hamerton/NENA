@@ -9,12 +9,13 @@ export interface SharedFile {
     name: string;
   };
   timestamp: number;
+  viewOnce?: boolean;
 }
 
 const files: SharedFile[] = [];
 
 export const fileService = {
-  async uploadFile(file: File, sender: { id: string; name: string }): Promise<SharedFile> {
+  async uploadFile(file: File, sender: { id: string; name: string }, viewOnce?: boolean): Promise<SharedFile> {
     return new Promise((resolve) => {
       setTimeout(() => {
         const newFile: SharedFile = {
@@ -23,6 +24,7 @@ export const fileService = {
           url: URL.createObjectURL(file), // This is a temporary local URL
           sender,
           timestamp: Date.now(),
+          viewOnce,
         };
         files.push(newFile);
         resolve(newFile);

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { chatService, Message } from '../services/chatService';
 import { fileService, SharedFile } from '../services/fileService';
@@ -15,6 +16,8 @@ interface ChatProps {
 export const Chat: React.FC<ChatProps> = ({ channelId, localParticipant }) => {
   const [messages, setMessages] = useState<(Message | SharedFile)[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [viewOnce, setViewOnce] = useState(false);
+  const [viewedFiles, setViewedFiles] = useState<string[]>([]);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,8 +60,16 @@ export const Chat: React.FC<ChatProps> = ({ channelId, localParticipant }) => {
   };
 
   const handleSendFile = async (file: File) => {
-    const sentFile = await fileService.uploadFile(file, localParticipant);
+    const sentFile = await fileService.uploadFile(file, localParticipant, viewOnce);
     setMessages([...messages, sentFile]);
+    setViewOnce(false); // Reset checkbox
+  };
+
+  const handleViewFile = (fileId: string) => {
+    setViewedFiles([...viewedFiles, fileId]);
+    setTimeout(() => {
+      setViewedFiles(prev => prev.filter(id => id !== fileId));
+    }, 5000); // Hide after 5 seconds
   };
 
   return (
@@ -68,11 +79,20 @@ export const Chat: React.FC<ChatProps> = ({ channelId, localParticipant }) => {
           if ('text' in msg) {
             return <ChatMessage key={msg.id} message={msg} isLocal={msg.sender.id === localParticipant.id} />;
           } else {
+            const isViewed = viewedFiles.includes(msg.id);
             return (
               <div key={msg.id} className={`chat-message ${msg.sender.id === localParticipant.id ? 'is-local' : ''}`}>
                 <div className="message-sender">{msg.sender.id === localParticipant.id ? 'You' : msg.sender.name}</div>
                 <div className="message-text">
-                  <a href={msg.url} target="_blank" rel="noopener noreferrer">{msg.name}</a>
+                  {msg.viewOnce ? (
+                    isViewed ? (
+                      <a href={msg.url} target="_blank" rel="noopener noreferrer">{msg.name}</a>
+                    ) : (
+                      <button onClick={() => handleViewFile(msg.id)}>View File</button>
+                    )
+                  ) : (
+                    <a href={msg.url} target="_blank" rel="noopener noreferrer">{msg.name}</a>
+                  )}
                 </div>
               </div>
             );
@@ -89,6 +109,10 @@ export const Chat: React.FC<ChatProps> = ({ channelId, localParticipant }) => {
         />
         <input type="file" ref={fileInputRef} onChange={handleFileSelect} style={{ display: 'none' }} />
         <button type="button" onClick={() => fileInputRef.current?.click()}>Share File</button>
+        <label>
+          <input type="checkbox" checked={viewOnce} onChange={(e) => setViewOnce(e.target.checked)} />
+          View Once
+        </label>
         <button type="submit">Send</button>
       </form>
     </div>

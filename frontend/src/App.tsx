@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import Header from './layout/Header';
 import ActivityFeed from './pages/ActivityFeed';
 import ProfilePage from './pages/ProfilePage';
+import SignUpPage from './pages/SignUpPage';
 import { Room } from './rooms/Room';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import './App.css';
@@ -41,6 +42,7 @@ const AuthenticatedApp: React.FC = () => {
             <Route path="*" element={<Navigate to="/login" />} />
           )}
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUpPage />} />
         </Routes>
       </main>
     </div>
@@ -71,6 +73,7 @@ const Login: React.FC = () => {
         <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
         <button type="submit">Login</button>
+        <p>Don't have an account? <Link to="/signup">Sign up</Link></p>
       </form>
     </div>
   );
