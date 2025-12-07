@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar } from '@mui/material';
@@ -20,6 +21,7 @@ const LeftNav: React.FC = () => {
     { text: 'Rooms', icon: <GroupIcon />, path: '/rooms' },
     { text: 'Study', icon: <SchoolIcon />, path: '/study' },
     { text: 'Music', icon: <MusicNoteIcon />, path: '/music' },
+    { text: 'Creator Dashboard', icon: <SchoolIcon />, path: '/creator-dashboard' },
   ];
 
   return (

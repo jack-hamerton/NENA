@@ -1,10 +1,12 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Box, ThemeProvider, createTheme } from '@mui/material';
-import LeftNav from './layout/LeftNav/LeftNav';
+import LeftNav from './layout/LeftNav';
 import DiscoverPage from './discover/DiscoverPage';
 import UserProfile from './profile/UserProfile';
 import FeedPage from './feed/FeedPage';
+import CreatorDashboard from './study/CreatorDashboard';
 
 const theme = createTheme({
   palette: {
@@ -29,6 +31,7 @@ const App: React.FC = () => {
               <Route path="/" element={<FeedPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/profile/:userId" element={<UserProfile />} />
+              <Route path="/creator-dashboard" element={<CreatorDashboard />} />
             </Routes>
           </Box>
         </Box>
