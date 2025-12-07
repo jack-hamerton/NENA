@@ -1,15 +1,16 @@
 import styled from 'styled-components';
+import NewPost from './NewPost';
+import ActivityFeed from './ActivityFeed';
 
 const FeedContainer = styled.div`
-  padding: 2rem;
-  color: ${props => props.theme.text};
+  padding: 20px;
 `;
 
 const FeedPage = () => {
   return (
     <FeedContainer>
-      <h1>Feed</h1>
-      <p>Welcome to your feed!</p>
+      <NewPost />
+      <ActivityFeed />
     </FeedContainer>
   );
 };
