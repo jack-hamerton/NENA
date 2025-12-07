@@ -1,29 +1,24 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import './SpiderWeb.css';
 
 const SpiderWeb = () => {
     const ref = useRef<SVGSVGElement>(null);
+    const [data, setData] = useState<{ nodes: any[], links: any[] } | null>(null);
 
     useEffect(() => {
-        if (!ref.current) return;
+        fetch('/api/connections/123') // Assuming a user ID of 123 for now
+            .then(res => res.json())
+            .then(data => setData(data));
+    }, []);
 
+    useEffect(() => {
+        if (!ref.current || !data) return;
+
+        const { nodes, links } = data;
         const width = 600;
         const height = 400;
-
-        const links = [
-            { source: 'User', target: 'Connection 1' },
-            { source: 'User', target: 'Connection 2' },
-            { source: 'User', target: 'Connection 3' },
-        ];
-
-        const nodes = [
-            { id: 'User', group: 'user' },
-            { id: 'Connection 1', group: 'connection' },
-            { id: 'Connection 2', group: 'connection' },
-            { id: 'Connection 3', group: 'connection' },
-        ];
 
         const simulation = d3.forceSimulation(nodes as any)
             .force('link', d3.forceLink(links).id((d: any) => d.id))
@@ -33,6 +28,9 @@ const SpiderWeb = () => {
         const svg = d3.select(ref.current)
             .attr('width', width)
             .attr('height', height);
+
+        // Clear previous render
+        svg.selectAll('*').remove();
 
         const link = svg.append('g')
             .selectAll('line')
@@ -70,7 +68,7 @@ const SpiderWeb = () => {
                 .attr('transform', (d: any) => `translate(${d.x},${d.y})`);
         });
 
-    }, []);
+    }, [data]);
 
     return (
         <div className="spider-web-container">
