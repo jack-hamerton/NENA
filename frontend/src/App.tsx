@@ -1,41 +1,31 @@
-import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
-import { royalBlue } from './theme/royalBlue';
-import MainLayout from './layout/MainLayout';
-import LogoCentered from './layout/SplashScreen/LogoCentered';
-import FeedPage from './feed/FeedPage';
-import DiscoverPage from './discover/DiscoverPage';
+import { MainLayout } from './layout/MainLayout';
+import { DiscoverPage } from './discover/DiscoverPage';
+import { UserProfile } from './profile/UserProfile';
+import { FeedPage } from './feed/FeedPage';
+import { MessagesPage } from './messages/MessagesPage';
+import { RoomsPage } from './rooms/RoomsPage';
+import { StudyPage } from './study/StudyPage';
+import { MusicPodcastPage } from './pages/MusicPodcastPage';
+import { PodcastHubPage } from './pages/PodcastHubPage';
 
-const App = () => {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000); // Simulate loading
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
-    return (
-      <ThemeProvider theme={royalBlue}>
-        <LogoCentered />
-      </ThemeProvider>
-    );
-  }
-
+function App() {
   return (
-    <ThemeProvider theme={royalBlue}>
-      <Router>
-        <MainLayout>
-          <Routes>
-            <Route path="/" element={<FeedPage />} />
-            <Route path="/discover" element={<DiscoverPage />} />
-            {/* Add other routes here */}
-          </Routes>
-        </MainLayout>
-      </Router>
-    </ThemeProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<FeedPage />} />
+          <Route path="discover" element={<DiscoverPage />} />
+          <Route path="profile/:userId" element={<UserProfile />} />
+          <Route path="messages" element={<MessagesPage />} />
+          <Route path="rooms" element={<RoomsPage />} />
+          <Route path="study" element={<StudyPage />} />
+          <Route path="music" element={<MusicPodcastPage />} />
+          <Route path="podcasts" element={<PodcastHubPage />} />
+        </Route>
+      </Routes>
+    </Router>
   );
-};
+}
 
 export default App;
