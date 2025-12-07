@@ -4,5 +4,7 @@ import { xiaoGenshin } from './xiaoGenshin';
 type Theme = typeof xiaoGenshin;
 
 declare module 'styled-components' {
-  export interface DefaultTheme extends Theme {}
+  export interface DefaultTheme extends Theme {
+    font: string;
+  }
 }

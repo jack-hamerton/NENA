@@ -14,4 +14,5 @@ export const xiaoGenshin = {
   lightGray: '#F5F5F5',
   mediumGray: '#9E9E9E',
   darkGray: '#424242',
+  font: 'sans-serif',
 };
