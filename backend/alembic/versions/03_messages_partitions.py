@@ -2,7 +2,7 @@
 
 Revision ID: 03_messages_partitions
 Revises: 02_collaboration_graph
-Create Date: 2023-12-14 10:02:00.000000
+Create Date: 2024-05-14 10:02:00.000000
 
 """
 from alembic import op
@@ -17,8 +17,23 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("CREATE TABLE messages (id SERIAL, content TEXT, sender_id INTEGER, recipient_id INTEGER, created_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);")
+    op.create_table('messages',
+    sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('sender_id', sa.Integer(), nullable=False),
+    sa.Column('recipient_id', sa.Integer(), nullable=False),
+    sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('is_read', sa.Boolean(), server_default='f', nullable=False),
+    sa.ForeignKeyConstraint(['recipient_id'], ['users.id'], ),
+    sa.ForeignKeyConstraint(['sender_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id', 'created_at'),
+    postgresql_partition_by='RANGE (created_at)'
+    )
+    op.create_index(op.f('ix_messages_recipient_id'), 'messages', ['recipient_id'], unique=False)
+    op.create_index(op.f('ix_messages_sender_id'), 'messages', ['sender_id'], unique=False)
 
 
 def downgrade():
-    op.execute("DROP TABLE messages;")
+    op.drop_index(op.f('ix_messages_sender_id'), table_name='messages')
+    op.drop_index(op.f('ix_messages_recipient_id'), table_name='messages')
+    op.drop_table('messages')
