@@ -1,26 +1,22 @@
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
 
-const slideUp = keyframes`
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-100%);
-  }
-`;
-
-const TransitionContainer = styled.div`
+const TransitionContainer = styled(motion.div)`
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: ${props => props.theme.background};
-  animation: ${slideUp} 1s ease-in-out forwards;
+  background-color: ${({ theme }) => theme.primary};
+  z-index: 999;
 `;
 
-const TransitionAnimation = () => {
-  return <TransitionContainer />;
+export const TransitionAnimation = () => {
+  return (
+    <TransitionContainer
+      initial={{ scaleY: 0 }}
+      animate={{ scaleY: 1 }}
+      transition={{ duration: 0.8, ease: 'easeInOut' }}
+    />
+  );
 };
-
-export default TransitionAnimation;
