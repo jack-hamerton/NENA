@@ -1,22 +1,29 @@
-import React from 'react';
-import { Card, CardContent, Typography, Avatar, Box } from '@mui/material';
-import { Post as PostType } from '../types/post';
 
-interface PostProps {
-  post: PostType;
+import React from 'react';
+
+export interface PostData {
+  id: string;
+  author: string;
+  content: string;
+  isReported: boolean;
 }
 
-const Post: React.FC<PostProps> = ({ post }) => {
+interface PostProps {
+  post: PostData;
+  onReport: (postId: string) => void;
+}
+
+const Post: React.FC<PostProps> = ({ post, onReport }) => {
   return (
-    <Card sx={{ mb: 2 }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar sx={{ mr: 2 }} />
-          <Typography variant="h6">User {post.userId}</Typography>
-        </Box>
-        <Typography>{post.content}</Typography>
-      </CardContent>
-    </Card>
+    <div className={`post ${post.isReported ? 'reported' : ''}`}>
+      <div className="post-header">
+        <span className="author">{post.author}</span>
+      </div>
+      <div className="post-content">{post.content}</div>
+      <div className="post-actions">
+        {!post.isReported && <button onClick={() => onReport(post.id)}>Report</button>}
+      </div>
+    </div>
   );
 };
 
