@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
-import { Home, Search, User, MessageSquare, Mic, BookOpen } from 'react-feather';
+import { Home, Search, User, MessageSquare, Mic, BookOpen, Music, Headphones } from 'react-feather';
 
 const NavContainer = styled.nav`
   width: 250px;
@@ -54,6 +54,14 @@ const LeftNav = () => {
       <NavItem to="/study">
         <BookOpen />
         Study
+      </NavItem>
+      <NavItem to="/music">
+        <Music />
+        Music
+      </NavItem>
+      <NavItem to="/podcasts">
+        <Headphones />
+        Podcasts
       </NavItem>
     </NavContainer>
   );
