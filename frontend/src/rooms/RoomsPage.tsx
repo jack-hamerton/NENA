@@ -1,14 +1,16 @@
+import React from 'react';
 import styled from 'styled-components';
 
 const RoomsContainer = styled.div`
-  color: ${(props) => props.theme.text};
+  padding: 2rem;
+  color: ${props => props.theme.text};
 `;
 
 const RoomsPage = () => {
   return (
     <RoomsContainer>
       <h1>Rooms</h1>
-      {/* Rooms content will be displayed here */}
+      <p>Find a room to join.</p>
     </RoomsContainer>
   );
 };
