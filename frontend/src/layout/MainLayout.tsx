@@ -1,27 +1,24 @@
 import styled from 'styled-components';
-import { LeftNav } from './LeftNav';
-import { Outlet } from 'react-router-dom';
-import { ScreenshotBlocker } from './ScreenshotBlocker';
+import LeftNav from './LeftNav';
 
-const MainLayoutContainer = styled.div`
+const LayoutContainer = styled.div`
   display: flex;
   height: 100vh;
+  background-color: ${props => props.theme.colors.background};
 `;
 
-const ContentContainer = styled.div`
+const MainContent = styled.main`
   flex-grow: 1;
   overflow-y: auto;
 `;
 
-export const MainLayout = () => {
+const MainLayout = ({ children }) => {
   return (
-    <ScreenshotBlocker>
-      <MainLayoutContainer>
-        <LeftNav />
-        <ContentContainer>
-          <Outlet />
-        </ContentContainer>
-      </MainLayoutContainer>
-    </ScreenshotBlocker>
+    <LayoutContainer>
+      <LeftNav />
+      <MainContent>{children}</MainContent>
+    </LayoutContainer>
   );
 };
+
+export default MainLayout;

@@ -1,70 +1,39 @@
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
-import { Home, Compass, MessageSquare, Mic, Users, BookOpen, Music } from 'react-feather';
 
 const NavContainer = styled.nav`
+  width: 200px;
+  background-color: ${props => props.theme.colors.primary};
+  padding: 20px 0;
   display: flex;
   flex-direction: column;
-  width: 240px;
-  background-color: ${({ theme }) => theme.background};
-  border-right: 1px solid ${({ theme }) => theme.accent2};
-  padding: 20px;
+  align-items: center;
 `;
 
-const NavItem = styled(NavLink)`
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  color: ${({ theme }) => theme.text};
+const StyledLink = styled(NavLink)`
+  color: ${props => props.theme.colors.text};
   text-decoration: none;
-  transition: background-color 0.2s;
+  font-family: ${props => props.theme.fonts.body};
+  margin: 10px 0;
+  font-size: 1.2em;
 
   &.active {
-    background-color: ${({ theme }) => theme.accent1};
-  }
-
-  &:hover {
-    background-color: ${({ theme }) => theme.accent2};
+    font-weight: bold;
   }
 `;
 
-const IconWrapper = styled.div`
-  margin-right: 15px;
-`;
-
-export const LeftNav = () => {
+const LeftNav = () => {
   return (
     <NavContainer>
-      <NavItem to="/" end>
-        <IconWrapper><Home /></IconWrapper>
-        Home
-      </NavItem>
-      <NavItem to="/discover">
-        <IconWrapper><Compass /></IconWrapper>
-        Discover
-      </NavItem>
-      <NavItem to="/messages">
-        <IconWrapper><MessageSquare /></IconWrapper>
-        Messages
-      </NavItem>
-      <NavItem to="/rooms">
-        <IconWrapper><Users /></IconWrapper>
-        Rooms
-      </NavItem>
-      <NavItem to="/study">
-        <IconWrapper><BookOpen /></IconWrapper>
-        Study
-      </NavItem>
-      <NavItem to="/music">
-        <IconWrapper><Music /></IconWrapper>
-        Music
-      </NavItem>
-      <NavItem to="/podcasts">
-        <IconWrapper><Mic /></IconWrapper>
-        Podcasts
-      </NavItem>
+      <StyledLink to="/" end>Feed</StyledLink>
+      <StyledLink to="/discover">Discover</StyledLink>
+      <StyledLink to="/messages">Messages</StyledLink>
+      <StyledLink to="/rooms">Rooms</StyledLink>
+      <StyledLink to="/study">Study</StyledLink>
+      <StyledLink to="/music">Music</StyledLink>
+      <StyledLink to="/podcasts">Podcasts</StyledLink>
     </NavContainer>
   );
 };
+
+export default LeftNav;

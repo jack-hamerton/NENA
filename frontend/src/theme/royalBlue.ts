@@ -1,13 +1,18 @@
 export const royalBlue = {
-  primary: '#007bff',
-  secondary: '#6c757d',
-  background: '#f8f9fa',
-  text: '#212529',
-  accent1: '#17a2b8',
-  accent2: '#ffc107',
-  lightGray: '#f8f9fa',
-  mediumGray: '#6c757d',
-  darkGray: '#343a40',
-  font: 'sans-serif',
-  codeFont: 'monospace',
+  colors: {
+    primary: '#4a5969',
+    secondary: '#73beb0',
+    accent: '#5d838a',
+    background: '#35424c',
+    text: '#ffffff',
+    card: '#427973'
+  },
+  fonts: {
+    body: "'Inter', sans-serif",
+    code: "'Source Code Pro', monospace",
+  },
+  animation: {
+    fast: '200ms',
+    normal: '300ms',
+  }
 };
