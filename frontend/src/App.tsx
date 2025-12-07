@@ -1,28 +1,27 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { MainLayout } from './layout/MainLayout';
-import { DiscoverPage } from './discover/DiscoverPage';
-import { UserProfile } from './profile/UserProfile';
-import { FeedPage } from './feed/FeedPage';
-import { MessagesPage } from './messages/MessagesPage';
-import { RoomsPage } from './rooms/RoomsPage';
-import { StudyPage } from './study/StudyPage';
-import { MusicPodcastPage } from './pages/MusicPodcastPage';
-import { PodcastHubPage } from './pages/PodcastHubPage';
+import { Home } from './components/core/Home';
+import { NotFound } from './components/core/NotFound';
+import { Login } from './components/auth/Login';
+import { Register } from './components/auth/Register';
+import { Post } from './components/post/Post';
+import { UserProfile } from './components/user/UserProfile';
+import { Room } from './components/room/Room';
+import { PodcastPlayer } from './components/podcast/PodcastPlayer';
+import { Calendar } from './components/calendar/Calendar';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<FeedPage />} />
-          <Route path="discover" element={<DiscoverPage />} />
-          <Route path="profile/:userId" element={<UserProfile />} />
-          <Route path="messages" element={<MessagesPage />} />
-          <Route path="rooms" element={<RoomsPage />} />
-          <Route path="study" element={<StudyPage />} />
-          <Route path="music" element={<MusicPodcastPage />} />
-          <Route path="podcasts" element={<PodcastHubPage />} />
-        </Route>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/posts/:postId" element={<Post />} />
+        <Route path="/users/:userId" element={<UserProfile />} />
+        <Route path="/rooms/:roomId" element={<Room />} />
+        <Route path="/podcasts/:podcastId" element={<PodcastPlayer />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
