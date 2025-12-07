@@ -1,0 +1,25 @@
+.chat-message {
+  margin-bottom: 10px;
+}
+
+.chat-message.is-local {
+  text-align: right;
+}
+
+.message-sender {
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-bottom: 2px;
+}
+
+.message-text {
+  background-color: #3a3a3a;
+  padding: 8px 12px;
+  border-radius: 10px;
+  display: inline-block;
+  max-width: 80%;
+}
+
+.chat-message.is-local .message-text {
+  background-color: #007bff;
+}

@@ -1,0 +1,23 @@
+.reactions-container {
+  position: absolute;
+  bottom: 80px; /* Adjust as needed */
+  left: 20px;
+  display: flex;
+}
+
+.reaction-emoji {
+  font-size: 24px;
+  margin-right: 10px;
+  animation: float-up 2s ease-out forwards;
+}
+
+@keyframes float-up {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+}

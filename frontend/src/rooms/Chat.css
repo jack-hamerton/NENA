@@ -1,0 +1,23 @@
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  border-left: 1px solid #444;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.chat-input {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #444;
+}
+
+.chat-input input {
+  flex-grow: 1;
+  margin-right: 10px;
+}
