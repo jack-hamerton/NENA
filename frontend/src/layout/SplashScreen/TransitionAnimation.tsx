@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react';
+import React from 'react';
 import styled, { keyframes } from 'styled-components';
-import LogoCentered from './LogoCentered';
-import TaglineFadeIn from './TaglineFadeIn';
 
 const slideUp = keyframes`
   from {
@@ -12,39 +10,18 @@ const slideUp = keyframes`
   }
 `;
 
-const SplashScreenContainer = styled.div`
-  position: fixed;
+const TransitionContainer = styled.div`
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: ${(props) => props.theme.background};
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  animation: ${slideUp} 0.5s ease-in-out 3s forwards;
+  background-color: ${props => props.theme.background};
+  animation: ${slideUp} 1s ease-in-out forwards;
 `;
 
 const TransitionAnimation = () => {
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setVisible(false);
-    }, 3500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <div style={{ display: visible ? 'block' : 'none' }}>
-      <SplashScreenContainer>
-        <LogoCentered />
-        <TaglineFadeIn />
-      </SplashScreenContainer>
-    </div>
-  );
+  return <TransitionContainer />;
 };
 
 export default TransitionAnimation;

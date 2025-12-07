@@ -1,8 +1,10 @@
+import React from 'react';
 import styled from 'styled-components';
 import { useParams } from 'react-router-dom';
 
 const UserProfileContainer = styled.div`
-  color: ${(props) => props.theme.text};
+  padding: 2rem;
+  color: ${props => props.theme.text};
 `;
 
 const UserProfile = () => {
@@ -10,8 +12,8 @@ const UserProfile = () => {
 
   return (
     <UserProfileContainer>
-      <h1>User Profile for {userId}</h1>
-      {/* User profile details will be displayed here */}
+      <h1>User Profile</h1>
+      <p>Viewing profile for user: {userId}</p>
     </UserProfileContainer>
   );
 };

@@ -1,30 +1,31 @@
+import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
+const pulse = keyframes`
+  0% {
+    transform: scale(1);
   }
-  to {
-    opacity: 1;
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
   }
 `;
 
 const LogoContainer = styled.div`
-  animation: ${fadeIn} 1s ease-in-out;
-  font-family: ${(props) => props.theme.font};
-  font-size: 10rem;
-  font-weight: bold;
-  color: ${(props) => props.theme.text};
+  animation: ${pulse} 2s infinite;
 `;
 
-const CustomN = styled.span`
-  color: ${(props) => props.theme.secondary};
+const Logo = styled.img`
+  width: 150px;
+  height: 150px;
 `;
 
 const LogoCentered = () => {
   return (
     <LogoContainer>
-      <CustomN>N</CustomN>ENA
+      <Logo src="/logo.svg" alt="Nena Logo" />
     </LogoContainer>
   );
 };

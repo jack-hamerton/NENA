@@ -1,3 +1,4 @@
+import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
 const fadeIn = keyframes`
@@ -10,14 +11,13 @@ const fadeIn = keyframes`
 `;
 
 const Tagline = styled.h2`
-  animation: ${fadeIn} 1s ease-in-out;
-  color: ${(props) => props.theme.text};
-  font-size: 1.5rem;
-  margin-top: 20px;
+  font-size: 1.5em;
+  color: ${props => props.theme.primary};
+  animation: ${fadeIn} 1.5s ease-in;
 `;
 
 const TaglineFadeIn = () => {
-  return <Tagline>Connecting Minds, Building Futures</Tagline>;
+  return <Tagline>Connecting people, ideas, and knowledge</Tagline>;
 };
 
 export default TaglineFadeIn;
