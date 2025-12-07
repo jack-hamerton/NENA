@@ -1,26 +1,18 @@
-import styled from 'styled-components';
-import LeftNav from './LeftNav';
+import React from 'react';
 import { Outlet } from 'react-router-dom';
+import { Box, CssBaseline } from '@mui/material';
+import LeftNav from './LeftNav';
 
-const LayoutContainer = styled.div`
-  display: flex;
-  height: 100vh;
-  background-color: ${props => props.theme.background};
-`;
-
-const MainContent = styled.main`
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 20px;
-`;
-
-export const MainLayout = () => {
+const MainLayout: React.FC = () => {
   return (
-    <LayoutContainer>
+    <Box sx={{ display: 'flex' }}>
+      <CssBaseline />
       <LeftNav />
-      <MainContent>
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Outlet />
-      </MainContent>
-    </LayoutContainer>
+      </Box>
+    </Box>
   );
 };
+
+export default MainLayout;
