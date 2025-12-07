@@ -1,22 +1,21 @@
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
 
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+const TaglineContainer = styled(motion.div)`
+  margin-top: 20px;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.text};
 `;
 
-const Tagline = styled.h2`
-  font-size: 1.5em;
-  color: ${props => props.theme.primary};
-  animation: ${fadeIn} 1.5s ease-in;
-`;
-
-const TaglineFadeIn = () => {
-  return <Tagline>Connecting people, ideas, and knowledge</Tagline>;
+export const TaglineFadeIn = () => {
+  return (
+    <TaglineContainer
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1, delay: 0.5 }}
+    >
+      Connecting Minds, Creating Futures
+    </TaglineContainer>
+  );
 };
-
-export default TaglineFadeIn;

@@ -1,72 +1,70 @@
-import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
-import { Home, Search, User, MessageSquare, Mic, BookOpen, Music, Headphones } from 'react-feather';
-import NavLogo from './NavLogo';
+import { NavLink } from 'react-router-dom';
+import { Home, Compass, MessageSquare, Mic, Users, BookOpen, Music } from 'react-feather';
 
 const NavContainer = styled.nav`
-  width: 250px;
-  background-color: ${(props) => props.theme.primary};
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  width: 240px;
+  background-color: ${({ theme }) => theme.background};
+  border-right: 1px solid ${({ theme }) => theme.accent2};
+  padding: 20px;
 `;
 
 const NavItem = styled(NavLink)`
-  color: ${(props) => props.theme.text};
-  text-decoration: none;
-  margin: 15px 0;
-  font-size: 1.2rem;
   display: flex;
   align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  color: ${({ theme }) => theme.text};
+  text-decoration: none;
+  transition: background-color 0.2s;
 
   &.active {
-    color: ${(props) => props.theme.secondary};
+    background-color: ${({ theme }) => theme.accent1};
   }
 
-  svg {
-    margin-right: 15px;
+  &:hover {
+    background-color: ${({ theme }) => theme.accent2};
   }
 `;
 
-const LeftNav = () => {
+const IconWrapper = styled.div`
+  margin-right: 15px;
+`;
+
+export const LeftNav = () => {
   return (
     <NavContainer>
-      <NavLogo />
       <NavItem to="/" end>
-        <Home />
-        Feed
+        <IconWrapper><Home /></IconWrapper>
+        Home
       </NavItem>
       <NavItem to="/discover">
-        <Search />
+        <IconWrapper><Compass /></IconWrapper>
         Discover
       </NavItem>
-      <NavItem to="/profile/me">
-        <User />
-        Profile
-      </NavItem>
       <NavItem to="/messages">
-        <MessageSquare />
+        <IconWrapper><MessageSquare /></IconWrapper>
         Messages
       </NavItem>
       <NavItem to="/rooms">
-        <Mic />
+        <IconWrapper><Users /></IconWrapper>
         Rooms
       </NavItem>
       <NavItem to="/study">
-        <BookOpen />
+        <IconWrapper><BookOpen /></IconWrapper>
         Study
       </NavItem>
       <NavItem to="/music">
-        <Music />
+        <IconWrapper><Music /></IconWrapper>
         Music
       </NavItem>
       <NavItem to="/podcasts">
-        <Headphones />
+        <IconWrapper><Mic /></IconWrapper>
         Podcasts
       </NavItem>
     </NavContainer>
   );
 };
-
-export default LeftNav;

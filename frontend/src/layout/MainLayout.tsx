@@ -1,28 +1,27 @@
-import { Outlet } from 'react-router-dom';
 import styled from 'styled-components';
-import Header from './Header';
-import Footer from './Footer';
+import { LeftNav } from './LeftNav';
+import { Outlet } from 'react-router-dom';
+import { ScreenshotBlocker } from './ScreenshotBlocker';
 
-const LayoutContainer = styled.div`
+const MainLayoutContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
 `;
 
-const MainContent = styled.main`
-  flex: 1;
+const ContentContainer = styled.div`
+  flex-grow: 1;
+  overflow-y: auto;
 `;
 
-const MainLayout = () => {
+export const MainLayout = () => {
   return (
-    <LayoutContainer>
-      <Header />
-      <MainContent>
-        <Outlet />
-      </MainContent>
-      <Footer />
-    </LayoutContainer>
+    <ScreenshotBlocker>
+      <MainLayoutContainer>
+        <LeftNav />
+        <ContentContainer>
+          <Outlet />
+        </ContentContainer>
+      </MainLayoutContainer>
+    </ScreenshotBlocker>
   );
 };
-
-export default MainLayout;

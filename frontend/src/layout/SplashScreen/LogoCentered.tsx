@@ -1,32 +1,21 @@
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
 
-const pulse = keyframes`
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+const LogoContainer = styled(motion.div)`
+  // Add your logo styles here
 `;
 
-const LogoContainer = styled.div`
-  animation: ${pulse} 2s infinite;
-`;
-
-const Logo = styled.img`
-  width: 150px;
-  height: 150px;
-`;
-
-const LogoCentered = () => {
+export const LogoCentered = () => {
   return (
-    <LogoContainer>
-      <Logo src="/logo.svg" alt="Nena Logo" />
+    <LogoContainer
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.8 }}
+    >
+      {/* Your Logo SVG or Image */}
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" stroke="white" strokeWidth="4" fill="transparent" />
+      </svg>
     </LogoContainer>
   );
 };
-
-export default LogoCentered;
