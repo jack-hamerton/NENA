@@ -1,23 +1,22 @@
-import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
-import Post from '../components/Post';
-import { Post as PostType } from '../types/post';
+import CreatePost from './CreatePost';
+import Post from './Post';
 
-const FeedPage: React.FC = () => {
-  const [posts, setPosts] = useState<PostType[]>([]);
+const mockPosts = [
+  {
+    id: 1,
+    user: { name: 'John Doe', avatar: '/avatars/avatar1.jpg' },
+    content: 'This is a sample post!',
+    timestamp: '2 hours ago',
+  },
+  // Add more mock posts here
+];
 
-  useEffect(() => {
-    // In a real app, you would fetch the user's feed from your API
-    const mockPosts: PostType[] = [
-      { id: '1', userId: '1', content: 'This is a post from a followed user.' },
-      { id: '2', userId: '2', content: 'This is another post.' },
-    ];
-    setPosts(mockPosts);
-  }, []);
-
+const FeedPage = () => {
   return (
     <Box>
-      {posts.map((post) => (
+      <CreatePost />
+      {mockPosts.map((post) => (
         <Post key={post.id} post={post} />
       ))}
     </Box>

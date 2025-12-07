@@ -1,16 +1,11 @@
-import styled from 'styled-components';
-
-const StudyContainer = styled.div`
-  padding: 2rem;
-  color: ${props => props.theme.text};
-`;
+import { Box, Typography } from '@mui/material';
 
 const StudyPage = () => {
   return (
-    <StudyContainer>
-      <h1>Study</h1>
-      <p>Let's get to studying!</p>
-    </StudyContainer>
+    <Box>
+      <Typography variant="h4">Study</Typography>
+      {/* Add study content here */}
+    </Box>
   );
 };
 

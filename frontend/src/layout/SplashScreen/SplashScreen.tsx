@@ -1,49 +1,26 @@
-import styled from 'styled-components';
-import { LogoCentered } from './LogoCentered';
-import { TaglineFadeIn } from './TaglineFadeIn';
-import { TransitionAnimation } from './TransitionAnimation';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import LogoCentered from './LogoCentered';
+import TaglineFadeIn from './TaglineFadeIn';
+import TransitionAnimation from './TransitionAnimation';
 
-const SplashScreenContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background-color: ${({ theme }) => theme.background};
-`;
-
-export const SplashScreen = () => {
-  const [showTagline, setShowTagline] = useState(false);
+const SplashScreen = ({ onFinish }) => {
   const [showTransition, setShowTransition] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const taglineTimer = setTimeout(() => {
-      setShowTagline(true);
-    }, 1000);
-
-    const transitionTimer = setTimeout(() => {
+    const timer = setTimeout(() => {
       setShowTransition(true);
     }, 2500);
 
-    const redirectTimer = setTimeout(() => {
-      navigate('/');
-    }, 3500);
-
-    return () => {
-      clearTimeout(taglineTimer);
-      clearTimeout(transitionTimer);
-      clearTimeout(redirectTimer);
-    };
-  }, [navigate]);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <SplashScreenContainer>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <LogoCentered />
-      {showTagline && <TaglineFadeIn />}
-      {showTransition && <TransitionAnimation />}
-    </SplashScreenContainer>
+      <TaglineFadeIn />
+      {showTransition && <TransitionAnimation onTransitionComplete={onFinish} />}
+    </div>
   );
 };
+
+export default SplashScreen;

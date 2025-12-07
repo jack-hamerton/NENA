@@ -1,25 +1,25 @@
-import React from 'react';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 
-const LogoCentered: React.FC = () => {
+const LogoCentered = () => {
   return (
     <Box
+      component={motion.div}
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
       sx={{
         display: 'flex',
-        justifyContent: 'center',
+        flexDirection: 'column',
         alignItems: 'center',
+        justifyContent: 'center',
         height: '100vh',
       }}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        {/* You can replace this with your actual logo */}
-        <img src="/logo.png" alt="Nena Logo" width="200" />
-      </motion.div>
+      <img src="/logo.png" alt="Nena Logo" width={120} />
+      <Typography variant="h4" sx={{ mt: 2, color: 'text.primary' }}>
+        Nena
+      </Typography>
     </Box>
   );
 };

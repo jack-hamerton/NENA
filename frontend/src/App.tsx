@@ -1,81 +1,50 @@
+import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import { AuthProvider } from './context/AuthContext';
+import { SnackbarProvider } from './context/SnackbarContext';
+import { darkTheme } from './theme';
+import AppLayout from './layout/AppLayout';
+import SplashScreen from './layout/SplashScreen/SplashScreen';
+import FeedPage from './feed/FeedPage';
+import DiscoverPage from './discover/DiscoverPage';
+import UserProfile from './profile/UserProfile';
+import MessagesPage from './messages/MessagesPage';
+import RoomsPage from './rooms/RoomsPage';
+import StudyPage from './study/StudyPage';
+import SettingsPage from './settings/SettingsPage';
 
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
-import Header from './layout/Header';
-import ActivityFeed from './pages/ActivityFeed';
-import ProfilePage from './pages/ProfilePage';
-import SignUpPage from './pages/SignUpPage';
-import { Room } from './rooms/Room';
-import { AuthProvider, useAuth } from './hooks/useAuth';
-import './App.css';
+const App = () => {
+  const [loading, setLoading] = useState(true);
 
-const App: React.FC = () => {
-  return (
-    <AuthProvider>
-      <Router>
-        <AuthenticatedApp />
-      </Router>
-    </AuthProvider>
-  );
-};
-
-const AuthenticatedApp: React.FC = () => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>; // Or a proper loading spinner
-  }
-
-  return (
-    <div className="app-container">
-      {user && <Header />}
-      <main className="feed-container">
-        <Routes>
-          {user ? (
-            <>
-              <Route path="/" element={<ActivityFeed />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/room" element={<Room />} />
-              {/* Other routes will be added here */}
-            </>
-          ) : (
-            <Route path="*" element={<Navigate to="/login" />} />
-          )}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUpPage />} />
-        </Routes>
-      </main>
-    </div>
-  );
-};
-
-const Login: React.FC = () => {
-  const { login } = useAuth();
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    try {
-      await login(email, password);
-    } catch (err) {
-      setError('Invalid email or password');
-    }
+  const handleSplashFinish = () => {
+    setLoading(false);
   };
 
   return (
-    <div className="login-page">
-      <form onSubmit={handleSubmit}>
-        <h2>Login</h2>
-        {error && <p className="error">{error}</p>}
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button type="submit">Login</button>
-        <p>Don't have an account? <Link to="/signup">Sign up</Link></p>
-      </form>
-    </div>
+    <ThemeProvider theme={darkTheme}>
+      <AuthProvider>
+        <SnackbarProvider>
+          {loading ? (
+            <SplashScreen onFinish={handleSplashFinish} />
+          ) : (
+            <Router>
+              <AppLayout>
+                <Routes>
+                  <Route path="/" element={<FeedPage />} />
+                  <Route path="/discover" element={<DiscoverPage />} />
+                  <Route path="/profile/:userId" element={<UserProfile />} />
+                  <Route path="/messages" element={<MessagesPage />} />
+                  <Route path="/rooms" element={<RoomsPage />} />
+                  <Route path="/study" element={<StudyPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                </Routes>
+              </AppLayout>
+            </Router>
+          )}
+        </SnackbarProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

@@ -1,7 +1,5 @@
-
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar } from '@mui/material';
+import { NavLink } from 'react-router-dom';
+import { Box, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
@@ -10,44 +8,28 @@ import GroupIcon from '@mui/icons-material/Group';
 import SchoolIcon from '@mui/icons-material/School';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 
-const drawerWidth = 240;
+const navItems = [
+  { path: '/', icon: <HomeIcon />, text: 'Feed' },
+  { path: '/discover', icon: <SearchIcon />, text: 'Discover' },
+  { path: '/profile/me', icon: <PersonIcon />, text: 'Profile' },
+  { path: '/messages', icon: <MessageIcon />, text: 'Messages' },
+  { path: '/rooms', icon: <GroupIcon />, text: 'Rooms' },
+  { path: '/study', icon: <SchoolIcon />, text: 'Study' },
+  { path: '/music', icon: <MusicNoteIcon />, text: 'Music' },
+];
 
-const LeftNav: React.FC = () => {
-  const navItems = [
-    { text: 'Home', icon: <HomeIcon />, path: '/feed' },
-    { text: 'Discover', icon: <SearchIcon />, path: '/' },
-    { text: 'Profile', icon: <PersonIcon />, path: '/profile/me' },
-    { text: 'Messages', icon: <MessageIcon />, path: '/messages' },
-    { text: 'Rooms', icon: <GroupIcon />, path: '/rooms' },
-    { text: 'Study', icon: <SchoolIcon />, path: '/study' },
-    { text: 'Music', icon: <MusicNoteIcon />, path: '/music' },
-    { text: 'Creator Dashboard', icon: <SchoolIcon />, path: '/creator-dashboard' },
-  ];
-
+const LeftNav = () => {
   return (
-    <Drawer
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-          backgroundColor: '#427973',
-        },
-      }}
-      variant="permanent"
-      anchor="left"
-    >
-      <Toolbar />
-      <List>
-        {navItems.map((item) => (
-          <ListItem button component={Link} to={item.path} key={item.text}>
-            <ListItemIcon sx={{ color: 'white' }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
-      </List>
-    </Drawer>
+    <Box sx={{ width: 240, flexShrink: 0, bgcolor: 'background.paper' }}>
+        <List>
+            {navItems.map((item) => (
+            <ListItem button component={NavLink} to={item.path} key={item.path}>
+                <ListItemIcon sx={{ color: 'text.primary' }}>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+            </ListItem>
+            ))}
+        </List>
+    </Box>
   );
 };
 

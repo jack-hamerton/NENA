@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
+import { Box } from '@mui/material';
 
-const ScreenshotBlocker: React.FC = () => {
+const ScreenshotBlocker = () => {
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'PrintScreen') {
-        event.preventDefault();
-        alert('Screenshots are disabled on this page.');
+    const handleKeyDown = (e) => {
+      if (e.key === 'PrintScreen') {
+        e.preventDefault();
+        alert('Screenshotting is disabled on this platform.');
       }
     };
 
@@ -16,7 +17,7 @@ const ScreenshotBlocker: React.FC = () => {
     };
   }, []);
 
-  return null;
+  return <Box sx={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }} className="screenshot-blocker" />;
 };
 
 export default ScreenshotBlocker;

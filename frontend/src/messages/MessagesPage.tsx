@@ -1,16 +1,11 @@
-import styled from 'styled-components';
-
-const MessagesContainer = styled.div`
-  padding: 2rem;
-  color: ${props => props.theme.text};
-`;
+import { Box, Typography } from '@mui/material';
 
 const MessagesPage = () => {
   return (
-    <MessagesContainer>
-      <h1>Messages</h1>
-      <p>Here are your messages.</p>
-    </MessagesContainer>
+    <Box>
+      <Typography variant="h4">Messages</Typography>
+      {/* Add messages content here */}
+    </Box>
   );
 };
 

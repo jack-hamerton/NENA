@@ -1,35 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { Box, Typography, Avatar, Button } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
-import ProfileHeader from './ProfileHeader';
-import UserPosts from './UserPosts';
-import { User } from '../types/user';
-import { Post } from '../types/post';
 
-const UserProfile: React.FC = () => {
-  const { userId } = useParams<{ userId: string }>();
-  const [user, setUser] = useState<User | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
+const UserProfile = () => {
+  const { userId } = useParams();
 
-  useEffect(() => {
-    // In a real app, you would fetch the user and their posts from your API
-    const mockUser: User = { id: userId!, name: 'John Doe', bio: 'Software Engineer' };
-    const mockPosts: Post[] = [
-      { id: '1', userId: userId!, content: 'Hello, world!' },
-      { id: '2', userId: userId!, content: 'This is my first post.' },
-    ];
-    setUser(mockUser);
-    setPosts(mockPosts);
-  }, [userId]);
-
-  if (!user) {
-    return <Typography>Loading...</Typography>;
-  }
+  // Fetch user data based on userId
 
   return (
     <Box>
-      <ProfileHeader user={user} />
-      <UserPosts posts={posts} />
+      <Avatar sx={{ width: 120, height: 120, mb: 2 }} />
+      <Typography variant="h4">User Name</Typography>
+      <Typography variant="body1" color="text.secondary">@username</Typography>
+      <Button variant="contained" sx={{ mt: 2 }}>Follow</Button>
+      {/* Add more profile details here */}
     </Box>
   );
 };
