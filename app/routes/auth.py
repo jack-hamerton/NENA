@@ -5,8 +5,56 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.core.security import create_access_token
 from app.db.session import get_db
+from app.routes import deps
+from app.services import pnv_service
 
 router = APIRouter()
+
+@router.post("/register/send-pnv")
+def register_send_pnv(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    user_in: schemas.UserCreate
+) -> dict:
+    """
+    Send a PNV request to the user during registration.
+    """
+    user = crud.user.get_by_email(db, email=user_in.email)
+    if user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    user = crud.user.get_by_phone_number(db, phone_number=user_in.phone_number)
+    if user:
+        raise HTTPException(status_code=400, detail="Phone number already registered")
+
+    verification_id = pnv_service.send_pnv_request(
+        phone_number=user_in.phone_number, country_code=user_in.country_code
+    )
+    return {"verification_id": verification_id}
+
+@router.post("/register/check-pnv", response_model=schemas.Token)
+def register_check_pnv(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    pnv_in: schemas.PNVCheck, 
+    user_in: schemas.UserCreate
+) -> dict:
+    """
+    Check a PNV code from the user during registration and create the user.
+    """
+    is_valid = pnv_service.check_pnv_request(
+        verification_id=pnv_in.verification_id, code=pnv_in.code
+    )
+    if not is_valid:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    user = crud.user.create(db, obj_in=user_in)
+    
+    return {
+        "access_token": create_access_token(
+            user.id
+        ),
+        "token_type": "bearer",
+    }
 
 @router.post("/login/access-token", response_model=schemas.Token)
 def login_access_token(

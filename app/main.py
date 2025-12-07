@@ -4,7 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.routes import (auth, profiles, discover, collaboration, messages, 
-                    comments, rooms, study, analytics, health, music_podcast_routes)
+                    comments, rooms, study, analytics, health, music_podcast_routes, pnv)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -32,3 +32,4 @@ app.include_router(study.router, tags=["study"], prefix=settings.API_V1_STR)
 app.include_router(analytics.router, tags=["analytics"], prefix=settings.API_V1_STR)
 app.include_router(health.router, tags=["health"], prefix=settings.API_V1_STR)
 app.include_router(music_podcast_routes.router, tags=["music_and_podcast"], prefix=settings.API_V1_STR)
+app.include_router(pnv.router, tags=["pnv"], prefix=settings.API_V1_STR)
