@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
 import { Home, Search, User, MessageSquare, Mic, BookOpen, Music, Headphones } from 'react-feather';
+import NavLogo from './NavLogo';
 
 const NavContainer = styled.nav`
   width: 250px;
@@ -31,6 +32,7 @@ const NavItem = styled(NavLink)`
 const LeftNav = () => {
   return (
     <NavContainer>
+      <NavLogo />
       <NavItem to="/" end>
         <Home />
         Feed

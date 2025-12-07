@@ -1,27 +1,18 @@
-import styled, { keyframes } from 'styled-components';
-
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-`;
+import styled from 'styled-components';
 
 const LogoContainer = styled.div`
-  animation: ${fadeIn} 1s ease-in-out;
   font-family: ${(props) => props.theme.font};
-  font-size: 10rem;
+  font-size: 2rem;
   font-weight: bold;
   color: ${(props) => props.theme.text};
+  margin-bottom: 40px;
 `;
 
 const CustomN = styled.span`
   color: ${(props) => props.theme.secondary};
 `;
 
-const LogoCentered = () => {
+const NavLogo = () => {
   return (
     <LogoContainer>
       <CustomN>N</CustomN>ENA
@@ -29,4 +20,4 @@ const LogoCentered = () => {
   );
 };
 
-export default LogoCentered;
+export default NavLogo;
