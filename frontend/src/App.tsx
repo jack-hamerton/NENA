@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import { royalBlue } from './theme/royalBlue';
+import { xiaoGenshin } from './theme/xiaoGenshin';
 import MainLayout from './layout/MainLayout';
 import DiscoverPage from './discover/DiscoverPage';
 import UserProfile from './profile/UserProfile';
@@ -13,7 +13,7 @@ import PodcastHubPage from './pages/PodcastHubPage';
 
 function App() {
   return (
-    <ThemeProvider theme={royalBlue}>
+    <ThemeProvider theme={xiaoGenshin}>
       <Router>
         <Routes>
           <Route path="/" element={<MainLayout />}>
