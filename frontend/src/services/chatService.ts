@@ -1,50 +1,33 @@
-// This is a mock chat service. In a real application, this would be replaced with API calls to your backend.
 
-export interface Message {
+import { realtimeService } from './realtimeService';
+import { EventEmitter } from 'events';
+
+interface Message {
   id: string;
-  text: string;
-  sender: {
-    id: string;
-    name: string;
-  };
-  timestamp: number;
+  content: string;
+  author: string;
+  roomId: string;
 }
 
-const messages: Message[] = [
-  {
-    id: '1',
-    text: 'Hello everyone!',
-    sender: {
-      id: '1', // Corresponds to localParticipant
-      name: 'Local User',
-    },
-    timestamp: Date.now() - 1000 * 60 * 5,
-  },
-  {
-    id: '2',
-    text: 'Hi there!',
-    sender: {
-      id: '2', // Corresponds to a remote participant
-      name: 'Remote User 1',
-    },
-    timestamp: Date.now() - 1000 * 60 * 4,
-  },
-];
+class ChatService extends EventEmitter {
+  constructor() {
+    super();
 
-export const chatService = {
-  async getMessages(channelId: string): Promise<Message[]> {
-    // In a real app, you'd fetch messages for a specific channel
-    // For now, we return all mock messages
-    return Promise.resolve(messages);
-  },
+    // Listen for incoming messages from the realtimeService
+    realtimeService.on('new-message', (message: Message) => {
+      this.emit('new-message', message);
+    });
+  }
 
-  async sendMessage(channelId: string, message: Omit<Message, 'id' | 'timestamp'>): Promise<Message> {
-    const newMessage: Message = {
-      ...message,
-      id: String(Date.now()),
-      timestamp: Date.now(),
+  sendMessage(roomId: string, content: string) {
+    // In a real app, the author would be the current user
+    const message: Partial<Message> = {
+      content,
+      roomId,
+      author: 'current-user', // This would be replaced with the actual user
     };
-    messages.push(newMessage);
-    return Promise.resolve(newMessage);
-  },
-};
+    realtimeService.send('send-message', message);
+  }
+}
+
+export const chatService = new ChatService();

@@ -1,94 +1,62 @@
-// This is a mock call service. In a real application, this would be replaced with a WebRTC library like Twilio Video or a custom implementation.
 
-export interface Participant {
-  id: string;
-  name: string;
-  isSpeaking: boolean;
-  isScreenSharing: boolean;
-  isLocal: boolean;
+import { realtimeService } from './realtimeService';
+import { EventEmitter } from 'events';
+
+class CallService extends EventEmitter {
+  private peerConnection: RTCPeerConnection;
+
+  constructor() {
+    super();
+    this.peerConnection = new RTCPeerConnection();
+
+    // Listen for ICE candidates and send them to the other peer
+    this.peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        realtimeService.send('ice-candidate', event.candidate);
+      }
+    };
+
+    // Listen for incoming tracks from the other peer
+    this.peerConnection.ontrack = (event) => {
+      // In a real app, you would attach this stream to a <video> element
+      console.log('Received remote stream', event.streams[0]);
+    };
+
+    // Listen for signaling messages from the realtimeService
+    realtimeService.on('offer', this.handleOffer.bind(this));
+    realtimeService.on('answer', this.handleAnswer.bind(this));
+    realtimeService.on('ice-candidate', this.handleIceCandidate.bind(this));
+    realtimeService.on('incoming-call', (from: string) => this.emit('incomingCall', from));
+  }
+
+  async makeCall(to: string) {
+    const offer = await this.peerConnection.createOffer();
+    await this.peerConnection.setLocalDescription(offer);
+    realtimeService.send('offer', { to, offer });
+  }
+
+  async acceptCall() {
+    const answer = await this.peerConnection.createAnswer();
+    await this.peerConnection.setLocalDescription(answer);
+    realtimeService.send('answer', answer);
+  }
+
+  rejectCall() {
+    realtimeService.send('reject-call', {});
+  }
+
+  private async handleOffer(offer: RTCSessionDescriptionInit) {
+    await this.peerConnection.setRemoteDescription(offer);
+    this.emit('incomingCall');
+  }
+
+  private async handleAnswer(answer: RTCSessionDescriptionInit) {
+    await this.peerConnection.setRemoteDescription(answer);
+  }
+
+  private async handleIceCandidate(candidate: RTCIceCandidateInit) {
+    await this.peerConnection.addIceCandidate(candidate);
+  }
 }
 
-let localParticipant: Participant | null = null;
-let remoteParticipants: Participant[] = [];
-
-const listeners: { [key: string]: Function[] } = {};
-
-const emit = (event: string, ...args: any[]) => {
-  if (listeners[event]) {
-    listeners[event].forEach(listener => listener(...args));
-  }
-};
-
-export const callService = {
-  async joinCall(roomId: string, participantName: string): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        localParticipant = {
-          id: `local-${Math.random().toString(36).substr(2, 9)}`,
-          name: participantName,
-          isSpeaking: false,
-          isScreenSharing: false,
-          isLocal: true,
-        };
-
-        // Simulate other participants already in the call
-        remoteParticipants = [
-          {
-            id: `remote-${Math.random().toString(36).substr(2, 9)}`,
-            name: 'Remote User 1',
-            isSpeaking: false,
-            isScreenSharing: false,
-            isLocal: false,
-          },
-          {
-            id: `remote-${Math.random().toString(36).substr(2, 9)}`,
-            name: 'Remote User 2',
-            isSpeaking: true,
-            isScreenSharing: false,
-            isLocal: false,
-          },
-        ];
-
-        emit('participantsChanged', [localParticipant, ...remoteParticipants]);
-        resolve();
-      }, 500);
-    });
-  },
-
-  leaveCall(): void {
-    localParticipant = null;
-    remoteParticipants = [];
-    emit('participantsChanged', []);
-  },
-
-  toggleMute(isMuted: boolean): void {
-    if (localParticipant) {
-      localParticipant.isSpeaking = !isMuted;
-      emit('participantsChanged', [localParticipant, ...remoteParticipants]);
-    }
-  },
-
-  toggleScreenShare(isScreenSharing: boolean): void {
-    if (localParticipant) {
-      localParticipant.isScreenSharing = isScreenSharing;
-      emit('participantsChanged', [localParticipant, ...remoteParticipants]);
-    }
-  },
-
-  getParticipants(): (Participant | null)[] {
-    return [localParticipant, ...remoteParticipants];
-  },
-
-  on(event: string, callback: Function) {
-    if (!listeners[event]) {
-      listeners[event] = [];
-    }
-    listeners[event].push(callback);
-  },
-
-  off(event: string, callback: Function) {
-    if (listeners[event]) {
-      listeners[event] = listeners[event].filter(l => l !== callback);
-    }
-  },
-};
+export const callService = new CallService();

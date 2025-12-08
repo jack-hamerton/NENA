@@ -12,7 +12,7 @@ import DiscoverPage from './discover/DiscoverPage';
 import UserProfile from './profile/UserProfile';
 import MessagesPage from './messages/MessagesPage';
 import RoomsPage from './rooms/RoomsPage';
-import Room from './pages/Room'; // Import the Room component
+import { RoomPage } from './pages/RoomPage';
 import StudyPage from './study/StudyPage';
 import SettingsPage from './settings/SettingsPage';
 import Analytics from './pages/Analytics';
@@ -40,7 +40,7 @@ const App = () => {
                     <Route path="/profile/:userId" element={<UserProfile />} />
                     <Route path="/messages" element={<MessagesPage />} />
                     <Route path="/rooms" element={<RoomsPage />} />
-                    <Route path="/room/:roomId" element={<Room />} /> {/* Add the new room route */}
+                    <Route path="/room/:roomId" element={<RoomPage />} />
                     <Route path="/study" element={<StudyPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/analytics" element={<Analytics />} />

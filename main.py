@@ -1,10 +1,12 @@
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, WebSocket
 from sqlalchemy.orm import Session
+import json
 
 import crud, models, schemas
 from database import SessionLocal, engine
 from models.chat import RoomRole
+from nena_workers_backend.gateway import manager, websocket_endpoint
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -32,6 +34,8 @@ def get_current_user(db: Session = Depends(get_db)):
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+app.add_api_websocket_route("/ws/{room_id}/{user_id}", websocket_endpoint)
 
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -77,7 +81,7 @@ def read_room(room_id: int, db: Session = Depends(get_db)):
     return db_room
 
 @app.post("/rooms/{room_id}/messages/", response_model=schemas.Message)
-def create_message_for_room(
+async def create_message_for_room(
     room_id: int,
     message: schemas.MessageCreate,
     db: Session = Depends(get_db),
@@ -86,7 +90,18 @@ def create_message_for_room(
     # Ensure the user is a member of the room before allowing them to post
     if not any(membership.room_id == room_id for membership in current_user.room_associations):
         raise HTTPException(status_code=403, detail="Not a member of this room")
-    return crud.create_message(db=db, message=message)
+    
+    new_message = crud.create_message(db=db, message=message, room_id=room_id, author_id=current_user.id)
+    
+    message_dict = {
+        "id": new_message.id,
+        "content": new_message.content,
+        "author_id": new_message.author_id,
+        "room_id": new_message.room_id
+    }
+    
+    await manager.broadcast_to_room(str(room_id), json.dumps({"event": "new-message", "data": message_dict}), exclude_user_id=str(current_user.id))
+    return new_message
 
 
 @app.get("/rooms/{room_id}/messages/", response_model=list[schemas.Message])
@@ -97,10 +112,21 @@ def read_messages_for_room(
     return messages
 
 @app.post("/rooms/{room_id}/members/{user_id}", response_model=schemas.RoomMembershipSchema)
-def add_user_to_room(
+async def add_user_to_room(
     room_id: int, user_id: int, role: RoomRole = RoomRole.MEMBER, db: Session = Depends(get_db)
 ):
-    return crud.add_user_to_room(db=db, room_id=room_id, user_id=user_id, role=role)
+    membership = crud.add_user_to_room(db=db, room_id=room_id, user_id=user_id, role=role)
+    await manager.broadcast_to_room(str(room_id), json.dumps({"event": "user-joined-room", "data": {"userId": user_id, "roomId": room_id}}))
+    return membership
+
+@app.delete("/rooms/{room_id}/members/{user_id}")
+async def remove_user_from_room(
+    room_id: int, user_id: int, db: Session = Depends(get_db)
+):
+    crud.remove_user_from_room(db=db, room_id=room_id, user_id=user_id)
+    await manager.broadcast_to_room(str(room_id), json.dumps({"event": "user-left-room", "data": {"userId": user_id, "roomId": room_id}}))
+    return {"message": "User removed from room"}
+
 
 @app.get("/rooms/{room_id}/members", response_model=list[schemas.RoomMembershipSchema])
 def get_room_members(room_id: int, db: Session = Depends(get_db)):
