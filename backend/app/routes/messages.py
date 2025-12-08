@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
@@ -5,8 +6,25 @@ from app.crud import message as crud_message
 from app.schemas import message as schema_message
 from app.core.dependencies import get_db, get_current_user
 from app.models.user import User
+from app.services.e2ee.x3dh import X3DH
+from app.services.e2ee.double_ratchet import DoubleRatchet
 
 router = APIRouter()
+
+# Placeholder for a key store
+# In a real application, this would be a secure and robust system
+key_store = {}
+
+@router.post("/keys")
+def exchange_keys(public_identity_key: str, signed_public_pre_key: str, signature: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.id not in key_store:
+        key_store[current_user.id] = X3DH(current_user.id)
+    x3dh = key_store[current_user.id]
+    # In a real application, we would store and retrieve the other user's keys from the database
+    double_ratchet = x3dh.establish_shared_secret(public_identity_key, signed_public_pre_key, signature)
+    # Store the DoubleRatchet instance for the current user
+    key_store[current_user.id] = double_ratchet
+    return {"status": "success"}
 
 @router.get("/{recipient_id}", response_model=List[schema_message.Message])
 def read_messages(
@@ -16,7 +34,12 @@ def read_messages(
     skip: int = 0,
     limit: int = 100
 ):
-    return crud_message.get_messages(db, sender_id=current_user.id, recipient_id=recipient_id, skip=skip, limit=limit)
+    messages = crud_message.get_messages(db, sender_id=current_user.id, recipient_id=recipient_id, skip=skip, limit=limit)
+    if current_user.id in key_store:
+        double_ratchet = key_store[current_user.id]
+        for msg in messages:
+            msg.content = double_ratchet.decrypt(msg.content, msg.nonce)
+    return messages
 
 @router.post("/", response_model=schema_message.Message)
 
@@ -25,4 +48,9 @@ def create_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if current_user.id in key_store:
+        double_ratchet = key_store[current_user.id]
+        encrypted_content, nonce = double_ratchet.encrypt(message.content)
+        message.content = encrypted_content
+        message.nonce = nonce
     return crud_message.create_message(db=db, message=message, sender_id=current_user.id)
