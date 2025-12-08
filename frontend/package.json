@@ -11,6 +11,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.15.14",
     "@react-three/drei": "^9.102.6",
     "@react-three/fiber": "^8.15.19",
@@ -25,14 +26,18 @@
     "react-icons": "^5.0.1",
     "react-router-dom": "^6.22.3",
     "socket.io-client": "^4.7.5",
-    "three": "^0.162.0"
+    "three": "^0.162.0",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/moment": "^2.11.29",
     "@types/react": "^18.2.64",
+    "@types/react-big-calendar": "^1.16.3",
     "@types/react-dom": "^18.2.21",
+    "@types/styled-components": "^5.1.36",
     "@types/three": "^0.162.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "typescript": "^5.2.2",
     "vite": "^5.1.6"
   }
 }

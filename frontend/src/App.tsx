@@ -4,7 +4,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { AuthProvider } from './context/AuthContext';
 import { SnackbarProvider } from './context/SnackbarContext';
 import { darkTheme } from './theme';
-import AppLayout from './layout/AppLayout';
+import MainLayout from './layout/MainLayout';
 import SplashScreen from './layout/SplashScreen/SplashScreen';
 import FeedPage from './feed/FeedPage';
 import DiscoverPage from './discover/DiscoverPage';
@@ -30,7 +30,7 @@ const App = () => {
             <SplashScreen onFinish={handleSplashFinish} />
           ) : (
             <Router>
-              <AppLayout>
+              <MainLayout>
                 <Routes>
                   <Route path="/" element={<FeedPage />} />
                   <Route path="/discover" element={<DiscoverPage />} />
@@ -41,7 +41,7 @@ const App = () => {
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/analytics" element={<Analytics />} />
                 </Routes>
-              </AppLayout>
+              </MainLayout>
             </Router>
           )}
         </SnackbarProvider>
