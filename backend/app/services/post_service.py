@@ -2,7 +2,7 @@
 from typing import List
 
 from backend.app import schemas
-from backend.app.db.models import Post, User, Follower, Bookmark
+from backend.app.db.models import Post, User, followers, Bookmark
 from sqlalchemy.orm import Session
 
 
@@ -21,18 +21,30 @@ def get_following_feed(db: Session, user: User) -> List[Post]:
     """
     Get the feed for the users that the current user is following.
     """
-    followed_user_ids = db.query(Follower.followed_id).filter(Follower.follower_id == user.id).all()
+    followed_user_ids = db.query(followers.c.followed_id).filter(followers.c.follower_id == user.id).all()
     followed_user_ids = [item[0] for item in followed_user_ids]
 
-    return db.query(Post).filter(Post.owner_id.in_(followed_user_ids)).order_by(Post.created_at.desc()).all()
+    posts = db.query(Post).filter(Post.author_id.in_(followed_user_ids)).order_by(Post.created_at.desc()).all()
 
-def get_trending_topics(db: Session):
+    # Check if each post is bookmarked by the user
+    for post in posts:
+        post.is_bookmarked = db.query(Bookmark).filter(Bookmark.post_id == post.id, Bookmark.user_id == user.id).first() is not None
+
+    return posts
+
+def get_for_you_feed(db: Session, user: User) -> List[Post]:
     """
     This is a placeholder for the real implementation.
     In a real-world application, this would be a more complex algorithm.
     """
-    # For now, let's return the most recent posts with hashtags
-    return db.query(Post).filter(Post.text.like('%#%')).order_by(Post.created_at.desc()).limit(10).all()
+    # For now, let's return the most recent posts, excluding the user's own posts
+    posts = db.query(Post).filter(Post.author_id != user.id).order_by(Post.created_at.desc()).limit(20).all()
+
+    # Check if each post is bookmarked by the user
+    for post in posts:
+        post.is_bookmarked = db.query(Bookmark).filter(Bookmark.post_id == post.id, Bookmark.user_id == user.id).first() is not None
+
+    return posts
 
 def bookmark_post(db: Session, post_id: int, user: User):
     """

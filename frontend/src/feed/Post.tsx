@@ -1,8 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Avatar, Typography, IconButton } from '@mui/material';
-import { Favorite, Share, Comment, Bookmark } from '@mui/icons-material';
+import { Favorite, Share, Comment, Bookmark, BookmarkBorder } from '@mui/icons-material';
+import { bookmarkPost, unbookmarkPost } from '../services/postService';
 
 const Post = ({ post }) => {
+  const [isBookmarked, setIsBookmarked] = useState(post.is_bookmarked);
+
+  const handleBookmarkClick = async () => {
+    try {
+      if (isBookmarked) {
+        await unbookmarkPost(post.id);
+      } else {
+        await bookmarkPost(post.id);
+      }
+      setIsBookmarked(!isBookmarked);
+    } catch (error) {
+      console.error('Error bookmarking post:', error);
+    }
+  };
+
   return (
     <Box sx={{ p: 2, mb: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -22,7 +38,9 @@ const Post = ({ post }) => {
         <IconButton><Favorite /></IconButton>
         <IconButton><Share /></IconButton>
         <IconButton><Comment /></IconButton>
-        <IconButton><Bookmark /></IconButton>
+        <IconButton onClick={handleBookmarkClick}>
+          {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
+        </IconButton>
       </Box>
     </Box>
   );

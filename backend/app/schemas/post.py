@@ -2,6 +2,15 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
+# User schema for embedding in Post
+class User(BaseModel):
+    id: int
+    full_name: str
+    profile_picture_url: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
 # Shared properties
 class PostBase(BaseModel):
     text: str
@@ -16,8 +25,9 @@ class PostCreate(PostBase):
 # Properties to return to client
 class Post(PostBase):
     id: int
-    owner_id: int
+    author: User
     created_at: datetime
+    is_bookmarked: bool = False
 
     class Config:
         orm_mode = True

@@ -41,3 +41,35 @@ export const unbookmarkPost = (postId: number) => {
     }
   });
 };
+
+export const likePost = (postId: number) => {
+  return axios.post(`${API_URL}/posts/${postId}/like`, {}, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+};
+
+export const unlikePost = (postId: number) => {
+  return axios.delete(`${API_URL}/posts/${postId}/like`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+};
+
+export const createComment = (postId: number, commentData: { text: string }) => {
+  return axios.post(`${API_URL}/posts/${postId}/comments`, commentData, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+};
+
+export const getCommentsForPost = (postId: number) => {
+  return axios.get(`${API_URL}/posts/${postId}/comments`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+};
