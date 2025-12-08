@@ -3,9 +3,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routes import (auth, profiles, discover, collaboration, messages, 
-                    comments, rooms, study, analytics, health, music_podcast_routes, pnv)
-from app.api.v1.endpoints import analytics as analytics_v1
+from app.api.v1.api import api_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -22,16 +20,4 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-app.include_router(auth.router, tags=["auth"], prefix=settings.API_V1_STR)
-app.include_router(profiles.router, tags=["profiles"], prefix=settings.API_V1_STR)
-app.include_router(discover.router, tags=["discover"], prefix=settings.API_V1_STR)
-app.include_router(collaboration.router, tags=["collaboration"], prefix=settings.API_V1_STR)
-app.include_router(messages.router, tags=["messages"], prefix=settings.API_V1_STR)
-app.include_router(comments.router, tags=["comments"], prefix=settings.API_V1_STR)
-app.include_router(rooms.router, tags=["rooms"], prefix=settings.API_V1_STR)
-app.include_router(study.router, tags=["study"], prefix=settings.API_V1_STR)
-app.include_router(analytics.router, tags=["analytics"], prefix=settings.API_V1_STR)
-app.include_router(health.router, tags=["health"], prefix=settings.API_V1_STR)
-app.include_router(music_podcast_routes.router, tags=["music_and_podcast"], prefix=settings.API_V1_STR)
-app.include_router(pnv.router, tags=["pnv"], prefix=settings.API_V1_STR)
-app.include_router(analytics_v1.router, tags=["analytics_v1"], prefix=settings.API_V1_STR)
+app.include_router(api_router, prefix=settings.API_V1_STR)

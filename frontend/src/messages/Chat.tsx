@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, TextField, Button, List, ListItem, ListItemText, Typography } from '@mui/material';
+import socket from '../services/socket';
 
 interface Message {
   id: number;
@@ -11,8 +12,24 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
+  useEffect(() => {
+    socket.onmessage = (event) => {
+      const message: Message = {
+        id: messages.length + 1,
+        text: event.data,
+        sender: 'Other',
+      };
+      setMessages([...messages, message]);
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [messages]);
+
   const handleSendMessage = () => {
     if (newMessage.trim() !== '') {
+      socket.send(newMessage);
       const message: Message = {
         id: messages.length + 1,
         text: newMessage,

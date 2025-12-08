@@ -4,6 +4,7 @@ from app.db.base_class import Base
 import datetime
 
 class User(Base):
+    __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
@@ -18,3 +19,4 @@ class User(Base):
 
     events = relationship("Event", back_populates="owner")
     event_participations = relationship("EventParticipant", back_populates="user")
+    poll_votes = relationship("PollVote", back_populates="user")
