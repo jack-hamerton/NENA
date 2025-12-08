@@ -28,11 +28,9 @@ def get_current_user(db: Session = Depends(get_db)):
     # For now, we'll just return the first user in the database.
     user = db.query(models.User).first()
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        # If no user is found, create a default one for demonstration purposes
+        default_user = schemas.UserCreate(email="default@example.com", password="password", username="defaultuser")
+        user = crud.create_user(db, default_user)
     return user
 
 app.add_api_websocket_route("/ws/{room_id}/{user_id}", websocket_endpoint)
@@ -91,16 +89,11 @@ async def create_message_for_room(
     if not any(membership.room_id == room_id for membership in current_user.room_associations):
         raise HTTPException(status_code=403, detail="Not a member of this room")
     
-    new_message = crud.create_message(db=db, message=message, room_id=room_id, author_id=current_user.id)
+    new_message = crud.create_message(db=db, message=message)
     
-    message_dict = {
-        "id": new_message.id,
-        "content": new_message.content,
-        "author_id": new_message.author_id,
-        "room_id": new_message.room_id
-    }
+    message_dict = schemas.Message.from_orm(new_message).dict()
     
-    await manager.broadcast_to_room(str(room_id), json.dumps({"event": "new-message", "data": message_dict}), exclude_user_id=str(current_user.id))
+    await manager.publish(f"room:{room_id}", json.dumps({"event": "new-message", "data": message_dict}))
     return new_message
 
 
@@ -116,7 +109,7 @@ async def add_user_to_room(
     room_id: int, user_id: int, role: RoomRole = RoomRole.MEMBER, db: Session = Depends(get_db)
 ):
     membership = crud.add_user_to_room(db=db, room_id=room_id, user_id=user_id, role=role)
-    await manager.broadcast_to_room(str(room_id), json.dumps({"event": "user-joined-room", "data": {"userId": user_id, "roomId": room_id}}))
+    await manager.publish(f"room:{room_id}", json.dumps({"event": "user-joined-room", "data": {"userId": user_id, "roomId": room_id}}))
     return membership
 
 @app.delete("/rooms/{room_id}/members/{user_id}")
@@ -124,7 +117,7 @@ async def remove_user_from_room(
     room_id: int, user_id: int, db: Session = Depends(get_db)
 ):
     crud.remove_user_from_room(db=db, room_id=room_id, user_id=user_id)
-    await manager.broadcast_to_room(str(room_id), json.dumps({"event": "user-left-room", "data": {"userId": user_id, "roomId": room_id}}))
+    await manager.publish(f"room:{room_id}", json.dumps({"event": "user-left-room", "data": {"userId": user_id, "roomId": room_id}}))
     return {"message": "User removed from room"}
 
 

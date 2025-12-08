@@ -1,7 +1,6 @@
 
 from sqlalchemy.orm import Session
-from models import chat as models
-from models.chat import RoomRole
+import models
 import schemas
 
 def get_user(db: Session, user_id: int):
@@ -35,7 +34,7 @@ def create_room(db: Session, room: schemas.RoomCreate, user_id: int):
 
     # Add the creator as the owner of the room
     db_membership = models.RoomMembership(
-        user_id=user_id, room_id=db_room.id, role=RoomRole.OWNER
+        user_id=user_id, room_id=db_room.id, role=models.RoomRole.OWNER
     )
     db.add(db_membership)
     db.commit()
@@ -53,7 +52,7 @@ def create_message(db: Session, message: schemas.MessageCreate):
     db.refresh(db_message)
     return db_message
 
-def add_user_to_room(db: Session, user_id: int, room_id: int, role: RoomRole = RoomRole.MEMBER):
+def add_user_to_room(db: Session, user_id: int, room_id: int, role: models.RoomRole = models.RoomRole.MEMBER):
     membership = models.RoomMembership(user_id=user_id, room_id=room_id, role=role)
     db.add(membership)
     db.commit()
