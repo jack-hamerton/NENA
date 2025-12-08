@@ -1,11 +1,22 @@
-import { Box, Typography } from '@mui/material';
+import React from 'react';
+import styled from 'styled-components';
+
+const DiscoverContainer = styled.div`
+  /* Add your styles here */
+`;
+
+const TrendingTopics = styled.div`
+  /* Add your styles here */
+`;
 
 const DiscoverPage = () => {
   return (
-    <Box>
-      <Typography variant="h4">Discover</Typography>
-      {/* Add discover content here */}
-    </Box>
+    <DiscoverContainer>
+      <TrendingTopics>
+        <h2>Trending Topics</h2>
+        {/* Add your trending topics here */}
+      </TrendingTopics>
+    </DiscoverContainer>
   );
 };
 
