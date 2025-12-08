@@ -2,7 +2,7 @@
 from typing import List
 
 from backend.app import schemas
-from backend.app.db.models import Post, User, followers, Bookmark
+from backend.app.db.models import Post, User, followers, Bookmark, Poll
 from sqlalchemy.orm import Session
 
 
@@ -10,7 +10,14 @@ def create_post(db: Session, post_in: schemas.PostCreate, owner: User) -> Post:
     """
     Create a new post.
     """
-    db_post = Post(**post_in.dict(), owner_id=owner.id)
+    post_data = post_in.dict(exclude={"poll"})
+    db_post = Post(**post_data, owner_id=owner.id)
+
+    if post_in.poll:
+        poll_data = post_in.poll.dict()
+        db_poll = Poll(**poll_data)
+        db_post.poll = db_poll
+
     db.add(db_post)
     db.commit()
     db.refresh(db_post)

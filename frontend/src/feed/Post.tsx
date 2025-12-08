@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Avatar, Typography, IconButton } from '@mui/material';
 import { Favorite, Share, Comment, Bookmark, BookmarkBorder } from '@mui/icons-material';
 import { bookmarkPost, unbookmarkPost } from '../services/postService';
+import { Poll } from '../rooms/Poll';
 
 const Post = ({ post }) => {
   const [isBookmarked, setIsBookmarked] = useState(post.is_bookmarked);
@@ -34,6 +35,7 @@ const Post = ({ post }) => {
           <img src={post.media_url} alt="Post media" style={{ maxWidth: '100%', borderRadius: '8px' }} />
         </Box>
       )}
+      {post.poll && <Poll poll={post.poll} />}
       <Box>
         <IconButton><Favorite /></IconButton>
         <IconButton><Share /></IconButton>

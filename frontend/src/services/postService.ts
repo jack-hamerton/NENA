@@ -18,7 +18,7 @@ export const getFollowingFeed = () => {
   });
 };
 
-export const createPost = (postData: { text: string; media_url?: string }) => {
+export const createPost = (postData: { text: string; media_url?: string; poll?: { question: string; options: string[] } }) => {
   return axios.post(`${API_URL}/posts`, postData, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`

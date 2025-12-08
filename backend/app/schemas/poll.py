@@ -5,7 +5,7 @@ import datetime
 class PollBase(BaseModel):
     question: str
     options: List[str]
-    duration_minutes: int
+    duration_minutes: Optional[int]
 
 class PollCreate(PollBase):
     pass
@@ -13,10 +13,8 @@ class PollCreate(PollBase):
 class PollUpdate(PollBase):
     pass
 
-class PollInDB(PollBase):
+class Poll(PollBase):
     id: int
-    post_id: Optional[int] = None
-    room_id: Optional[int] = None
     created_at: datetime.datetime
 
     class Config:

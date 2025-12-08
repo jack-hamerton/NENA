@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
+from .poll import Poll, PollCreate
 
 # User schema for embedding in Post
 class User(BaseModel):
@@ -19,7 +20,7 @@ class PostBase(BaseModel):
 
 # Properties to receive on item creation
 class PostCreate(PostBase):
-    pass
+    poll: Optional[PollCreate] = None
 
 
 # Properties to return to client
@@ -28,6 +29,7 @@ class Post(PostBase):
     author: User
     created_at: datetime
     is_bookmarked: bool = False
+    poll: Optional[Poll] = None
 
     class Config:
         orm_mode = True

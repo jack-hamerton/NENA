@@ -3,6 +3,7 @@ import { RoomVideoGrid } from './RoomVideoGrid';
 import { Chat } from './Chat';
 import { HostControls } from './HostControls';
 import { Reactions } from './Reactions';
+import { Polls } from './Polls';
 import { callService, Participant } from '../services/callService';
 
 export const Room: React.FC = () => {
@@ -37,6 +38,7 @@ export const Room: React.FC = () => {
       <RoomVideoGrid participants={participants} localParticipant={localParticipant} />
       <Chat channelId="group-chat" localParticipant={{ id: localParticipant.id, name: localParticipant.name }} />
       <Reactions reactions={[]} />
+      <Polls />
     </div>
   );
 };

@@ -11,4 +11,4 @@ class Post(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     owner = relationship("User", back_populates="posts")
-    polls = relationship("Poll", back_populates="post")
+    poll = relationship("Poll", uselist=False, back_populates="post")
