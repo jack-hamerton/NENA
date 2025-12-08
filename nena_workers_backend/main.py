@@ -3,6 +3,9 @@ from fastapi import FastAPI
 from nena_workers_backend.monitoring import routes as monitoring_routes
 from nena_workers_backend.security import routes as security_routes
 from nena_workers_backend.user_analysis import routes as user_analysis_routes
+from database import Base, engine
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
