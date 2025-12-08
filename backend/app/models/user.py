@@ -20,3 +20,4 @@ class User(Base):
     events = relationship("Event", back_populates="owner")
     event_participations = relationship("EventParticipant", back_populates="user")
     poll_votes = relationship("PollVote", back_populates="user")
+    podcasts = relationship("Podcast", back_populates="creator")
