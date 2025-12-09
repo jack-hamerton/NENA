@@ -2,8 +2,19 @@
 import { realtimeService } from './realtimeService';
 import { EventEmitter } from 'events';
 
+export interface Participant {
+  id: string;
+  name: string;
+  stream: MediaStream;
+  isMuted: boolean;
+  isSharingScreen: boolean;
+  isLocal: boolean;
+}
+
 class CallService extends EventEmitter {
   private peerConnection: RTCPeerConnection;
+  private localStream: MediaStream | null = null;
+  private participants: Participant[] = [];
 
   constructor() {
     super();
@@ -20,6 +31,16 @@ class CallService extends EventEmitter {
     this.peerConnection.ontrack = (event) => {
       // In a real app, you would attach this stream to a <video> element
       console.log('Received remote stream', event.streams[0]);
+      const newParticipant: Participant = {
+        id: 'remote-user', // This would be the actual user ID
+        name: 'Remote User',
+        stream: event.streams[0],
+        isMuted: false,
+        isSharingScreen: false,
+        isLocal: false,
+      };
+      this.participants = [...this.participants, newParticipant];
+      this.emit('participantsChanged', this.participants);
     };
 
     // Listen for signaling messages from the realtimeService
@@ -27,6 +48,47 @@ class CallService extends EventEmitter {
     realtimeService.on('answer', this.handleAnswer.bind(this));
     realtimeService.on('ice-candidate', this.handleIceCandidate.bind(this));
     realtimeService.on('incoming-call', (from: string) => this.emit('incomingCall', from));
+  }
+
+  async joinCall(roomId: string): Promise<void> {
+    this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    this.localStream.getTracks().forEach(track => {
+      this.peerConnection.addTrack(track, this.localStream!);
+    });
+
+    const localParticipant: Participant = {
+      id: 'local-user', // This would be the actual user ID
+      name: 'Local User',
+      stream: this.localStream,
+      isMuted: false,
+      isSharingScreen: false,
+      isLocal: true,
+    };
+
+    this.participants = [...this.participants, localParticipant];
+    this.emit('participantsChanged', this.participants);
+  }
+
+  leaveCall() {
+    if (this.localStream) {
+      this.localStream.getTracks().forEach(track => track.stop());
+    }
+    this.peerConnection.close();
+    this.participants = [];
+    this.emit('participantsChanged', this.participants);
+  }
+
+  toggleMute() {
+    if (this.localStream) {
+      this.localStream.getAudioTracks().forEach(track => {
+        track.enabled = !track.enabled;
+      });
+    }
+  }
+
+  toggleScreenShare() {
+    // Screen sharing implementation would go here
+    console.log('Toggling screen share');
   }
 
   async makeCall(to: string) {

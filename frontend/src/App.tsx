@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { SnackbarProvider } from './context/SnackbarContext';
 import { AIProvider } from './hooks/useAI';
 import { darkTheme } from './theme';
@@ -26,7 +26,6 @@ const App = () => {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <AuthProvider>
         <SnackbarProvider>
           <AIProvider>
             {loading ? (
@@ -50,7 +49,6 @@ const App = () => {
             )}
           </AIProvider>
         </SnackbarProvider>
-      </AuthProvider>
     </ThemeProvider>
   );
 };

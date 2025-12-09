@@ -47,7 +47,7 @@ export const Chat: React.FC<ChatProps> = ({ channelId, localParticipant }) => {
       sender: localParticipant,
     };
 
-    const sentMessage = await chatService.sendMessage(channelId, messageToSend);
+    const sentMessage = await chatService.sendMessage(messageToSend);
     setMessages([...messages, sentMessage]);
     setNewMessage('');
   };

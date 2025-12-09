@@ -19,7 +19,7 @@ export const Room: React.FC = () => {
     callService.on('participantsChanged', handleParticipantsChanged);
 
     // Join the call when the component mounts
-    callService.joinCall('my-room', 'Local User');
+    callService.joinCall('my-room');
 
     return () => {
       // Leave the call when the component unmounts

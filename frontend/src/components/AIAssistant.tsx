@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAI } from '../../hooks/useAI';
+import { useAI } from '../hooks/useAI';
 import { Paper, TextField, Button, Typography, Box, IconButton } from '@mui/material';
 
 const AIAssistant = () => {

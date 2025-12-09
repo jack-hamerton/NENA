@@ -7,15 +7,13 @@ export const HostControls: React.FC = () => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   const handleMuteToggle = () => {
-    const newMutedState = !isMuted;
-    callService.toggleMute(newMutedState);
-    setIsMuted(newMutedState);
+    callService.toggleMute();
+    setIsMuted(!isMuted);
   };
 
   const handleScreenShareToggle = () => {
-    const newScreenSharingState = !isScreenSharing;
-    callService.toggleScreenShare(newScreenSharingState);
-    setIsScreenSharing(newScreenSharingState);
+    callService.toggleScreenShare();
+    setIsScreenSharing(!isScreenSharing);
   };
 
   return (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { UserEngagement } from '../../types/analytics';
+import { UserEngagement } from '../types/analytics';
 
 const UserEngagementChart = () => {
   const [userEngagement, setUserEngagement] = useState<UserEngagement[]>([]);

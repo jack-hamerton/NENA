@@ -1,7 +1,7 @@
 
 import { callService } from './callService';
 
-function showIncomingCall(from: string, on-accept: () => void, on-reject: () => void) {
+function showIncomingCall(from: string, onAccept: () => void, onReject: () => void) {
   // Create the UI for the incoming call notification
   const notification = document.createElement('div');
   notification.className = 'incoming-call-notification';
@@ -13,7 +13,7 @@ function showIncomingCall(from: string, on-accept: () => void, on-reject: () => 
   const acceptButton = document.createElement('button');
   acceptButton.textContent = 'Accept';
   acceptButton.onclick = () => {
-    on-accept();
+    onAccept();
     notification.remove();
   };
   notification.appendChild(acceptButton);
@@ -21,7 +21,7 @@ function showIncomingCall(from: string, on-accept: () => void, on-reject: () => 
   const rejectButton = document.createElement('button');
   rejectButton.textContent = 'Reject';
   rejectButton.onclick = () => {
-    on-reject();
+    onReject();
     notification.remove();
   };
   notification.appendChild(rejectButton);

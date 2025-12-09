@@ -2,11 +2,14 @@
 import { realtimeService } from './realtimeService';
 import { EventEmitter } from 'events';
 
-interface Message {
+export interface Message {
   id: string;
-  content: string;
-  author: string;
-  roomId: string;
+  text: string;
+  sender: {
+    id: string;
+    name: string;
+  };
+  timestamp: number;
 }
 
 class ChatService extends EventEmitter {
@@ -19,14 +22,22 @@ class ChatService extends EventEmitter {
     });
   }
 
-  sendMessage(roomId: string, content: string) {
-    // In a real app, the author would be the current user
-    const message: Partial<Message> = {
-      content,
-      roomId,
-      author: 'current-user', // This would be replaced with the actual user
+  getMessages(roomId: string): Promise<Message[]> {
+    // In a real app, this would fetch messages from a server
+    return Promise.resolve([
+      { id: '1', text: 'Hello!', sender: { id: '1', name: 'Alice' }, timestamp: Date.now() - 1000 },
+      { id: '2', text: 'Hi there!', sender: { id: '2', name: 'Bob' }, timestamp: Date.now() },
+    ]);
+  }
+
+  sendMessage(message: Omit<Message, 'id' | 'timestamp'>): Promise<Message> {
+    const messageWithId: Message = {
+      ...message,
+      id: Math.random().toString(36).substring(2, 9),
+      timestamp: Date.now(),
     };
-    realtimeService.send('send-message', message);
+    realtimeService.send('send-message', messageWithId);
+    return Promise.resolve(messageWithId);
   }
 }
 
