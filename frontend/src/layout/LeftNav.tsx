@@ -23,14 +23,16 @@ const navItems = [
 const LeftNav = () => {
   return (
     <Box sx={{ width: 240, flexShrink: 0, bgcolor: 'background.paper' }}>
-        <List>
-            {navItems.map((item) => (
-            <ListItem button component={NavLink} to={item.path} key={item.path}>
-                <ListItemIcon sx={{ color: 'text.primary' }}>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
+      <List>
+        {navItems.map((item) => (
+          <NavLink to={item.path} key={item.path} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <ListItem button>
+              <ListItemIcon sx={{ color: 'text.primary' }}>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
             </ListItem>
-            ))}
-        </List>
+          </NavLink>
+        ))}
+      </List>
     </Box>
   );
 };

@@ -1,33 +1,38 @@
 
 import React, { useState, useEffect } from 'react';
-import Post, { PostData } from '../components/Post';
-import { postService } from '../services/postService';
+import { PostCard } from '../feed/PostCard';
+import { usePosts } from '../hooks/usePosts';
 
-const ActivityFeed = () => {
-  const [posts, setPosts] = useState<PostData[]>([]);
+export const ActivityFeed: React.FC = () => {
+  const [posts, setPosts] = useState([]);
+  const { getPosts, reportPost } = usePosts();
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const fetchedPosts = await postService.getPosts();
-      setPosts(fetchedPosts);
+      try {
+        const response = await getPosts();
+        setPosts(response.data);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
     };
     fetchPosts();
-  }, []);
+  }, [getPosts]);
 
-  const handleReport = async (postId: string) => {
-    const updatedPost = await postService.reportPost(postId);
-    if (updatedPost) {
-      setPosts(posts.map((p) => (p.id === postId ? updatedPost : p)));
+  const handleReportPost = async (postId: number) => {
+    try {
+      await reportPost(postId);
+      // You might want to update the UI to indicate the post has been reported
+    } catch (error) {
+      console.error('Error reporting post:', error);
     }
   };
 
   return (
-    <div className="activity-feed">
+    <div>
       {posts.map((post) => (
-        <Post key={post.id} post={post} onReport={handleReport} />
+        <PostCard key={post.id} post={post} onReportPost={handleReportPost} />
       ))}
     </div>
   );
 };
-
-export default ActivityFeed;

@@ -1,49 +1,100 @@
-
+import { generateKeyPair, createSignature, deriveSharedSecret, encryptMessage, decryptMessage, verifySignature } from './crypto';
 import { KeyStore } from './keystore';
-import { deriveSharedSecret, encryptMessage, decryptMessage, verifySignature } from './crypto';
 
-// This is a simplified implementation of the Double Ratchet algorithm.
-// A real implementation would be more complex and would involve a state machine.
+const MAX_MESSAGE_CHAIN_LENGTH = 100;
 
 export class DoubleRatchet {
-  private rootKey: CryptoKey | null = null;
-  private sendingKey: CryptoKey | null = null;
-  private receivingKey: CryptoKey | null = null;
-  private previousReceivingKey: CryptoKey | null = null;
+  private keyStore: KeyStore;
+  private theirPublicKey: CryptoKey;
+  private rootKey: CryptoKey;
+  private sendingChainKey: CryptoKey;
+  private receivingChainKey: CryptoKey;
+  private messageNumber: number = 0;
+  private previousMessageNumber: number = 0;
 
-  constructor(private keyStore: KeyStore, private otherUserPublicKey: CryptoKey) {}
+  constructor(keyStore: KeyStore, theirPublicKey: CryptoKey, sharedSecret: CryptoKey) {
+    this.keyStore = keyStore;
+    this.theirPublicKey = theirPublicKey;
+    this.rootKey = sharedSecret;
+  }
 
   async initialize() {
-    // In a real implementation, we would use the X3DH protocol to establish the initial shared secret.
-    // Here, we'll just derive it directly from the other user's public key.
-    const sharedSecret = await deriveSharedSecret(this.keyStore.identityKey.privateKey, this.otherUserPublicKey);
-    this.rootKey = sharedSecret;
-    this.sendingKey = sharedSecret;
-    this.receivingKey = sharedSecret;
+    const [sendingChainKey, receivingChainKey] = await this.kdf(this.rootKey, new Uint8Array(0));
+    this.sendingChainKey = sendingChainKey;
+    this.receivingChainKey = receivingChainKey;
   }
 
-  async encrypt(message: string): Promise<{ ciphertext: ArrayBuffer, iv: Uint8Array }> {
-    if (!this.sendingKey) {
-      throw new Error('Double Ratchet not initialized');
-    }
-    const { ciphertext, iv } = await encryptMessage(this.sendingKey, message);
-    // In a real implementation, we would update the sending key after each message.
-    return { ciphertext, iv };
+  async encrypt(plaintext: Uint8Array): Promise<Uint8Array> {
+    const [messageKey, nextSendingChainKey] = await this.kdf(this.sendingChainKey, new Uint8Array([1]));
+    this.sendingChainKey = nextSendingChainKey;
+
+    const ciphertext = await encryptMessage(messageKey, plaintext);
+
+    const ourPublicRatchetKey = await this.keyStore.getPublicKey();
+    const signature = await createSignature(await this.keyStore.getPrivateKey(), ciphertext);
+
+    const message = new Uint8Array(ourPublicRatchetKey.length + signature.length + ciphertext.length);
+    message.set(ourPublicRatchetKey, 0);
+    message.set(signature, ourPublicRatchetKey.length);
+    message.set(ciphertext, ourPublicRatchetKey.length + signature.length);
+
+    this.messageNumber++;
+
+    return message;
   }
 
-  async decrypt(ciphertext: ArrayBuffer, iv: Uint8Array): Promise<string> {
-    if (!this.receivingKey) {
-      throw new Error('Double Ratchet not initialized');
+  async decrypt(message: Uint8Array): Promise<Uint8Array> {
+    const theirPublicRatchetKey = message.slice(0, 33);
+    const signature = message.slice(33, 97);
+    const ciphertext = message.slice(97);
+
+    const verified = await verifySignature(this.theirPublicKey, signature, ciphertext);
+    if (!verified) {
+      throw new Error('Invalid signature');
     }
-    try {
-      return await decryptMessage(this.receivingKey, ciphertext, iv);
-    } catch (error) {
-      // If decryption fails, try the previous receiving key (out-of-order message)
-      if (this.previousReceivingKey) {
-        return await decryptMessage(this.previousReceivingKey, ciphertext, iv);
-      } else {
-        throw error;
+
+    if (await this.isNewRatchet(theirPublicRatchetKey)) {
+      await this.ratchet(theirPublicRatchetKey);
+    }
+
+    let messageKey;
+    let i = 0;
+    while (i < MAX_MESSAGE_CHAIN_LENGTH) {
+      try {
+        [messageKey, this.receivingChainKey] = await this.kdf(this.receivingChainKey, new Uint8Array([1]));
+        const plaintext = await decryptMessage(messageKey, ciphertext);
+        this.previousMessageNumber = i;
+        return plaintext;
+      } catch (error) {
+        i++;
       }
     }
+    throw new Error('Could not decrypt message');
+  }
+
+  private async kdf(key: CryptoKey, input: Uint8Array): Promise<[CryptoKey, CryptoKey]> {
+    const derivedBits = await window.crypto.subtle.deriveBits(
+      { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(), info: input },
+      key,
+      512
+    );
+    const key1 = await window.crypto.subtle.importKey('raw', derivedBits.slice(0, 32), { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
+    const key2 = await window.crypto.subtle.importKey('raw', derivedBits.slice(32, 64), { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
+    return [key1, key2];
+  }
+
+  private async isNewRatchet(theirPublicKey: Uint8Array): Promise<boolean> {
+    const theirPublicKeyString = new TextDecoder().decode(theirPublicKey);
+    const currentPublicKeyString = new TextDecoder().decode(await window.crypto.subtle.exportKey('raw', this.theirPublicKey));
+    return theirPublicKeyString !== currentPublicKeyString;
+  }
+
+  private async ratchet(theirPublicKey: Uint8Array) {
+    const newRootKey = await deriveSharedSecret(await this.keyStore.getPrivateKey(), await window.crypto.subtle.importKey('raw', theirPublicKey, { name: 'ECDH', namedCurve: 'P-256' }, true, []));
+    const [newSendingChainKey, newReceivingChainKey] = await this.kdf(newRootKey, new Uint8Array(0));
+    this.rootKey = newRootKey;
+    this.sendingChainKey = newSendingChainKey;
+    this.receivingChainKey = newReceivingChainKey;
+    this.theirPublicKey = await window.crypto.subtle.importKey('raw', theirPublicKey, { name: 'ECDH', namedCurve: 'P-256' }, true, []);
   }
 }

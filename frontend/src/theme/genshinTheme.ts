@@ -1,80 +1,40 @@
 import { createTheme } from '@mui/material/styles';
 
-// Xiao Genshin Impact Color Palette
-const primary = '#4a5969'; // Dark slate gray
-const secondary = '#73beb0'; // Medium aquamarine
-const accent1 = '#5d838a'; // Cadet blue
-const background = '#35424c'; // Dark slate gray (darker)
-const accent2 = '#427973'; // Viridian green
-
-export const genshinTheme = createTheme({
+const genshinTheme = createTheme({
   palette: {
     primary: {
-      main: primary,
+      main: '#564333', // Geo
     },
     secondary: {
-      main: secondary,
+      main: '#B28850', // Geo construct
     },
     background: {
-      default: background,
-      paper: primary,
+      default: '#F5F0E6', // Light stone
+      paper: '#FFFFFF',   // White
     },
     text: {
-      primary: '#ffffff',
-      secondary: '#e0e0e0',
+      primary: '#564333', // Dark geo
+      secondary: '#A28F79', // Lighter geo
     },
-    accent: {
-        main: accent1,
-        dark: accent2
-    }
+    error: {
+      main: '#C73E3A', // Pyro
+    },
+    warning: {
+      main: '#F2C24A', // Electro
+    },
+    info: {
+      main: '#59C5F5', // Hydro
+    },
+    success: {
+      main: '#8BC34A', // Dendro
+    },
+    secondary: {
+        main: '#80D1C8', // Anemo
+    },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h1: { fontSize: '2.5rem', fontWeight: 500 },
-    h2: { fontSize: '2rem', fontWeight: 500 },
-    body1: { fontSize: '1rem' },
-  },
-  components: {
-    MuiButton: {
-        styleOverrides: {
-            root: {
-                borderRadius: 8,
-                textTransform: 'none',
-            },
-            containedPrimary: {
-                backgroundColor: secondary,
-                color: background,
-                '&:hover': {
-                    backgroundColor: accent2,
-                }
-            }
-        }
-    },
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          backgroundColor: primary,
-          boxShadow: 'none',
-          borderBottom: `1px solid ${accent1}`
-        },
-      },
-    },
-    MuiDrawer: {
-        styleOverrides: {
-            paper: {
-                backgroundColor: background,
-                borderRight: 'none',
-            }
-        }
-    },
-    MuiCard: {
-        styleOverrides: {
-            root: {
-                backgroundColor: primary,
-                border: `1px solid ${accent1}`,
-                borderRadius: 12,
-            }
-        }
-    }
+    fontFamily: '"Genshin Impact", sans-serif',
   },
 });
+
+export default genshinTheme;

@@ -25,7 +25,14 @@ const theme = {
   background: '#121212',
   accent: '#f48fb1',
   text: '#ffffff',
-  borderColor: '#333'
+  borderColor: '#333',
+  font: "'Roboto', 'Helvetica', 'Arial', sans-serif",
+  secondary: '#90caf9',
+  tertiary: '#f48fb1',
+  colors: {
+    card: '#1e1e1e',
+    text: '#ffffff'
+  }
 };
 
 const App = () => {

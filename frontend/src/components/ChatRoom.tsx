@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { chatService } from '../services/chatService';
 import { roomService } from '../services/roomService';
+import { useAuth } from '../hooks/useAuth';
 
 interface Message {
   id: string;
@@ -18,12 +19,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [users, setUsers] = useState<string[]>([]);
   const [message, setMessage] = useState('');
+  const { user } = useAuth(); // Assume useAuth provides the current user
 
   useEffect(() => {
-    // Join the room when the component mounts
     roomService.joinRoom(roomId);
 
-    // Listen for new messages
     const handleNewMessage = (newMessage: Message) => {
       if (newMessage.roomId === roomId) {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
@@ -31,7 +31,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
     };
     chatService.on('new-message', handleNewMessage);
 
-    // Listen for users joining and leaving
     const handleUserJoined = ({ roomId: joinedRoomId, userId }: { roomId: string, userId: string }) => {
       if (joinedRoomId === roomId) {
         setUsers((prevUsers) => [...prevUsers, userId]);
@@ -45,7 +44,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
     roomService.on('user-joined-room', handleUserJoined);
     roomService.on('user-left-room', handleUserLeft);
 
-    // Leave the room when the component unmounts
     return () => {
       roomService.leaveRoom(roomId);
       chatService.off('new-message', handleNewMessage);
@@ -56,7 +54,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
 
   const handleSendMessage = () => {
     if (message.trim()) {
-      chatService.sendMessage(roomId, message);
+      const messageData = {
+        text: message,
+        sender: {
+          id: user.id,
+          name: user.name,
+        },
+        roomId,
+      };
+      chatService.sendMessage(messageData);
       setMessage('');
     }
   };

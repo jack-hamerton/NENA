@@ -1,37 +1,75 @@
 
-import { generateIdentity, generatePreKey, signPublicKey } from './crypto';
+import { openDB } from 'idb';
+
+const DB_NAME = 'keystore-db';
+const STORE_NAME = 'keystore';
+const KEY_PATH = 'key';
 
 export class KeyStore {
-  private identityKey: CryptoKeyPair | null = null;
-  private preKeys: CryptoKeyPair[] = [];
+  private dbPromise;
+  public identityKey: CryptoKeyPair;
 
-  constructor(private userId: string) {}
+  constructor() {
+    this.dbPromise = openDB(DB_NAME, 1, {
+      upgrade(db) {
+        db.createObjectStore(STORE_NAME);
+      },
+    });
+    this.loadIdentityKey();
+  }
 
-  async initialize() {
-    this.identityKey = await generateIdentity();
-    // Generate a batch of pre-keys
-    for (let i = 0; i < 10; i++) {
-      this.preKeys.push(await generatePreKey());
+  async loadIdentityKey() {
+    const db = await this.dbPromise;
+    this.identityKey = await db.get(STORE_NAME, 'identityKey');
+    if (!this.identityKey) {
+      this.identityKey = await this.generateIdentityKey();
+      await this.saveIdentityKey();
     }
   }
 
-  get publicIdentityKey(): CryptoKey | null {
-    return this.identityKey ? this.identityKey.publicKey : null;
+  async generateIdentityKey(): Promise<CryptoKeyPair> {
+    return window.crypto.subtle.generateKey(
+      { name: 'ECDH', namedCurve: 'P-256' },
+      true,
+      ['deriveKey']
+    );
   }
 
-  get publicPreKeys(): { keyId: number, publicKey: CryptoKey }[] {
-    return this.preKeys.map((keyPair, i) => ({ keyId: i, publicKey: keyPair.publicKey }));
+  async saveIdentityKey() {
+    const db = await this.dbPromise;
+    await db.put(STORE_NAME, this.identityKey, 'identityKey');
   }
 
-  async getSignedPublicPreKey(keyId: number): Promise<{ publicKey: CryptoKey, signature: ArrayBuffer } | null> {
-    if (!this.identityKey || !this.preKeys[keyId]) {
-      return null;
+  async getPublicKey(): Promise<Uint8Array> {
+    const publicKey = await window.crypto.subtle.exportKey('raw', this.identityKey.publicKey);
+    return new Uint8Array(publicKey);
+  }
+
+  async getPrivateKey(): Promise<CryptoKey> {
+    return this.identityKey.privateKey;
+  }
+
+  async getPreKey(id: number): Promise<CryptoKeyPair> {
+    const db = await this.dbPromise;
+    let preKey = await db.get(STORE_NAME, `prekey-${id}`);
+    if (!preKey) {
+      preKey = await this.generatePreKey();
+      await this.savePreKey(id, preKey);
     }
-    const publicKey = this.preKeys[keyId].publicKey;
-    const signature = await signPublicKey(this.identityKey.privateKey, publicKey);
-    return { publicKey, signature };
+    return preKey;
   }
 
-  // In a real application, this would be more sophisticated
-  // and would involve storing and retrieving keys from a secure storage.
+  async generatePreKey(): Promise<CryptoKeyPair> {
+    return window.crypto.subtle.generateKey(
+      { name: 'ECDH', namedCurve: 'P-256' },
+      true,
+      ['deriveKey']
+    );
+  }
+
+  async savePreKey(id: number, key: CryptoKeyPair) {
+    const db = await this.dbPromise;
+    await db.put(STORE_NAME, key, `prekey-${id}`);
+  }
 }
+

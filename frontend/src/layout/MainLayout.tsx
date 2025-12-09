@@ -1,3 +1,4 @@
+
 import { Outlet } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
 import styled from 'styled-components';
@@ -16,13 +17,14 @@ const ContentContainer = styled.main`
   padding: 24px;
 `;
 
-const MainLayout = () => {
+const MainLayout = ({ children }) => {
   return (
     <MainContainer>
       <CssBaseline />
       <ScreenshotBlocker />
       <LeftNav />
       <ContentContainer>
+        {children}
         <Outlet />
       </ContentContainer>
       <AIAssistant />

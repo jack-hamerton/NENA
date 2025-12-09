@@ -17,7 +17,9 @@ export const Whiteboard = ({ roomId }) => {
       // Draw received data on canvas
     });
 
-    return () => newSocket.close();
+    return () => {
+      newSocket.close();
+    }
   }, [roomId]);
 
   const handleMouseDown = (e) => {

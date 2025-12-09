@@ -17,8 +17,7 @@ export const AuthProvider = ({ children }: any) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
       if (user) {
-        const newKeyStore = new KeyStore(user.uid);
-        await newKeyStore.initialize();
+        const newKeyStore = new KeyStore();
         setKeyStore(newKeyStore);
         
         const token = await user.getIdToken();
