@@ -10,6 +10,7 @@ To get a local copy up and running follow these simple example steps.
 
 * npm
 * Python 3.11
+* Docker
 
 ### Installation
 
@@ -28,9 +29,11 @@ To get a local copy up and running follow these simple example steps.
 
 ## Usage
 
+### Without Docker
+
 1. Start the backend server
    ```sh
-   source .venv/bin/activate && cd backend && uvicorn app.main:app --reload
+   source .venv/bin/activate && export PYTHONPATH=$PYTHONPATH:$(pwd)/database && cd backend && uvicorn app.main:app --reload
    ```
 2. Start the frontend development server
    ```sh
@@ -38,6 +41,15 @@ To get a local copy up and running follow these simple example steps.
    ```
 
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+### With Docker
+
+1. Build and run the containers
+   ```sh
+   docker-compose -f nena-platform/docker-compose.yml up -d --build
+   ```
+
+Open [http://localhost:80](http://localhost:80) to view it in the browser.
 
 ## License
 
