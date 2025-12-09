@@ -7,6 +7,7 @@ from app.core.deps import get_db
 
 router = APIRouter()
 
+
 @router.post("/", response_model=schemas.Study)
 def create_study(
     *, 
@@ -28,9 +29,9 @@ def read_studies(
     # current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Retrieve studies.
+    Retrieve studies for the current user.
     """
-    studies = crud.study.get_multi(db, skip=skip, limit=limit)
+    studies = crud.study.get_multi_by_owner(db, owner_id=1, skip=skip, limit=limit) # Replace 1 with current_user.id
     return studies
 
 @router.get("/{id}", response_model=schemas.Study)
@@ -48,16 +49,28 @@ def read_study(
         raise HTTPException(status_code=404, detail="Study not found")
     return study
 
-@router.post("/{study_id}/answers", response_model=schemas.Answer)
-def create_answer(
+@router.get("/code/{unique_code}", response_model=schemas.Study)
+def read_study_by_code(
     *, 
     db: Session = Depends(get_db),
-    study_id: int,
-    answer_in: schemas.AnswerCreate,
-    # current_user: models.User = Depends(deps.get_current_active_user) # Assuming you have user authentication
+    unique_code: str,
 ) -> Any:
     """
-    Create new answer for a question in a study.
+    Get study by unique code.
     """
-    answer = crud.answer.create_with_owner(db=db, obj_in=answer_in, owner_id=1)
-    return answer
+    study = crud.study.get_by_unique_code(db=db, unique_code=unique_code)
+    if not study:
+        raise HTTPException(status_code=404, detail="Study not found")
+    return study
+
+@router.post("/responses/", response_model=schemas.Response)
+def create_response(
+    *, 
+    db: Session = Depends(get_db),
+    response_in: schemas.ResponseCreate,
+) -> Any:
+    """
+    Create new response for a study.
+    """
+    response = crud.response.create_response(db=db, response=response_in)
+    return response

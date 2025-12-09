@@ -14,6 +14,9 @@ import MessagesPage from './messages/MessagesPage';
 import RoomsPage from './rooms/RoomsPage';
 import { RoomPage } from './pages/RoomPage';
 import StudyPage from './study/StudyPage';
+import StudyBuilder from './study/StudyBuilder';
+import StudyList from './study/StudyList';
+import StudyParticipantView from './study/StudyParticipantView';
 import SettingsPage from './settings/SettingsPage';
 import Analytics from './pages/Analytics';
 import LoginPage from './pages/LoginPage';
@@ -75,12 +78,17 @@ const App = () => {
 const MainApp = () => (
   <MainLayout>
     <Routes>
+      <Route path='/' element={<FeedPage />} />
       <Route path='/discover' element={<DiscoverPage />} />
       <Route path='/profile/:userId' element={<UserProfile />} />
       <Route path='/messages' element={<MessagesPage />} />
       <Route path='/rooms' element={<RoomsPage />} />
       <Route path='/room/:roomId' element={<RoomPage />} />
       <Route path='/study' element={<StudyPage />} />
+      <Route path='/study/new' element={<StudyBuilder />} />
+      <Route path='/studies' element={<StudyList />} />
+      <Route path='/study/access' element={<StudyParticipantView />} />
+      <Route path='/study/access/:uniqueCode' element={<StudyParticipantView />} />
       <Route path='/settings' element={<SettingsPage />} />
       <Route path='/analytics' element={<Analytics />} />
       <Route path='*' element={<Navigate to='/' />} />

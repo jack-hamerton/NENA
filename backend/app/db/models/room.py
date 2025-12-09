@@ -1,15 +1,15 @@
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
+import enum
 
-room_participants = Table(
-    "room_participants",
-    Base.metadata,
-    Column("room_id", Integer, ForeignKey("rooms.id")),
-    Column("user_id", Integer, ForeignKey("users.id")),
-)
+class RoomParticipantRole(str, enum.Enum):
+    admin = "admin"
+    member = "member"
+    speaker = "speaker"
+    guest = "guest"
 
 class Room(Base):
     __tablename__ = "rooms"
@@ -20,6 +20,12 @@ class Room(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="owned_rooms")
-    participants = relationship(
-        "User", secondary=room_participants, back_populates="rooms"
-    )
+    participants = relationship("RoomParticipant", back_populates="room")
+
+class RoomParticipant(Base):
+    __tablename__ = 'room_participants'
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    room_id = Column(Integer, ForeignKey('rooms.id'), primary_key=True)
+    role = Column(Enum(RoomParticipantRole), default=RoomParticipantRole.member)
+    user = relationship("User", back_populates="rooms")
+    room = relationship("Room", back_populates="participants")

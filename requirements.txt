@@ -4,3 +4,4 @@ sqlalchemy
 pydantic
 redis
 aioredis
+psycopg2-binary

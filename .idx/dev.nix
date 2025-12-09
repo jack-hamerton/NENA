@@ -13,6 +13,7 @@
     pkgs.alembic
     pkgs.postgresql
     pkgs.curl
+    pkgs.python311Packages.pytest
     # pkgs.nodePackages.nodemon
   ];
 
@@ -35,7 +36,7 @@
   #   echo "Welcome to your Nix development shell!"
   #   # Run a command when the shell starts
   #   npm install
-  # '';
+  # ''
 
   # starship.enable = true;
 }

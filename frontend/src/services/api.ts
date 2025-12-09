@@ -3,7 +3,7 @@ import { KeyStore } from '../messages/e2ee/keystore';
 import { encryptMessage, decryptMessage, deriveSharedSecret } from '../messages/e2ee/crypto';
 
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: '/api/v1',
 });
 
 const keyStore = new KeyStore();
