@@ -11,6 +11,7 @@ const StudyParticipantView = () => {
   const [error, setError] = useState('');
 
   const fetchStudyByCode = async (code) => {
+    if (!code) return;
     try {
       const response = await fetch(`http://localhost:8000/api/v1/studies/code/${code}`);
       if (response.ok) {
@@ -38,6 +39,8 @@ const StudyParticipantView = () => {
   const handleFetchStudy = () => {
     if (accessCode) {
       fetchStudyByCode(accessCode);
+    } else {
+      setError('Please enter an access code.');
     }
   };
 
@@ -102,11 +105,12 @@ const StudyParticipantView = () => {
             value={accessCode}
             onChange={(e) => setAccessCode(e.target.value)}
             margin="normal"
+            error={!!error}
+            helperText={error}
           />
           <Button variant="contained" color="primary" onClick={handleFetchStudy} sx={{ mt: 2 }}>
             Access Study
           </Button>
-          {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
         </Box>
       ) : (
         <Box>

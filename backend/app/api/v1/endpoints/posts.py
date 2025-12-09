@@ -4,10 +4,10 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from backend.app import schemas
-from backend.app.core import deps, security
-from backend.app.db.models import User
-from backend.app.services import post_service, like_service, comment_service
+from app import schemas
+from app.core import deps, security
+from app.db.models import User
+from app.services import post_service, like_service, comment_service
 
 router = APIRouter()
 

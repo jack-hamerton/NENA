@@ -18,4 +18,10 @@ class Poll(PollBase):
     created_at: datetime.datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class PollInDBBase(Poll):
+    pass
+
+class PollInDB(PollInDBBase):
+    pass

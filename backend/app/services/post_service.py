@@ -1,8 +1,8 @@
 
 from typing import List
 
-from backend.app import schemas
-from backend.app.db.models import Post, User, followers, Bookmark, Poll
+from app import schemas
+from app.models import Post, User, followers, Bookmark, Poll
 from sqlalchemy.orm import Session
 
 

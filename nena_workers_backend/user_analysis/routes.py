@@ -1,8 +1,8 @@
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from deps import get_db
-from models import User
+from nena_workers_backend.deps import get_db
+from nena_workers_backend.models import User
 
 router = APIRouter()
 
