@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import ActivityFeed from './ActivityFeed';
-import { getForYouFeed, getFollowingFeed } from '../services/postService';
+import { postService } from '../services/postService';
 
 const FeedContainer = styled.div`
   /* Add your styles here */
@@ -26,9 +26,9 @@ const FeedPage = () => {
     const fetchPosts = async () => {
       let response;
       if (feedType === 'for-you') {
-        response = await getForYouFeed();
+        response = await postService.getForYouFeed();
       } else {
-        response = await getFollowingFeed();
+        response = await postService.getFollowingFeed();
       }
       setPosts(response.data);
     };

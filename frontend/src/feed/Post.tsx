@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Avatar, Typography, IconButton } from '@mui/material';
 import { Favorite, Share, Comment, Bookmark, BookmarkBorder } from '@mui/icons-material';
-import { bookmarkPost, unbookmarkPost } from '../services/postService';
+import { postService } from '../services/postService';
 import { Poll } from '../rooms/Poll';
 
 const Post = ({ post }) => {
@@ -10,9 +10,9 @@ const Post = ({ post }) => {
   const handleBookmarkClick = async () => {
     try {
       if (isBookmarked) {
-        await unbookmarkPost(post.id);
+        await postService.unbookmarkPost(post.id);
       } else {
-        await bookmarkPost(post.id);
+        await postService.bookmarkPost(post.id);
       }
       setIsBookmarked(!isBookmarked);
     } catch (error) {

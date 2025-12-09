@@ -1,20 +1,32 @@
 import { Outlet } from 'react-router-dom';
-import { Box, CssBaseline } from '@mui/material';
+import { CssBaseline } from '@mui/material';
+import styled from 'styled-components';
 import LeftNav from './LeftNav';
 import ScreenshotBlocker from './ScreenshotBlocker';
 import AIAssistant from '../components/AIAssistant';
 
+const MainContainer = styled.div`
+  display: flex;
+  background-color: ${props => props.theme.background};
+  min-height: 100vh;
+`;
+
+const ContentContainer = styled.main`
+  flex-grow: 1;
+  padding: 24px;
+`;
+
 const MainLayout = () => {
   return (
-    <Box sx={{ display: 'flex', backgroundColor: 'background.default', minHeight: '100vh' }}>
+    <MainContainer>
       <CssBaseline />
       <ScreenshotBlocker />
       <LeftNav />
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <ContentContainer>
         <Outlet />
-      </Box>
+      </ContentContainer>
       <AIAssistant />
-    </Box>
+    </MainContainer>
   );
 };
 

@@ -1,11 +1,10 @@
 
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from 'styled-components';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SnackbarProvider } from './context/SnackbarContext';
 import { AIProvider } from './hooks/useAI';
-import { darkTheme } from './theme';
 import MainLayout from './layout/MainLayout';
 import SplashScreen from './layout/SplashScreen/SplashScreen';
 import FeedPage from './feed/FeedPage';
@@ -20,6 +19,15 @@ import Analytics from './pages/Analytics';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
+const theme = {
+  primary: '#1a73e8',
+  primaryHover: '#287ae6',
+  background: '#121212',
+  accent: '#f48fb1',
+  text: '#ffffff',
+  borderColor: '#333'
+};
+
 const App = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -29,7 +37,7 @@ const App = () => {
   };
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={theme}>
       <SnackbarProvider>
         <AIProvider>
           <AuthProvider>
@@ -39,12 +47,12 @@ const App = () => {
               <Router>
                 <Routes>
                   {user ? (
-                    <Route path="/*" element={<MainApp />} />
+                    <Route path='/*' element={<MainApp />} />
                   ) : (
                     <>
-                      <Route path="/login" element={<LoginPage />} />
-                      <Route path="/register" element={<RegisterPage />} />
-                      <Route path="*" element={<Navigate to="/login" />} />
+                      <Route path='/login' element={<LoginPage />} />
+                      <Route path='/register' element={<RegisterPage />} />
+                      <Route path='*' element={<Navigate to='/login' />} />
                     </>
                   )}
                 </Routes>
@@ -60,16 +68,15 @@ const App = () => {
 const MainApp = () => (
   <MainLayout>
     <Routes>
-      <Route path="/" element={<FeedPage />} />
-      <Route path="/discover" element={<DiscoverPage />} />
-      <Route path="/profile/:userId" element={<UserProfile />} />
-      <Route path="/messages" element={<MessagesPage />} />
-      <Route path="/rooms" element={<RoomsPage />} />
-      <Route path="/room/:roomId" element={<RoomPage />} />
-      <Route path="/study" element={<StudyPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
-      <Route path="/analytics" element={<Analytics />} />
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path='/discover' element={<DiscoverPage />} />
+      <Route path='/profile/:userId' element={<UserProfile />} />
+      <Route path='/messages' element={<MessagesPage />} />
+      <Route path='/rooms' element={<RoomsPage />} />
+      <Route path='/room/:roomId' element={<RoomPage />} />
+      <Route path='/study' element={<StudyPage />} />
+      <Route path='/settings' element={<SettingsPage />} />
+      <Route path='/analytics' element={<Analytics />} />
+      <Route path='*' element={<Navigate to='/' />} />
     </Routes>
   </MainLayout>
 );

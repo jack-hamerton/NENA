@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { createPost } from '../../services/postService'; // Assuming you have this function
+import { postService } from '../../services/postService'; // Assuming you have this function
 
 const CreatePostContainer = styled.div`
   /* Add your styles here */
@@ -28,7 +28,7 @@ const CreatePost = () => {
       replyPrivacy,
     };
 
-    // await createPost(post); // Implement this function in your postService
+    // await postService.createPost(post); // Implement this function in your postService
   };
 
   return (

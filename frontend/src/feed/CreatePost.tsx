@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button } from '@mui/material';
 import { CreatePoll } from '../rooms/CreatePoll';
-import { createPost } from '../services/postService';
+import { postService } from '../services/postService';
 
 const CreatePost = () => {
   const [text, setText] = useState('');
   const [isPollModalOpen, setIsPollModalOpen] = useState(false);
 
   const handlePostSubmit = async () => {
-    await createPost({ text });
+    await postService.createPost({ text });
     setText('');
   };
 
   const handlePollCreated = async (newPoll: any) => {
-    await createPost({ text, poll: newPoll });
+    await postService.createPost({ text, poll: newPoll });
     setText('');
     setIsPollModalOpen(false);
   };
