@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { auth } from '../services/firebase';
 import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { KeyStore } from '../messages/e2ee/keystore';
-import { publishKeys, getKeys } from '../services/api';
+import { publishKeys, getRecipientKeys } from '../services/api';
 import { X3DH } from '../messages/e2ee/x3dh';
 
 const AuthContext = createContext<any>(null);
@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }: any) => {
         
         const token = await user.getIdToken();
         try {
-          await publishKeys(newKeyStore, token);
+          await publishKeys();
           console.log('Public keys published successfully');
         } catch (error) {
           console.error('Failed to publish public keys:', error);
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: any) => {
       if (user && keyStore && recipientId) {
         const token = await user.getIdToken();
         try {
-          const recipientKeys = await getKeys(recipientId, token);
+          const recipientKeys = await getRecipientKeys(recipientId);
           const x3dh = new X3DH(keyStore);
           await x3dh.establishSession(recipientKeys.public_identity_key, recipientKeys.signed_public_pre_key, recipientKeys.signature);
           console.log('Secure session established successfully');

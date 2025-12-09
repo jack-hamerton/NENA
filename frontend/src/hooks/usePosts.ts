@@ -25,5 +25,9 @@ export const usePosts = () => {
     return await postService.getCommentsForPost(postId);
   };
 
-  return { getForYouFeed, getFollowingFeed, createPost, likePost, unlikePost, getCommentsForPost };
+  const reportPost = async (postId: number) => {
+    return await postService.reportPost(postId);
+  };
+
+  return { getForYouFeed, getFollowingFeed, createPost, likePost, unlikePost, getCommentsForPost, reportPost };
 };

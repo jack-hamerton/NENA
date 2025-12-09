@@ -74,6 +74,14 @@ const getCommentsForPost = (postId: number) => {
   });
 };
 
+const reportPost = (postId: number) => {
+  return axios.post(`${API_URL}/posts/${postId}/report`, {}, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+};
+
 export const postService = {
     getForYouFeed,
     getFollowingFeed,
@@ -84,4 +92,5 @@ export const postService = {
     unlikePost,
     createComment,
     getCommentsForPost,
+    reportPost,
 };

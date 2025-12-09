@@ -5,8 +5,10 @@ import { EventEmitter } from 'events';
 export interface Participant {
   id: string;
   name: string;
-  stream: MediaStream;
+  identity: string;
+  videoStream: MediaStream;
   isMuted: boolean;
+  isSpeaking: boolean;
   isSharingScreen: boolean;
   isLocal: boolean;
 }
@@ -34,8 +36,10 @@ class CallService extends EventEmitter {
       const newParticipant: Participant = {
         id: 'remote-user', // This would be the actual user ID
         name: 'Remote User',
-        stream: event.streams[0],
+        identity: 'remote-user',
+        videoStream: event.streams[0],
         isMuted: false,
+        isSpeaking: false,
         isSharingScreen: false,
         isLocal: false,
       };
@@ -59,8 +63,10 @@ class CallService extends EventEmitter {
     const localParticipant: Participant = {
       id: 'local-user', // This would be the actual user ID
       name: 'Local User',
-      stream: this.localStream,
+      identity: 'local-user',
+      videoStream: this.localStream,
       isMuted: false,
+      isSpeaking: false,
       isSharingScreen: false,
       isLocal: true,
     };
@@ -119,6 +125,11 @@ class CallService extends EventEmitter {
   private async handleIceCandidate(candidate: RTCIceCandidateInit) {
     await this.peerConnection.addIceCandidate(candidate);
   }
+
+  getParticipants(): Participant[] {
+    return this.participants;
+  }
+
 }
 
 export const callService = new CallService();

@@ -28,9 +28,6 @@ const genshinTheme = createTheme({
     success: {
       main: '#8BC34A', // Dendro
     },
-    secondary: {
-        main: '#80D1C8', // Anemo
-    },
   },
   typography: {
     fontFamily: '"Genshin Impact", sans-serif',

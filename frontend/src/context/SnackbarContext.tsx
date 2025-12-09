@@ -1,12 +1,12 @@
-import { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { Snackbar, Alert, AlertColor } from '@mui/material';
 
 const SnackbarContext = createContext(null);
 
-export const SnackbarProvider = ({ children }) => {
+export const SnackbarProvider = ({ children }: { children: ReactNode }) => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as AlertColor });
 
-  const showSnackbar = (message, severity = 'success') => {
+  const showSnackbar = (message: string, severity: AlertColor = 'success') => {
     setSnackbar({ open: true, message, severity });
   };
 

@@ -29,9 +29,9 @@ export class KeyStore {
 
   async generateIdentityKey(): Promise<CryptoKeyPair> {
     return window.crypto.subtle.generateKey(
-      { name: 'ECDH', namedCurve: 'P-256' },
+      { name: 'ECDSA', namedCurve: 'P-256' },
       true,
-      ['deriveKey']
+      ['sign', 'verify']
     );
   }
 
@@ -71,5 +71,19 @@ export class KeyStore {
     const db = await this.dbPromise;
     await db.put(STORE_NAME, key, `prekey-${id}`);
   }
-}
 
+  async sign(data: ArrayBuffer): Promise<ArrayBuffer> {
+    return window.crypto.subtle.sign(
+      { name: 'ECDSA', hash: { name: 'SHA-256' } },
+      this.identityKey.privateKey,
+      data
+    );
+  }
+
+  async getSignedPublicPreKey(id: number) {
+    const preKey = await this.getPreKey(id);
+    const publicKey = await window.crypto.subtle.exportKey('raw', preKey.publicKey);
+    const signature = await this.sign(publicKey);
+    return { publicKey, signature };
+  }
+}

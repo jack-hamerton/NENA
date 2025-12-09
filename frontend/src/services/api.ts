@@ -1,52 +1,70 @@
-
+import axios from 'axios';
 import { KeyStore } from '../messages/e2ee/keystore';
-import { exportPublicKey, arrayBufferToBase64 } from '../utils/crypto';
+import { encryptMessage, decryptMessage, deriveSharedSecret } from '../messages/e2ee/crypto';
 
-const API_URL = 'http://localhost:8000/api/v1'; // Assuming the backend is running on port 8000
+const apiClient = axios.create({
+  baseURL: '/api',
+});
 
-export async function publishKeys(keyStore: KeyStore, token: string) {
-  const publicIdentityKey = await exportPublicKey(keyStore.publicIdentityKey!);
-  
-  // For simplicity, we'll use the first pre-key.
-  const signedPublicPreKey = await keyStore.getSignedPublicPreKey(0);
-  if (!signedPublicPreKey) {
-    throw new Error('Could not get signed public pre-key');
-  }
+const keyStore = new KeyStore();
 
-  const { publicKey, signature } = signedPublicPreKey;
-  const publicKeyBase64 = await exportPublicKey(publicKey);
-  const signatureBase64 = arrayBufferToBase64(signature);
+export const publishKeys = async () => {
+    const publicKey = await window.crypto.subtle.exportKey('raw', keyStore.identityKey.publicKey);
+    const signedPublicPreKey = await keyStore.getSignedPublicPreKey(0);
+    const response = await apiClient.post('/keys', {
+        publicKey: Buffer.from(publicKey).toString('hex'),
+        signedPublicPreKey: {
+            publicKey: Buffer.from(signedPublicPreKey.publicKey).toString('hex'),
+            signature: Buffer.from(signedPublicPreKey.signature).toString('hex'),
+        },
+    });
+    return response.data;
+};
 
-  const response = await fetch(`${API_URL}/messages/keys`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      public_identity_key: publicIdentityKey,
-      signed_public_pre_key: publicKeyBase64,
-      signature: signatureBase64
-    })
+export const getRecipientKeys = async (recipientId: string) => {
+  const response = await apiClient.get(`/keys/${recipientId}`);
+  return response.data;
+};
+
+export const sendMessage = async (recipientId: string, message: string) => {
+  const recipientKeys = await getRecipientKeys(recipientId);
+  const theirPublicKey = await window.crypto.subtle.importKey(
+    'raw',
+    Buffer.from(recipientKeys.publicKey, 'hex'),
+    { name: 'ECDH', namedCurve: 'P-256' },
+    true,
+    []
+  );
+
+  const sharedSecret = await deriveSharedSecret(await keyStore.getPrivateKey(), theirPublicKey);
+
+  const encryptedMessage = await encryptMessage(sharedSecret, new TextEncoder().encode(message));
+
+  await apiClient.post('/messages', {
+    recipientId,
+    message: Buffer.from(encryptedMessage).toString('hex'),
   });
+};
 
-  if (!response.ok) {
-    throw new Error('Failed to publish keys');
-  }
+export const getMessages = async () => {
+    const response = await apiClient.get('/messages');
+    const messages = response.data;
 
-  return response.json();
-}
+    const decryptedMessages = await Promise.all(
+        messages.map(async (message: any) => {
+            const senderKeys = await getRecipientKeys(message.senderId);
+            const theirPublicKey = await window.crypto.subtle.importKey(
+                'raw',
+                Buffer.from(senderKeys.publicKey, 'hex'),
+                { name: 'ECDH', namedCurve: 'P-256' },
+                true,
+                []
+            );
+            const sharedSecret = await deriveSharedSecret(await keyStore.getPrivateKey(), theirPublicKey);
+            const decryptedMessage = await decryptMessage(sharedSecret, Buffer.from(message.message, 'hex'));
+            return { ...message, message: new TextDecoder().decode(decryptedMessage) };
+        })
+    );
 
-export async function getKeys(userId: string, token: string) {
-  const response = await fetch(`${API_URL}/messages/keys/${userId}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to get keys');
-  }
-
-  return response.json();
-}
+    return decryptedMessages;
+};

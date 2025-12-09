@@ -1,38 +1,35 @@
-
-import React, { useState, useEffect } from 'react';
-import { PostCard } from '../feed/PostCard';
+import { useEffect, useState } from 'react';
+import { Post } from '../components/post/Post.tsx';
+import CreatePost from '../components/post/CreatePost.tsx';
 import { usePosts } from '../hooks/usePosts';
+import { Container, Typography } from '@mui/material';
 
-export const ActivityFeed: React.FC = () => {
+export const ActivityFeed = () => {
+  const { getForYouFeed, reportPost } = usePosts();
   const [posts, setPosts] = useState([]);
-  const { getPosts, reportPost } = usePosts();
 
   useEffect(() => {
     const fetchPosts = async () => {
-      try {
-        const response = await getPosts();
-        setPosts(response.data);
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-      }
+      const response = await getForYouFeed();
+      setPosts(response.data);
     };
-    fetchPosts();
-  }, [getPosts]);
 
-  const handleReportPost = async (postId: number) => {
-    try {
-      await reportPost(postId);
-      // You might want to update the UI to indicate the post has been reported
-    } catch (error) {
-      console.error('Error reporting post:', error);
-    }
+    fetchPosts();
+  }, [getForYouFeed]);
+
+  const handleReportPost = async (postId) => {
+    await reportPost(postId);
   };
 
   return (
-    <div>
+    <Container maxWidth="sm">
+      <Typography variant="h4" component="h1" gutterBottom>
+        Activity Feed
+      </Typography>
+      <CreatePost />
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} onReportPost={handleReportPost} />
+        <Post key={post.id} postId={post.id} />
       ))}
-    </div>
+    </Container>
   );
 };
