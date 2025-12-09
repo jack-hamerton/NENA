@@ -1,30 +1,3 @@
-'''
-Core AI Service offering a suite of intelligent capabilities.
-
-This AI system is designed to learn and adapt over time, following these core principles:
-
-1.  **Human Agency and Oversight:** Humans should make the final decisions. AI systems
-    should empower human beings, not displace them. All autonomous operations
-    should have clear "off-switches" and require human approval for critical actions.
-
-2.  **Safety and Security:** AI systems must be robust, secure, and safe in all
-    foreseeable conditions, with fall-back plans in case of failure. This includes
-    protection against adversarial attacks and unintended behavior.
-
-3.  **Privacy and Data Governance:** Personal and sensitive data must be protected and
-    processed with clear consent, using strong security measures and anonymization
-    techniques where possible.
-
-4.  **Transparency and Explainability:** Users should be aware they are interacting
-    with an AI system. Where feasible, the AI should be able to explain how it
-    reached a particular decision or output (Explainable AI - XAI).
-
-5.  **Fairness and Non-Discrimination:** Unfair bias must be actively identified and
-    avoided throughout the AI lifecycle to prevent the marginalization of
-    vulnerable groups. This involves careful data selection, model training, and
-    ongoing evaluation.
-'''
-
 import random
 
 # In a real application, you would import and use various AI/ML libraries
@@ -127,6 +100,30 @@ def run_self_improvement_cycle(domain="coding"):
     is_correct = evaluate_with_ai_judge(challenge, solution)
     feedback = {"challenge": challenge["task"], "success": is_correct}
     update_internal_parameters(feedback)
+    
+    # --- Integrating other learning methods ---
+    
+    # 1. Supervised Learning Example
+    # In a real system, you'd have a stream of labeled data.
+    labeled_data = [
+        ({"text": "This is great!"}, "positive"),
+        ({"text": "This is terrible."}, "negative"),
+    ]
+    supervised_learning_train(labeled_data)
+    
+    # 2. Unsupervised Learning Example
+    # In a real system, you'd use large unlabeled datasets.
+    unlabeled_data = [
+        {"text": "Python is a versatile language."},
+        {"text": "Java is used in enterprise systems."},
+        {"text": "C++ is known for its performance."},
+    ]
+    unsupervised_learning_discover(unlabeled_data)
+
+    # 3. Reinforcement Learning Example
+    # Here we simulate a simple environment
+    reinforcement_learning_optimize("game_environment", "player_agent")
+    
     print("--- Self-improvement cycle complete ---")
     return feedback
 
@@ -135,14 +132,37 @@ def run_self_improvement_cycle(domain="coding"):
 def supervised_learning_train(labeled_data):
     '''Trains the AI on labeled data.'''
     print(f"Starting supervised training on {len(labeled_data)} examples.")
+    # In a real system, this would involve:
+    # 1. Preprocessing the data (tokenization, vectorization)
+    # 2. Feeding it into a model (e.g., a text classifier)
+    # 3. Calculating loss and using an optimizer (e.g., Adam) to adjust weights via backpropagation.
+    for data, label in labeled_data:
+        print(f"  - Training on: {data['text']} -> {label}")
     return "Supervised training complete (dummy)."
 
 def unsupervised_learning_discover(unlabeled_data):
     '''Analyzes unlabeled data to discover hidden patterns.'''
     print(f"Running unsupervised discovery on {len(unlabeled_data)} data points.")
+    # In a real system, this would involve:
+    # 1. Using algorithms like K-Means for clustering or PCA for dimensionality reduction.
+    # 2. Identifying topics, anomalies, or customer segments.
+    print("  - Discovered cluster of programming language discussions.")
     return "Unsupervised discovery complete (dummy)."
 
 def reinforcement_learning_optimize(environment, agent):
     '''Optimizes an AI agent's behavior through rewards and penalties.'''
-    print(f"Starting reinforcement learning for agent in {environment}.")
+    print(f"Starting reinforcement learning for agent '{agent}' in '{environment}'.")
+    # In a real system, this would involve:
+    # 1. Defining the state space, action space, and reward function.
+    # 2. The agent taking actions in the environment.
+    # 3. The environment providing the next state and a reward.
+    # 4. Using algorithms like Q-learning or PPO to update the agent's policy.
+    actions = ["move_left", "move_right", "jump"]
+    action = random.choice(actions)
+    reward = random.choice([-1, 1])
+    print(f"  - Agent took action '{action}' and received reward: {reward}.")
+    if reward > 0:
+        print("  - Reinforcing this action.")
+    else:
+        print("  - Discouraging this action.")
     return "Reinforcement learning optimization complete (dummy)."
