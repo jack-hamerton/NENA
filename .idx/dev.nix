@@ -7,9 +7,12 @@
     # pkgs.go
     pkgs.python311
     pkgs.python311Packages.pip
+    pkgs.python311Packages.fastapi
+    pkgs.python311Packages.uvicorn
     pkgs.nodejs_20
     pkgs.alembic
     pkgs.postgresql
+    pkgs.curl
     # pkgs.nodePackages.nodemon
   ];
 
