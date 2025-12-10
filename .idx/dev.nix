@@ -9,6 +9,11 @@
     pkgs.python311Packages.pip
     pkgs.python311Packages.fastapi
     pkgs.python311Packages.uvicorn
+    pkgs.python311Packages.sqlalchemy
+    pkgs.python311Packages.pydantic
+    pkgs.python311Packages.redis
+    pkgs.python311Packages.aioredis
+    pkgs.python311Packages.psycopg2
     pkgs.nodejs_20
     pkgs.alembic
     pkgs.postgresql
