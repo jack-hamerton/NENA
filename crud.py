@@ -46,7 +46,7 @@ def get_messages(db: Session, room_id: int, skip: int = 0, limit: int = 100):
     return db.query(models.Message).filter(models.Message.room_id == room_id).offset(skip).limit(limit).all()
 
 def create_message(db: Session, message: schemas.MessageCreate):
-    db_message = models.Message(**message.dict())
+    db_message = models.Message(**message.model_dump())
     db.add(db_message)
     db.commit()
     db.refresh(db_message)
@@ -63,7 +63,7 @@ def get_room_members(db: Session, room_id: int):
     return db.query(models.RoomMembership).filter(models.RoomMembership.room_id == room_id).all()
 
 def create_post(db: Session, post: schemas.PostCreate, author_id: int):
-    db_post = models.Post(**post.dict(), author_id=author_id)
+    db_post = models.Post(**post.model_dump(), author_id=author_id)
     db.add(db_post)
     db.commit()
     db.refresh(db_post)

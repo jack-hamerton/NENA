@@ -14,6 +14,8 @@
     pkgs.postgresql
     pkgs.curl
     pkgs.python311Packages.pytest
+    pkgs.docker
+    pkgs.docker-compose
     # pkgs.nodePackages.nodemon
   ];
 

@@ -91,7 +91,7 @@ async def create_message_for_room(
     
     new_message = crud.create_message(db=db, message=message)
     
-    message_dict = schemas.Message.from_orm(new_message).dict()
+    message_dict = schemas.Message.from_orm(new_message).model_dump()
     
     await manager.publish(f"room:{room_id}", json.dumps({"event": "new-message", "data": message_dict}))
     return new_message

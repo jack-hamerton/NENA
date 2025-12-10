@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api'; // Replace with your API base URL
+const API_URL = '/api'; // Replace with your API base URL
 
 export const api = {
   get: (endpoint, config) => axios.get(`${API_URL}${endpoint}`, config),
