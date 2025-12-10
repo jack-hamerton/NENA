@@ -1,52 +1,63 @@
-import { useState, useEffect } from 'react';
-import { Box, TextField, Button, List, ListItem, ListItemText, Typography } from '@mui/material';
-import socket from '../services/socket';
 
-interface Message {
-  id: number;
-  text: string;
-  sender: string;
-}
+import { useState, useEffect } from 'react';
+import { Box, TextField, Button, List, ListItem, ListItemText, Typography, IconButton } from '@mui/material';
+import { Lock, LockOpen } from '@mui/icons-material';
+import { chatService, Message } from '../services/chatService';
+import { useSnackbar } from '../context/SnackbarContext';
+import { PinLock } from '../components/PinLock';
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [locked, setLocked] = useState(false);
+  const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
-    socket.onmessage = (event) => {
-      const message: Message = {
-        id: messages.length + 1,
-        text: event.data,
-        sender: 'Other',
-      };
-      setMessages([...messages, message]);
+    chatService.getMessages('some-room').then(setMessages);
+
+    const handleNewMessage = (message: Message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+      showSnackbar(`New message from ${message.sender.name}`, 'success');
     };
 
+    chatService.on('new-message', handleNewMessage);
+
     return () => {
-      socket.close();
+      chatService.off('new-message', handleNewMessage);
     };
-  }, [messages]);
+  }, [showSnackbar]);
 
   const handleSendMessage = () => {
     if (newMessage.trim() !== '') {
-      socket.send(newMessage);
-      const message: Message = {
-        id: messages.length + 1,
-        text: newMessage,
-        sender: 'Me',
-      };
-      setMessages([...messages, message]);
+      chatService.sendMessage({ 
+        text: newMessage, 
+        sender: { id: 'me', name: 'Me' },
+        // In a real app, the sender would be the logged in user.
+       });
       setNewMessage('');
     }
   };
 
+  const handleUnlock = () => {
+    setLocked(false);
+  };
+
+  if (locked) {
+    return <PinLock onUnlock={handleUnlock} />;
+  }
+
   return (
     <Box>
-      <Typography variant="h5">Chat</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h5">Chat</Typography>
+        <IconButton onClick={() => setLocked(true)}>
+          {locked ? <Lock /> : <LockOpen />}
+        </IconButton>
+      </Box>
       <List>
         {messages.map((message) => (
           <ListItem key={message.id}>
-            <ListItemText primary={message.text} secondary={message.sender} />
+            <ListItemText primary={message.text} secondary={message.sender.name} />
           </ListItem>
         ))}
       </List>

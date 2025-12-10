@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { chatService } from '../services/chatService';
 import { roomService } from '../services/roomService';
 import { useAuth } from '../hooks/useAuth';
+import { useSnackbar } from '../context/SnackbarContext';
 
 interface Message {
   id: string;
@@ -20,6 +21,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
   const [users, setUsers] = useState<string[]>([]);
   const [message, setMessage] = useState('');
   const { user } = useAuth(); // Assume useAuth provides the current user
+  const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
     roomService.joinRoom(roomId);
@@ -34,11 +36,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
     const handleUserJoined = ({ roomId: joinedRoomId, userId }: { roomId: string, userId: string }) => {
       if (joinedRoomId === roomId) {
         setUsers((prevUsers) => [...prevUsers, userId]);
+        showSnackbar(`${userId} joined the room`, 'info');
       }
     };
     const handleUserLeft = ({ roomId: leftRoomId, userId }: { roomId: string, userId: string }) => {
       if (leftRoomId === roomId) {
         setUsers((prevUsers) => prevUsers.filter((u) => u !== userId));
+        showSnackbar(`${userId} left the room`, 'info');
       }
     };
     roomService.on('user-joined-room', handleUserJoined);
@@ -50,7 +54,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
       roomService.off('user-joined-room', handleUserJoined);
       roomService.off('user-left-room', handleUserLeft);
     };
-  }, [roomId]);
+  }, [roomId, showSnackbar]);
 
   const handleSendMessage = () => {
     if (message.trim()) {

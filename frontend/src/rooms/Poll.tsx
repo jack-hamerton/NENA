@@ -7,7 +7,7 @@ export const Poll: React.FC<{ poll: any }> = ({ poll }) => {
 
     const handleVote = async (option: string) => {
         try {
-            await api.post(`/rooms/${roomId}/polls/${poll.id}/vote`, { option });
+            await api.post(`/rooms/${roomId}/polls/${poll.id}/vote`, { option }, {});
             // You might want to update the poll data to reflect the new vote
         } catch (error) {
             console.error('Error voting:', error);

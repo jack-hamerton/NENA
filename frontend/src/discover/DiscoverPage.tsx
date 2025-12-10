@@ -1,21 +1,27 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import styled from 'styled-components';
+import GlobalSearchBox from './GlobalSearchBox';
+import ResultsGrid from './ResultsGrid';
+import { searchService } from '../services/searchService';
+import { DiscoverResult } from '../types/discover';
 
 const DiscoverContainer = styled.div`
-  /* Add your styles here */
-`;
-
-const TrendingTopics = styled.div`
-  /* Add your styles here */
+  padding: 2rem;
 `;
 
 const DiscoverPage = () => {
+  const [results, setResults] = useState<DiscoverResult[]>([]);
+
+  const handleSearch = async (query: string) => {
+    const searchResults = await searchService.search(query);
+    setResults(searchResults);
+  };
+
   return (
     <DiscoverContainer>
-      <TrendingTopics>
-        <h2>Trending Topics</h2>
-        {/* Add your trending topics here */}
-      </TrendingTopics>
+      <GlobalSearchBox onSearch={handleSearch} />
+      <ResultsGrid results={results} />
     </DiscoverContainer>
   );
 };

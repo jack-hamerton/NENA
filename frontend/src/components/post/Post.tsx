@@ -8,9 +8,9 @@ export const Post = ({ postId }) => {
 
   useEffect(() => {
     const fetchPost = async () => {
-      const postRes = await api.get(`/posts/${postId}`);
+      const postRes = await api.get(`/posts/${postId}`, {});
       setPost(postRes.data);
-      const commentsRes = await api.get(`/posts/${postId}/comments`);
+      const commentsRes = await api.get(`/posts/${postId}/comments`, {});
       setComments(commentsRes.data);
     };
     fetchPost();

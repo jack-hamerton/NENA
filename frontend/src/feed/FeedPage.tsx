@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import ActivityFeed from './ActivityFeed';
 import { postService } from '../services/postService';
@@ -18,23 +18,33 @@ const Tab = styled.div<{ active: boolean }>`
   border-bottom: ${props => (props.active ? '2px solid blue' : 'none')};
 `;
 
+const RestartButton = styled.button`
+  margin-left: auto;
+  padding: 5px 10px;
+  cursor: pointer;
+`;
+
 const FeedPage = () => {
   const [feedType, setFeedType] = useState('for-you');
   const [posts, setPosts] = useState([]);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      let response;
-      if (feedType === 'for-you') {
-        response = await postService.getForYouFeed();
-      } else {
-        response = await postService.getFollowingFeed();
-      }
-      setPosts(response.data);
-    };
-
-    fetchPosts();
+  const fetchPosts = useCallback(async () => {
+    let response;
+    if (feedType === 'for-you') {
+      response = await postService.getForYouFeed();
+    } else {
+      response = await postService.getFollowingFeed();
+    }
+    setPosts(response.data);
   }, [feedType]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  const handleRestart = () => {
+    fetchPosts();
+  };
 
   return (
     <FeedContainer>
@@ -45,6 +55,7 @@ const FeedPage = () => {
         <Tab active={feedType === 'following'} onClick={() => setFeedType('following')}>
           Following
         </Tab>
+        <RestartButton onClick={handleRestart}>Restart</RestartButton>
       </Tabs>
       <ActivityFeed posts={posts} />
     </FeedContainer>

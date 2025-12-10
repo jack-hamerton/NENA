@@ -7,7 +7,7 @@ export const PostFeed = () => {
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const response = await api.get('/posts');
+      const response = await api.get('/posts', {});
       setPosts(response.data);
     };
     fetchPosts();

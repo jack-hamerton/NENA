@@ -7,7 +7,7 @@ export const RoomList = () => {
 
   useEffect(() => {
     const fetchRooms = async () => {
-      const response = await api.get('/rooms');
+      const response = await api.get('/rooms', {});
       setRooms(response.data);
     };
     fetchRooms();

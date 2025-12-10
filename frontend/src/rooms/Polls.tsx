@@ -11,7 +11,7 @@ export const Polls: React.FC = () => {
     useEffect(() => {
         const fetchPolls = async () => {
             try {
-                const response = await api.get(`/rooms/${roomId}/polls`);
+                const response = await api.get(`/rooms/${roomId}/polls`, {});
                 setPolls(response.data);
             } catch (error) {
                 console.error('Error fetching polls:', error);

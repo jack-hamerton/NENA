@@ -1,9 +1,10 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SnackbarProvider } from './context/SnackbarContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { AIProvider } from './hooks/useAI';
 import MainLayout from './layout/MainLayout';
 import SplashScreen from './layout/SplashScreen/SplashScreen';
@@ -21,6 +22,9 @@ import SettingsPage from './settings/SettingsPage';
 import Analytics from './pages/Analytics';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import { Calendar } from './components/calendar/Calendar';
+import CallNotificationHandler from './services/CallNotificationHandler';
+import { PinLock } from './components/PinLock';
 
 const theme = {
   primary: '#1a73e8',
@@ -40,11 +44,34 @@ const theme = {
 
 const App = () => {
   const [loading, setLoading] = useState(true);
+  const [locked, setLocked] = useState(false);
   const { user } = useAuth();
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setLocked(true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const handleSplashFinish = () => {
     setLoading(false);
   };
+
+  const handleUnlock = () => {
+    setLocked(false);
+  };
+
+  if (locked) {
+    return <PinLock onUnlock={handleUnlock} />;
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -57,7 +84,7 @@ const App = () => {
               <Router>
                 <Routes>
                   {user ? (
-                    <Route path='/*' element={<MainApp />} />
+                    <Route path='/*' element={<NotificationProvider><MainApp /></NotificationProvider>} />
                   ) : (
                     <>
                       <Route path='/login' element={<LoginPage />} />
@@ -77,6 +104,7 @@ const App = () => {
 
 const MainApp = () => (
   <MainLayout>
+    <CallNotificationHandler />
     <Routes>
       <Route path='/' element={<FeedPage />} />
       <Route path='/discover' element={<DiscoverPage />} />
@@ -91,6 +119,7 @@ const MainApp = () => (
       <Route path='/study/access/:uniqueCode' element={<StudyParticipantView />} />
       <Route path='/settings' element={<SettingsPage />} />
       <Route path='/analytics' element={<Analytics />} />
+      <Route path='/calendar' element={<Calendar />} />
       <Route path='*' element={<Navigate to='/' />} />
     </Routes>
   </MainLayout>

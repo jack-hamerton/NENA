@@ -1,20 +1,29 @@
 
 import { Outlet } from 'react-router-dom';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, Box } from '@mui/material';
 import styled from 'styled-components';
-import LeftNav from './LeftNav';
-import ScreenshotBlocker from './ScreenshotBlocker';
+import LeftNav from '../layout/LeftNav';
+import ScreenshotBlocker from '../layout/ScreenshotBlocker';
 import AIAssistant from '../components/AIAssistant';
+import NotificationBar from '../components/NotificationBar';
 
 const MainContainer = styled.div`
-  display: flex;
   background-color: ${props => props.theme.background};
   min-height: 100vh;
+  position: relative;
 `;
 
 const ContentContainer = styled.main`
-  flex-grow: 1;
+  margin-left: 240px; /* Same as LeftNav width */
   padding: 24px;
+`;
+
+const TopRightContainer = styled.div`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
 `;
 
 const MainLayout = ({ children }) => {
@@ -23,11 +32,14 @@ const MainLayout = ({ children }) => {
       <CssBaseline />
       <ScreenshotBlocker />
       <LeftNav />
+      <TopRightContainer>
+        <NotificationBar />
+        <AIAssistant />
+      </TopRightContainer>
       <ContentContainer>
         {children}
         <Outlet />
       </ContentContainer>
-      <AIAssistant />
     </MainContainer>
   );
 };

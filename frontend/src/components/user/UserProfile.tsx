@@ -8,7 +8,7 @@ export const UserProfile = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const response = await api.get(`/users/${userId}`);
+      const response = await api.get(`/users/${userId}`, {});
       setUser(response.data);
     };
     fetchUser();

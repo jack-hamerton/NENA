@@ -6,7 +6,7 @@ export const PodcastPlayer = ({ podcastId }) => {
 
   useEffect(() => {
     const fetchPodcast = async () => {
-      const response = await api.get(`/podcasts/${podcastId}`);
+      const response = await api.get(`/podcasts/${podcastId}`, {});
       setPodcast(response.data);
     };
     fetchPodcast();

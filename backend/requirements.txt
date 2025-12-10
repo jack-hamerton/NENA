@@ -16,6 +16,8 @@ anyio==4.12.0
     # via
     #   starlette
     #   watchfiles
+apscheduler==3.10.1
+    # via -r requirements.in
 bcrypt==5.0.0
     # via passlib
 blinker==1.9.0
@@ -102,6 +104,8 @@ python-jose[cryptography]==3.5.0
     # via -r requirements.in
 python-multipart==0.0.20
     # via -r requirements.in
+pytz==2023.3
+    # via apscheduler
 pyyaml==6.0.3
     # via uvicorn
 redis==7.1.0
@@ -126,6 +130,8 @@ starlette==0.50.0
     # via
     #   fastapi
     #   fastapi-mail
+tzlocal==5.2
+    # via apscheduler
 typing-extensions==4.15.0
     # via
     #   alembic

@@ -7,7 +7,7 @@ export const CollaborationSpace = () => {
 
   useEffect(() => {
     const fetchDocuments = async () => {
-      const response = await api.get('/collaboration/documents');
+      const response = await api.get('/collaboration/documents', {});
       setDocuments(response.data);
     };
     fetchDocuments();

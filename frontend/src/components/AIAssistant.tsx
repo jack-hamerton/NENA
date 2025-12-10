@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useAI } from '../hooks/useAI';
 import { Paper, TextField, Button, Typography, Box, IconButton } from '@mui/material';
@@ -13,10 +14,12 @@ const AIAssistant = () => {
   const [position, setPosition] = useState({ x: 20, y: 20 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0, initialX: 0, initialY: 0 });
+  const wasDragged = useRef(false);
 
   const handleDragStart = (e) => {
     if (e.button !== 0) return; // Only drag with left mouse button
     setIsDragging(true);
+    wasDragged.current = false;
     dragStartRef.current = {
       x: e.clientX,
       y: e.clientY,
@@ -28,6 +31,7 @@ const AIAssistant = () => {
   useEffect(() => {
     const handleDragMove = (e) => {
       if (!isDragging) return;
+      wasDragged.current = true;
       const dx = e.clientX - dragStartRef.current.x;
       const dy = e.clientY - dragStartRef.current.y;
       setPosition({
@@ -65,20 +69,28 @@ const AIAssistant = () => {
     }
   };
 
+  const handleButtonClick = () => {
+    if (!wasDragged.current) {
+      setIsOpen(true);
+    }
+  };
+
   if (!isOpen) {
     return (
       <Button
         variant="contained"
-        onClick={() => setIsOpen(true)}
+        onMouseDown={handleDragStart}
+        onClick={handleButtonClick}
         sx={{
           position: 'fixed',
-          bottom: 20,
-          right: 20,
+          bottom: position.y,
+          right: position.x,
           borderRadius: '50%',
           width: '64px',
           height: '64px',
           zIndex: 1300,
           backgroundColor: 'primary.main',
+          cursor: 'move',
         }}
       >
         <Typography component="span" sx={{ fontSize: '2.5rem' }}>🤖</Typography>

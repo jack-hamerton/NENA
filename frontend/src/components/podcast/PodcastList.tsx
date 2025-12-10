@@ -7,7 +7,7 @@ export const PodcastList = () => {
 
   useEffect(() => {
     const fetchPodcasts = async () => {
-      const response = await api.get('/podcasts');
+      const response = await api.get('/podcasts', {});
       setPodcasts(response.data);
     };
     fetchPodcasts();

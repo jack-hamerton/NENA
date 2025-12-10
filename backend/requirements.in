@@ -13,3 +13,4 @@ redis
 requests
 fastapi-mail
 pydantic-settings
+apscheduler
