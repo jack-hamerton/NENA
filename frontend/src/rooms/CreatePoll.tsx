@@ -17,7 +17,7 @@ export const CreatePoll: React.FC<CreatePollProps> = ({ onPollCreated }) => {
             const response = await api.post(`/rooms/${roomId}/polls`, {
                 question,
                 options: options.split(',').map(opt => opt.trim()),
-            });
+            }, {});
             onPollCreated(response.data);
             setQuestion('');
             setOptions('');

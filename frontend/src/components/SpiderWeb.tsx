@@ -12,23 +12,23 @@ const SpiderWeb = ({ collaborationId }) => {
     const fetchData = async () => {
       if (!collaborationId) return;
 
-      const challengesRes = await api.get(`/collaborations/${collaborationId}/challenges`, {}, {});
+      const challengesRes = await api.get(`/collaborations/${collaborationId}/challenges`, {});
       const challenges = challengesRes.data;
 
       const userIds = new Set();
       challenges.forEach(c => userIds.add(c.creator_id));
 
-      const mitigationsPromises = challenges.map(c => api.get(`/challenges/${c.id}/mitigations`, {}), {});
+      const mitigationsPromises = challenges.map(c => api.get(`/challenges/${c.id}/mitigations`, {}));
       const mitigationsRes = await Promise.all(mitigationsPromises);
       const mitigations = mitigationsRes.flatMap(res => res.data);
 
       mitigations.forEach(m => userIds.add(m.creator_id));
 
-      const usersPromises = Array.from(userIds).map(id => api.get(`/users/${id}`, {}), {});
+      const usersPromises = Array.from(userIds).map(id => api.get(`/users/${id}`, {}));
       const usersRes = await Promise.all(usersPromises);
       const users = usersRes.map(res => res.data);
 
-      const impactScoresPromises = users.map(u => api.get(`/users/${u.id}/impact-score`, {}), {});
+      const impactScoresPromises = users.map(u => api.get(`/users/${u.id}/impact-score`, {}));
       const impactScoresRes = await Promise.all(impactScoresPromises);
       const impactScores = impactScoresRes.map(res => res.data);
 

@@ -51,6 +51,14 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 Open [http://localhost:80](http://localhost:80) to view it in the browser.
 
+## Production
+
+To run the application in a production environment:
+
+```sh
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.

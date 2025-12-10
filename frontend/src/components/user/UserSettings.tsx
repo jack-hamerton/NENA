@@ -12,7 +12,7 @@ export const UserSettings = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await api.put('/users/settings', user);
+    await api.put('/users/settings', user, {});
     // Handle success or error
   };
 

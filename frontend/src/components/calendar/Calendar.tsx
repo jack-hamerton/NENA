@@ -33,7 +33,7 @@ export const Calendar = () => {
   }, [notifications]);
 
   const fetchEvents = async () => {
-    const response = await api.get('/calendar/events', {}, {});
+    const response = await api.get('/calendar/events', {});
     setEvents(response.data.map(event => ({
       ...event,
       start: new Date(event.start_time),
