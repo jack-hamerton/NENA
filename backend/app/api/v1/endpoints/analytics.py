@@ -1,33 +1,22 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 
 from app.crud import analytics as crud_analytics
 from app.schemas import analytics as schemas_analytics
 from app.api import deps
+from app.models import user as user_model
 
 router = APIRouter()
 
-@router.get("/user-engagement", response_model=List[schemas_analytics.UserEngagement])
-def get_user_engagement(
+@router.get("/dashboard", response_model=schemas_analytics.AnalyticsDashboard)
+def get_analytics_dashboard(
     db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
+    current_user: user_model.User = Depends(deps.get_current_active_user),
 ):
     """
-    Retrieve user engagement metrics.
+    Retrieve a full analytics dashboard for the current user.
     """
-    user_engagement = crud_analytics.get_user_engagement(db, skip=skip, limit=limit)
-    return user_engagement
+    if not current_user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-@router.get("/post-engagement", response_model=List[schemas_analytics.PostEngagement])
-def get_post_engagement(
-    db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
-):
-    """
-    Retrieve post engagement metrics.
-    """
-    post_engagement = crud_analytics.get_post_engagement(db, skip=skip, limit=limit)
-    return post_engagement
+    return crud_analytics.get_analytics_dashboard(db, user_id=current_user.id)
