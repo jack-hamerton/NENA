@@ -6,5 +6,6 @@ class PNVRequest(BaseModel):
     country_code: str
 
 class PNVCheck(BaseModel):
-    verification_id: str
+    phone_number: str
+    country_code: str
     code: str
