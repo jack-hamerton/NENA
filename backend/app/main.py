@@ -4,7 +4,6 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.api.v1.api import api_router
-from app.api.endpoints import calendar as calendar_router
 from app.api.endpoints import notifications as notifications_router
 from app.ai.services import ai_service
 from app.reminders import start_scheduler
@@ -47,7 +46,6 @@ def startup_event():
     start_scheduler()
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
-app.include_router(calendar_router.router, prefix="/calendar", tags=["calendar"])
 app.include_router(notifications_router.router, prefix="/notifications", tags=["notifications"])
 app.include_router(ai_router, prefix="/ai")
 app.include_router(impact_router.router, prefix="/impact", tags=["impact"])

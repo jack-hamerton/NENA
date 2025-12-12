@@ -4,11 +4,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
-import HomePage from './pages/HomePage'; // Assuming you have a home page
+import HomePage from './pages/HomePage';
+import Calendar from './pages/Calendar';
+import MainLayout from './layout/MainLayout';
 
-// A simple mock for auth status. In a real app, you'd use a context or state management.
 const useAuth = () => {
-  // For demonstration, we'll just check for a token in localStorage.
   const token = localStorage.getItem('authToken');
   return { isAuthenticated: !!token }; 
 };
@@ -26,17 +26,18 @@ function App() {
         <Route path='/signup' element={<SignUpPage />} />
         <Route path='/verify-email' element={<EmailVerificationPage />} />
         
-        {/* Protected Route */}
         <Route 
-          path='/' 
+          path='/*' 
           element={
             <PrivateRoute>
-              <HomePage />
+              <MainLayout />
             </PrivateRoute>
           }
-        />
+        >
+          <Route index element={<HomePage />} />
+          <Route path='calendar' element={<Calendar />} />
+        </Route>
         
-        {/* Redirect any other path to the home page or login */}
         <Route path='*' element={<Navigate to='/' />} />
       </Routes>
     </Router>

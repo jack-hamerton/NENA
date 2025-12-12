@@ -1,49 +1,69 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Any
 
 from app import crud, schemas, models
-from app.dependencies import get_db, get_current_user
-from app.websockets import manager
+from app.core.dependencies import get_db, get_current_user
 
 router = APIRouter()
 
+@router.get("/", response_model=List[schemas.Event])
+def read_events(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+) -> Any:
+    """
+    Retrieve user's events.
+    """
+    events = crud.calendar.get_multi_by_owner(db, owner_id=current_user.id)
+    return events
+
 @router.post("/", response_model=schemas.Event)
-async def create_event_with_collaborator(
+def create_event(
     *, 
     db: Session = Depends(get_db),
     event_in: schemas.EventCreate,
-    collaborator_id: int,
-    current_user: models.User = Depends(get_current_user)
-):
+    current_user: models.User = Depends(get_current_user),
+) -> Any:
     """
-    Create an event and add a collaborator, checking for availability.
+    Create new event.
     """
-    if crud.event.is_user_busy(db, user_id=collaborator_id, start_time=event_in.start_time, end_time=event_in.end_time):
-        available_slots = crud.event.find_available_slots(db, user_id=collaborator_id, date=event_in.start_time.date())
-        raise HTTPException(
-            status_code=409, # Conflict
-            detail={"message": "User is busy at this time.", "available_slots": available_slots}
-        )
-
-    event = crud.event.create_with_owner(db, obj_in=event_in, owner_id=current_user.id)
-    crud.event.add_collaborator(db, event_id=event.id, user_id=collaborator_id)
-    
-    # Send notification to the collaborator
-    notification = schemas.Notification(
-        type="event_invitation",
-        payload=schemas.Event.from_orm(event).dict()
-    )
-    await manager.send_personal_message(notification.dict(), collaborator_id)
-
+    event = crud.calendar.create_with_owner(db, obj_in=event_in, owner_id=current_user.id)
     return event
 
-@router.get("/events", response_model=List[schemas.Event])
-def get_user_events(
-    db: Session = Depends(get_db), 
-    current_user: models.User = Depends(get_current_user)
-):
+@router.put("/{id}", response_model=schemas.Event)
+def update_event(
+    *, 
+    db: Session = Depends(get_db),
+    id: int,
+    event_in: schemas.EventUpdate,
+    current_user: models.User = Depends(get_current_user),
+) -> Any:
     """
-    Retrieve all events for the current user (created and collaborated).
+    Update an event.
     """
-    return crud.event.get_multi_for_user(db, user_id=current_user.id)
+    event = crud.calendar.get(db, id=id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if event.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    event = crud.calendar.update(db, db_obj=event, obj_in=event_in)
+    return event
+
+@router.delete("/{id}", response_model=schemas.Event)
+def delete_event(
+    *, 
+    db: Session = Depends(get_db),
+    id: int,
+    current_user: models.User = Depends(get_current_user),
+) -> Any:
+    """
+    Delete an event.
+    """
+    event = crud.calendar.get(db, id=id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if event.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    event = crud.calendar.remove(db, id=id)
+    return event

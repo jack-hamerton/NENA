@@ -1,11 +1,12 @@
 
-import { Outlet } from 'react-router-dom';
-import { CssBaseline, Box } from '@mui/material';
+import { Outlet, Link } from 'react-router-dom';
+import { CssBaseline, Box, IconButton, Tooltip } from '@mui/material';
 import styled from 'styled-components';
 import LeftNav from '../layout/LeftNav';
 import ScreenshotBlocker from '../layout/ScreenshotBlocker';
 import AIAssistant from '../components/AIAssistant';
 import NotificationBar from '../components/NotificationBar';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 const MainContainer = styled.div`
   background-color: ${props => props.theme.background};
@@ -26,7 +27,7 @@ const TopRightContainer = styled.div`
   align-items: center;
 `;
 
-const MainLayout = ({ children }) => {
+const MainLayout = () => {
   return (
     <MainContainer>
       <CssBaseline />
@@ -34,10 +35,14 @@ const MainLayout = ({ children }) => {
       <LeftNav />
       <TopRightContainer>
         <NotificationBar />
+        <Tooltip title="Calendar">
+          <IconButton color="inherit" component={Link} to="/calendar">
+            <CalendarTodayIcon />
+          </IconButton>
+        </Tooltip>
         <AIAssistant />
       </TopRightContainer>
       <ContentContainer>
-        {children}
         <Outlet />
       </ContentContainer>
     </MainContainer>

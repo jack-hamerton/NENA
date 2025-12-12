@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import login, users, rooms, posts, studies
+from app.api.v1.endpoints import login, users, rooms, posts, studies, calendar
 from app.ai.endpoints import ai
 from app.routes import messages
 
@@ -12,3 +12,4 @@ api_router.include_router(posts.router, prefix="", tags=["posts"])
 api_router.include_router(ai.router, prefix="/ai", tags=["ai"])
 api_router.include_router(studies.router, prefix="/studies", tags=["studies"])
 api_router.include_router(messages.router, prefix="", tags=["messages"])
+api_router.include_router(calendar.router, prefix="/calendar", tags=["calendar"])

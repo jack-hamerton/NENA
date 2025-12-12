@@ -7,7 +7,6 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // In a real app, you would clear the auth token from storage
     localStorage.removeItem('authToken');
     navigate('/login');
   };

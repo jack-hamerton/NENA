@@ -1,7 +1,6 @@
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel
 import datetime
-from app.db.models import EventCollaboratorStatus
 
 class EventBase(BaseModel):
     title: str
@@ -12,21 +11,15 @@ class EventBase(BaseModel):
 class EventCreate(EventBase):
     pass
 
-class EventUpdate(EventBase):
-    pass
+class EventUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    start_time: Optional[datetime.datetime] = None
+    end_time: Optional[datetime.datetime] = None
 
 class Event(EventBase):
     id: int
-    creator_id: int
+    owner_id: int
 
-    class Config:
-        orm_mode = True
-
-class EventCollaboratorBase(BaseModel):
-    event_id: int
-    user_id: int
-    status: EventCollaboratorStatus
-
-class EventCollaborator(EventCollaboratorBase):
     class Config:
         orm_mode = True
