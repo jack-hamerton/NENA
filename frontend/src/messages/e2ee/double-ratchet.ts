@@ -31,7 +31,13 @@ export class DoubleRatchet {
     const ciphertext = await encryptMessage(messageKey, plaintext);
 
     const ourPublicRatchetKey = new Uint8Array(await this.keyStore.getPublicKey());
-    const signature = new Uint8Array(await sign(await this.keyStore.getPrivateKey(), new Uint8Array(ciphertext)));
+    
+    // --- SECURITY PATCH: Sign both the public key and the ciphertext ---
+    const dataToSign = new Uint8Array(ourPublicRatchetKey.byteLength + ciphertext.byteLength);
+    dataToSign.set(ourPublicRatchetKey, 0);
+    dataToSign.set(new Uint8Array(ciphertext), ourPublicRatchetKey.byteLength);
+    const signature = new Uint8Array(await sign(await this.keyStore.getPrivateKey(), dataToSign));
+    // --- END PATCH ---
 
     const message = new Uint8Array(ourPublicRatchetKey.byteLength + signature.byteLength + ciphertext.byteLength);
     message.set(ourPublicRatchetKey, 0);
@@ -45,15 +51,22 @@ export class DoubleRatchet {
 
   async decrypt(message: BufferSource): Promise<Uint8Array> {
     const messageUint8 = new Uint8Array(message as ArrayBuffer);
-    const theirPublicRatchetKey = messageUint8.slice(0, 65);
+    const theirPublicRatchetKeyBytes = messageUint8.slice(0, 65);
     const signature = messageUint8.slice(65, 129);
     const ciphertext = messageUint8.slice(129);
 
-    const verified = await verifySignature(this.theirPublicKey, signature, ciphertext);
+    // --- SECURITY PATCH: Verify the signature against the public key and the ciphertext ---
+    const dataToVerify = new Uint8Array(theirPublicRatchetKeyBytes.byteLength + ciphertext.byteLength);
+    dataToVerify.set(theirPublicRatchetKeyBytes, 0);
+    dataToVerify.set(ciphertext, theirPublicRatchetKeyBytes.byteLength);
+    const verified = await verifySignature(this.theirPublicKey, signature, dataToVerify);
+    // --- END PATCH ---
+
     if (!verified) {
       throw new Error('Invalid signature');
     }
 
+    const theirPublicRatchetKey = await window.crypto.subtle.importKey('raw', theirPublicRatchetKeyBytes, { name: 'ECDH', namedCurve: 'P-256' }, true, []);
     if (await this.isNewRatchet(theirPublicRatchetKey)) {
       await this.ratchet(theirPublicRatchetKey);
     }
@@ -84,18 +97,18 @@ export class DoubleRatchet {
     return [key1, key2];
   }
 
-  private async isNewRatchet(theirPublicKey: BufferSource): Promise<boolean> {
-    const theirPublicKeyString = new TextDecoder().decode(theirPublicKey);
-    const currentPublicKeyString = new TextDecoder().decode(await window.crypto.subtle.exportKey('raw', this.theirPublicKey));
-    return theirPublicKeyString !== currentPublicKeyString;
+  private async isNewRatchet(theirPublicKey: CryptoKey): Promise<boolean> {
+    const theirPublicKeyRaw = await window.crypto.subtle.exportKey('raw', theirPublicKey);
+    const currentPublicKeyRaw = await window.crypto.subtle.exportKey('raw', this.theirPublicKey);
+    return new TextDecoder().decode(theirPublicKeyRaw) !== new TextDecoder().decode(currentPublicKeyRaw);
   }
 
-  private async ratchet(theirPublicKey: BufferSource) {
-    const newRootKey = await deriveSharedSecret(await this.keyStore.getPrivateKey(), await window.crypto.subtle.importKey('raw', theirPublicKey, { name: 'ECDH', namedCurve: 'P-256' }, true, []));
+  private async ratchet(theirPublicKey: CryptoKey) {
+    const newRootKey = await deriveSharedSecret(await this.keyStore.getPrivateKey(), theirPublicKey);
     const [newSendingChainKey, newReceivingChainKey] = await this.kdf(newRootKey, new Uint8Array(0));
     this.rootKey = newRootKey;
     this.sendingChainKey = newSendingChainKey;
     this.receivingChainKey = newReceivingChainKey;
-    this.theirPublicKey = await window.crypto.subtle.importKey('raw', theirPublicKey, { name: 'ECDH', namedCurve: 'P-256' }, true, []);
+    this.theirPublicKey = theirPublicKey;
   }
 }

@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import authService from '../services/auth.service';
 
-const Register = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [countryCode, setCountryCode] = useState('');
+const Register: React.FC = () => {
+  const [username, setUsername] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [countryCode, setCountryCode] = useState<string>('');
 
-  const [verificationId, setVerificationId] = useState(null);
-  const [code, setCode] = useState('');
+  const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [code, setCode] = useState<string>('');
 
-  const handleSendPnv = async (e) => {
+  const handleSendPnv = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const response = await authService.sendPnv(email, username, password, phoneNumber, countryCode);
@@ -21,8 +21,12 @@ const Register = () => {
     }
   };
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!verificationId) {
+        console.error("Verification ID is not set.");
+        return;
+    }
     try {
       await authService.checkPnvAndRegister(verificationId, code, email, username, password, phoneNumber, countryCode);
       // Redirect or show success message

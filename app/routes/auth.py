@@ -41,6 +41,13 @@ def register_check_pnv(
     """
     Check a PNV code from the user during registration and create the user.
     """
+    user = crud.user.get_by_email(db, email=user_in.email)
+    if user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    user = crud.user.get_by_phone_number(db, phone_number=user_in.phone_number)
+    if user:
+        raise HTTPException(status_code=400, detail="Phone number already registered")
+        
     is_valid = pnv_service.check_pnv_request(
         phone_number=pnv_in.phone_number, country_code=pnv_in.country_code, code=pnv_in.code
     )
