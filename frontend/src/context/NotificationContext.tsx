@@ -1,15 +1,34 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { api } from '../utils/api';
 import { useAuth } from './AuthContext';
 import { useSnackbar } from 'notistack';
 import { Button } from '@mui/material';
 
-const NotificationContext = createContext(null);
+interface Notification {
+  id: number;
+  read: boolean;
+  type: string;
+  payload: any;
+}
 
-export const useNotifications = () => useContext(NotificationContext);
+interface NotificationContextType {
+  notifications: Notification[];
+  clearReadNotifications: () => void;
+  markAsRead: (notificationId: number) => void;
+}
 
-export const NotificationProvider = ({ children }) => {
-  const [notifications, setNotifications] = useState([]);
+const NotificationContext = createContext<NotificationContextType | null>(null);
+
+export const useNotifications = () => {
+  const context = useContext(NotificationContext);
+  if (!context) {
+    throw new Error("useNotifications must be used within a NotificationProvider");
+  }
+  return context;
+};
+
+export const NotificationProvider = ({ children }: { children: ReactNode }) => {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const { user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -33,11 +52,11 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [user]);
 
-  const markAsRead = (notificationId) => {
+  const markAsRead = useCallback((notificationId: number) => {
     setNotifications(prev =>
       prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
     );
-  };
+  }, []);
 
   const clearReadNotifications = useCallback(() => {
     setNotifications(prev => prev.filter(n => !n.read));
@@ -63,7 +82,7 @@ export const NotificationProvider = ({ children }) => {
           ),
         });
       } else if (latestNotification.type === 'event_reminder') {
-        const { event, message } = latestNotification.payload;
+        const { message } = latestNotification.payload;
         enqueueSnackbar(message, {
           action: (
             <Button
@@ -78,7 +97,7 @@ export const NotificationProvider = ({ children }) => {
         });
       }
     }
-  }, [notifications, enqueueSnackbar]);
+  }, [notifications, enqueueSnackbar, markAsRead]);
 
 
   const contextValue = {

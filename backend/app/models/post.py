@@ -12,3 +12,4 @@ class Post(Base):
 
     owner = relationship("User", back_populates="posts")
     poll = relationship("Poll", uselist=False, back_populates="post")
+    likes = relationship("Like", back_populates="post")

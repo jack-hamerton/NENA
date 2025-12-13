@@ -1,32 +1,35 @@
-import { useState, useEffect, useRef } from 'react';
-import { io } from 'socket.io-client';
+import { useEffect, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
 
-export const Whiteboard = ({ roomId }) => {
-  const canvasRef = useRef(null);
-  const [socket, setSocket] = useState(null);
+interface WhiteboardProps {
+  roomId: string;
+}
+
+export const Whiteboard = ({ roomId }: WhiteboardProps) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:3001'); // Replace with your server URL
-    setSocket(newSocket);
+    const socket: Socket = io('http://localhost:3001'); // Replace with your server URL
 
-    newSocket.emit('join-room', roomId);
+    socket.emit('join-room', roomId);
 
-    newSocket.on('drawing', (data) => {
+    socket.on('drawing', () => {
       const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
+      if (!canvas) return;
+      canvas.getContext('2d');
       // Draw received data on canvas
     });
 
     return () => {
-      newSocket.close();
-    }
+      socket.close();
+    };
   }, [roomId]);
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = () => {
     // Start drawing
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = () => {
     // Draw
   };
 

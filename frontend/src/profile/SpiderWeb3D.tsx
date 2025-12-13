@@ -1,4 +1,4 @@
-
+/* eslint-disable react/no-unknown-property */
 import { useMemo } from 'react';
 import * as THREE from 'three';
 

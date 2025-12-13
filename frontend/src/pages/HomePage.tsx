@@ -18,7 +18,7 @@ const HomePage: React.FC = () => {
           Welcome to the App!
         </Typography>
         <Typography variant='body1' sx={{ mb: 4 }}>
-          You have successfully logged in and can now access the app's features.
+          You have successfully logged in and can now access the app&apos;s features.
         </Typography>
         <Button variant='contained' color='primary' onClick={handleLogout}>
           Logout

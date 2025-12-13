@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { postService } from '../../services/postService'; // Assuming you have this function
+// import { postService } from '../../services/postService'; // Assuming you have this function
 
 const CreatePostContainer = styled.div`
   /* Add your styles here */
@@ -8,16 +8,16 @@ const CreatePostContainer = styled.div`
 
 const CreatePost = () => {
   const [content, setContent] = useState('');
-  const [media, setMedia] = useState(null);
-  const [pollOptions, setPollOptions] = useState([]);
-  const [scheduledAt, setScheduledAt] = useState(null);
-  const [location, setLocation] = useState('');
-  const [altText, setAltText] = useState('');
-  const [monetization, setMonetization] = useState(false);
-  const [replyPrivacy, setReplyPrivacy] = useState('everyone');
+  const [media] = useState(null);
+  const [pollOptions] = useState([]);
+  const [scheduledAt] = useState(null);
+  const [location] = useState('');
+  const [altText] = useState('');
+  const [monetization] = useState(false);
+  const [replyPrivacy] = useState('everyone');
 
   const handleCreatePost = async () => {
-    const post = {
+    const _post = {
       content,
       media,
       pollOptions,

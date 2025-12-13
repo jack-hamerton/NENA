@@ -1,13 +1,12 @@
 
-import { openDB } from 'idb';
+import { openDB, IDBPDatabase } from 'idb';
 
 const DB_NAME = 'keystore-db';
 const STORE_NAME = 'keystore';
-const KEY_PATH = 'key';
 
 export class KeyStore {
-  private dbPromise;
-  public identityKey: CryptoKeyPair;
+  private dbPromise: Promise<IDBPDatabase<unknown>>;
+  public identityKey: CryptoKeyPair | undefined;
 
   constructor() {
     this.dbPromise = openDB(DB_NAME, 1, {
@@ -36,16 +35,19 @@ export class KeyStore {
   }
 
   async saveIdentityKey() {
+    if (!this.identityKey) return;
     const db = await this.dbPromise;
     await db.put(STORE_NAME, this.identityKey, 'identityKey');
   }
 
   async getPublicKey(): Promise<Uint8Array> {
+    if (!this.identityKey) throw new Error("Identity key not loaded");
     const publicKey = await window.crypto.subtle.exportKey('raw', this.identityKey.publicKey);
     return new Uint8Array(publicKey);
   }
 
   async getPrivateKey(): Promise<CryptoKey> {
+    if (!this.identityKey) throw new Error("Identity key not loaded");
     return this.identityKey.privateKey;
   }
 
@@ -73,6 +75,7 @@ export class KeyStore {
   }
 
   async sign(data: ArrayBuffer): Promise<ArrayBuffer> {
+    if (!this.identityKey) throw new Error("Identity key not loaded");
     return window.crypto.subtle.sign(
       { name: 'ECDSA', hash: { name: 'SHA-256' } },
       this.identityKey.privateKey,

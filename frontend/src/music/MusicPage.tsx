@@ -9,7 +9,7 @@ const MusicPage = () => {
   return (
     <MusicContainer>
       <h1>Music</h1>
-      <p>Here's some music for you.</p>
+      <p>Here&apos;s some music for you.</p>
     </MusicContainer>
   );
 };

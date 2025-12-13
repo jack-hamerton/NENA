@@ -1,6 +1,13 @@
 import React from 'react';
 
-export const Document = ({ document }: any) => {
+interface DocumentProps {
+  document: {
+    title: string;
+    content: string;
+  };
+}
+
+export const Document: React.FC<DocumentProps> = ({ document }) => {
   return (
     <div>
       <h3>{document.title}</h3>

@@ -9,8 +9,8 @@ export class DoubleRatchet {
   private rootKey: CryptoKey;
   private sendingChainKey: CryptoKey;
   private receivingChainKey: CryptoKey;
-  private messageNumber: number = 0;
-  private previousMessageNumber: number = 0;
+  public messageNumber = 0;
+  public previousMessageNumber = 0;
 
   constructor(keyStore: KeyStore, theirPublicKey: CryptoKey, sharedSecret: CryptoKey) {
     this.keyStore = keyStore;

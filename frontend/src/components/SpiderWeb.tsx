@@ -4,9 +4,20 @@ import * as d3 from 'd3';
 import './SpiderWeb.css';
 import { api } from '../utils/api';
 
-const SpiderWeb = ({ collaborationId }) => {
+interface GraphNode extends d3.SimulationNodeDatum {
+  id: string;
+  group: string;
+  impact?: number;
+}
+
+interface GraphLink extends d3.SimulationLinkDatum<GraphNode> {
+  source: string;
+  target: string;
+}
+
+const SpiderWeb = ({ collaborationId }: { collaborationId: string }) => {
   const ref = useRef<SVGSVGElement>(null);
-  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+  const [graphData, setGraphData] = useState<{ nodes: GraphNode[]; links: GraphLink[] }>({ nodes: [], links: [] });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -15,7 +26,7 @@ const SpiderWeb = ({ collaborationId }) => {
       const challengesRes = await api.get(`/collaborations/${collaborationId}/challenges`, {});
       const challenges = challengesRes.data;
 
-      const userIds = new Set();
+      const userIds = new Set<string>();
       challenges.forEach(c => userIds.add(c.creator_id));
 
       const mitigationsPromises = challenges.map(c => api.get(`/challenges/${c.id}/mitigations`, {}));
@@ -35,17 +46,17 @@ const SpiderWeb = ({ collaborationId }) => {
       const userImpactMapping = users.reduce((acc, user, index) => {
         acc[user.id] = impactScores[index];
         return acc;
-      }, {});
+      }, {} as { [key: string]: number });
 
-      const nodes = [
+      const nodes: GraphNode[] = [
         ...users.map(u => ({ id: u.email, group: 'user', impact: userImpactMapping[u.id] })),
         ...challenges.map(c => ({ id: c.id, group: 'challenge' })),
         ...mitigations.map(m => ({ id: m.id, group: 'mitigation' }))
       ];
 
-      const links = [
-        ...challenges.map(c => ({ source: users.find(u => u.id === c.creator_id)?.email, target: c.id })),
-        ...mitigations.map(m => ({ source: users.find(u => u.id === m.creator_id)?.email, target: m.id }))
+      const links: GraphLink[] = [
+        ...challenges.map(c => ({ source: users.find(u => u.id === c.creator_id)?.email || '', target: c.id })),
+        ...mitigations.map(m => ({ source: users.find(u => u.id === m.creator_id)?.email || '', target: m.id }))
       ];
 
       setGraphData({ nodes, links });
@@ -61,8 +72,8 @@ const SpiderWeb = ({ collaborationId }) => {
     const width = 600;
     const height = 400;
 
-    const simulation = d3.forceSimulation(nodes as any)
-      .force('link', d3.forceLink(links).id((d: any) => d.id))
+    const simulation = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(links).id(d => (d as GraphNode).id))
       .force('charge', d3.forceManyBody())
       .force('center', d3.forceCenter(width / 2, height / 2));
 
@@ -84,13 +95,13 @@ const SpiderWeb = ({ collaborationId }) => {
       .data(nodes)
       .join('circle')
       .attr('r', 5)
-      .attr('class', (d: any) => d.group);
+      .attr('class', d => d.group);
 
     const label = svg.append('g')
       .selectAll('text')
       .data(nodes)
       .join('text')
-      .text((d: any) => d.id)
+      .text(d => d.id)
       .attr('x', 8)
       .attr('y', 3);
 
@@ -98,7 +109,7 @@ const SpiderWeb = ({ collaborationId }) => {
       .attr('class', 'tooltip')
       .style('opacity', 0);
 
-    node.on('mouseover', (event, d: any) => {
+    node.on('mouseover', (event, d) => {
       tooltip.transition()
         .duration(200)
         .style('opacity', .9);
@@ -114,17 +125,17 @@ const SpiderWeb = ({ collaborationId }) => {
 
     simulation.on('tick', () => {
       link
-        .attr('x1', (d: any) => d.source.x)
-        .attr('y1', (d: any) => d.source.y)
-        .attr('x2', (d: any) => d.target.x)
-        .attr('y2', (d: any) => d.target.y);
+        .attr('x1', d => (d.source as GraphNode).x || 0)
+        .attr('y1', d => (d.source as GraphNode).y || 0)
+        .attr('x2', d => (d.target as GraphNode).x || 0)
+        .attr('y2', d => (d.target as GraphNode).y || 0);
 
       node
-        .attr('cx', (d: any) => d.x)
-        .attr('cy', (d: any) => d.y);
+        .attr('cx', d => d.x || 0)
+        .attr('cy', d => d.y || 0);
 
       label
-        .attr('transform', (d: any) => `translate(${d.x},${d.y})`);
+        .attr('transform', d => `translate(${d.x || 0},${d.y || 0})`);
     });
 
   }, [graphData]);

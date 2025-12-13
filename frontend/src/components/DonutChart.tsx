@@ -23,22 +23,22 @@ const DonutChart: React.FC<DonutChartProps> = ({ data }) => {
       .append('g')
       .attr('transform', `translate(${width / 2},${height / 2})`);
 
-    const color = d3.scaleOrdinal()
+    const color = d3.scaleOrdinal<string>()
       .domain(data.map(d => d.name))
       .range(d3.schemeCategory10);
 
     const pie = d3.pie<{ name: string; value: number }>().value(d => d.value);
     const data_ready = pie(data);
 
-    const arc = d3.arc()
+    const arc = d3.arc<d3.PieArcDatum<{ name: string; value: number }>>()
       .innerRadius(radius * 0.5)
       .outerRadius(radius * 0.8);
 
     svg.selectAll('path')
       .data(data_ready)
       .join('path')
-      .attr('d', arc as any)
-      .attr('fill', (d: any) => color(d.data.name) as any);
+      .attr('d', arc)
+      .attr('fill', d => color(d.data.name));
 
   }, [data]);
 

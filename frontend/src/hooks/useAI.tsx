@@ -1,7 +1,11 @@
 import { createContext, useContext, ReactNode } from 'react';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
-const AIContext = createContext<any>(null);
+interface AIContextType {
+  conversation: (prompt: string) => Promise<AxiosResponse<string>>;
+}
+
+const AIContext = createContext<AIContextType | null>(null);
 
 interface AIProviderProps {
   children: ReactNode;
@@ -21,4 +25,10 @@ export const AIProvider = ({ children }: AIProviderProps) => {
   );
 };
 
-export const useAI = () => useContext(AIContext);
+export const useAI = () => {
+  const context = useContext(AIContext);
+  if (!context) {
+    throw new Error('useAI must be used within an AIProvider');
+  }
+  return context;
+};

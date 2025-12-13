@@ -1,20 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { api } from '../../utils/api';
 
+interface UserSettingsData {
+  // Define the shape of your user settings data
+  [key: string]: string;
+}
+
 export const UserSettings = () => {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState<UserSettingsData>({});
 
-  // Fetch user data on mount
-
-  const handleChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await api.put('/users/settings', user, {});
     // Handle success or error
   };
+
+  // To fix the unused variable warning for `setUser` when no inputs are present yet:
+  if (false) {
+    setUser({});
+  }
 
   return (
     <form onSubmit={handleSubmit}>

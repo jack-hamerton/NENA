@@ -12,7 +12,7 @@ export const conversation = (prompt: string, conversation_history?: any[]) => {
   });
 };
 
-export const generateContent = (prompt: string, mode: string = "draft") => {
+export const generateContent = (prompt: string, mode = "draft") => {
   return axios.post(`${API_URL}/generate_content`, { prompt, mode }, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -20,7 +20,7 @@ export const generateContent = (prompt: string, mode: string = "draft") => {
   });
 };
 
-export const assistWithCode = (code: string, language: string, task: string = "explain") => {
+export const assistWithCode = (code: string, language: string, task = "explain") => {
   return axios.post(`${API_URL}/assist_with_code`, { code, language, task }, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`

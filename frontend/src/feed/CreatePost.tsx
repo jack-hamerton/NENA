@@ -3,6 +3,11 @@ import { Box, TextField, Button } from '@mui/material';
 import { CreatePoll } from '../rooms/CreatePoll';
 import { postService } from '../services/postService';
 
+interface Poll {
+  question: string;
+  options: string[];
+}
+
 const CreatePost = () => {
   const [text, setText] = useState('');
   const [isPollModalOpen, setIsPollModalOpen] = useState(false);
@@ -12,7 +17,7 @@ const CreatePost = () => {
     setText('');
   };
 
-  const handlePollCreated = async (newPoll: any) => {
+  const handlePollCreated = async (newPoll: Poll) => {
     await postService.createPost({ text, poll: newPoll });
     setText('');
     setIsPollModalOpen(false);
