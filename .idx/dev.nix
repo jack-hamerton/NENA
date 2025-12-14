@@ -10,7 +10,6 @@
       (ps: with ps; [
         aiosmtplib
         alembic
-        annotated-doc
         annotated-types
         anyio
         apscheduler
@@ -38,7 +37,7 @@
         mako
         markupsafe
         passlib
-        psycopg2-binary
+        psycopg2
         pyasn1
         pycparser
         pydantic
