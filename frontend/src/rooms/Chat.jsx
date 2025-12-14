@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
+import EmojiPicker from 'emoji-picker-react';
 import { chatService, Message } from '../services/chatService';
 import { fileService, SharedFile } from '../services/fileService';
 import { ChatMessage } from './ChatMessage';
@@ -16,10 +16,13 @@ interface ChatProps {
 export const Chat: React.FC<ChatProps> = ({ channelId, localParticipant }) => {
   const [messages, setMessages] = useState<(Message | SharedFile)[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [typingUser, setTypingUser] = useState<string | null>(null);
   const [viewOnce, setViewOnce] = useState(false);
   const [viewedFiles, setViewedFiles] = useState<string[]>([]);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -27,20 +30,72 @@ export const Chat: React.FC<ChatProps> = ({ channelId, localParticipant }) => {
         chatService.getMessages(channelId),
         fileService.getFiles(channelId),
       ]);
-
       const combinedHistory = [...chatHistory, ...fileHistory].sort((a, b) => a.timestamp - b.timestamp);
       setMessages(combinedHistory);
     };
     fetchHistory();
-  }, [channelId]);
+
+    const handleNewMessage = (message: Message) => {
+      if (message.sender.id !== localParticipant.id) {
+        setMessages(prevMessages => [...prevMessages, message]);
+      }
+    };
+
+    const handleReactionAdded = ({ messageId, reaction }: { messageId: string; reaction: string }) => {
+      setMessages(prevMessages =>
+        prevMessages.map(msg =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                reactions: {
+                  ...msg.reactions,
+                  [reaction]: (msg.reactions[reaction] || 0) + 1,
+                },
+              }
+            : msg
+        )
+      );
+    };
+
+    chatService.onNewMessage(handleNewMessage);
+    chatService.onReactionAdded(handleReactionAdded);
+    chatService.onTyping((name) => setTypingUser(name));
+    chatService.onStopTyping(() => setTypingUser(null));
+
+    return () => {
+      chatService.offNewMessage();
+      chatService.offReactionAdded();
+      chatService.offTyping();
+      chatService.offStopTyping();
+    };
+  }, [channelId, localParticipant.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    chatService.startTyping(localParticipant.name);
+
+    typingTimeoutRef.current = setTimeout(() => {
+      chatService.stopTyping(localParticipant.name);
+    }, 3000);
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newMessage.trim() === '') return;
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      chatService.stopTyping(localParticipant.name);
+    }
 
     const messageToSend = {
       text: newMessage,
@@ -50,6 +105,7 @@ export const Chat: React.FC<ChatProps> = ({ channelId, localParticipant }) => {
     const sentMessage = await chatService.sendMessage(messageToSend);
     setMessages([...messages, sentMessage]);
     setNewMessage('');
+    setShowEmojiPicker(false);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,12 +128,16 @@ export const Chat: React.FC<ChatProps> = ({ channelId, localParticipant }) => {
     }, 5000); // Hide after 5 seconds
   };
 
+  const onEmojiClick = (emojiObject: any) => {
+    setNewMessage(prevMessage => prevMessage + emojiObject.emoji);
+  };
+
   return (
     <div className="chat-panel">
       <div className="chat-messages">
         {messages.map(msg => {
           if ('text' in msg) {
-            return <ChatMessage key={msg.id} message={msg} isLocal={msg.sender.id === localParticipant.id} />;
+            return <ChatMessage key={msg.id} message={msg as Message} isLocal={msg.sender.id === localParticipant.id} />;
           } else {
             const isViewed = viewedFiles.includes(msg.id);
             return (
@@ -98,15 +158,22 @@ export const Chat: React.FC<ChatProps> = ({ channelId, localParticipant }) => {
             );
           }
         })}
+        {typingUser && <div className="typing-indicator">{typingUser} is typing...</div>}
         <div ref={messagesEndRef} />
       </div>
+      {showEmojiPicker && (
+        <div className="emoji-picker-container">
+          <EmojiPicker onEmojiClick={onEmojiClick} />
+        </div>
+      )}
       <form className="chat-input" onSubmit={handleSendMessage}>
         <input
           type="text"
           placeholder="Type a message..."
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={handleTyping}
         />
+        <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>😊</button>
         <input type="file" ref={fileInputRef} onChange={handleFileSelect} style={{ display: 'none' }} />
         <button type="button" onClick={() => fileInputRef.current?.click()}>Share File</button>
         <label>

@@ -7,6 +7,7 @@ import ScreenshotBlocker from '../layout/ScreenshotBlocker';
 import AIAssistant from '../components/AIAssistant';
 import NotificationBar from '../components/NotificationBar';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { Chat } from '../rooms/Chat';
 
 const MainContainer = styled.div`
   background-color: ${props => props.theme.background};
@@ -28,6 +29,7 @@ const TopRightContainer = styled.div`
 `;
 
 const MainLayout = () => {
+  const localParticipant = { id: '1', name: 'John Doe' };
   return (
     <MainContainer>
       <CssBaseline />
@@ -44,6 +46,7 @@ const MainLayout = () => {
       </TopRightContainer>
       <ContentContainer>
         <Outlet />
+        <Chat channelId="general" localParticipant={localParticipant} />
       </ContentContainer>
     </MainContainer>
   );

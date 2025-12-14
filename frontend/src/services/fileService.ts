@@ -1,12 +1,19 @@
-// This is a mock file service. In a real application, this would be replaced with a file storage service like Firebase Storage or AWS S3.
+export interface SharedFile {
+  id: string;
+  name: string;
+  url: string;
+  sender: { id: string; name: string };
+  timestamp: number;
+  viewOnce: boolean;
+}
 
-const files = [];
+const files: SharedFile[] = [];
 
 export const fileService = {
-  async uploadFile(file, sender, viewOnce) {
+  async uploadFile(file: File, sender: { id: string; name: string }, viewOnce: boolean): Promise<SharedFile> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const newFile = {
+        const newFile: SharedFile = {
           id: `file-${Date.now()}`,
           name: file.name,
           url: URL.createObjectURL(file), // This is a temporary local URL
@@ -20,7 +27,7 @@ export const fileService = {
     });
   },
 
-  async getFiles(channelId) {
+  async getFiles(channelId: string): Promise<SharedFile[]> {
     // In a real app, you would fetch files for a specific channel
     return Promise.resolve(files);
   },

@@ -14,9 +14,21 @@ class User(Base):
     is_superuser = Column(Boolean(), default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+    # Privacy settings
+    profile_photo_privacy = Column(String, default="everyone")  # everyone, followers, none
+    about_privacy = Column(String, default="everyone")  # everyone, followers, none
+    online_status_privacy = Column(String, default="everyone")  # everyone, followers, none
+
+    # Two-step verification
+    pin_enabled = Column(Boolean(), default=False)
+    hashed_pin = Column(String, nullable=True)
+
+    # Call settings
+    silence_unknown_callers = Column(Boolean(), default=False)
+
     posts = relationship("Post", back_populates="owner")
-    followers = relationship("Follower", foreign_keys=["Follower.followed_id"], back_populates="followed")
-    following = relationship("Follower", foreign_keys=["Follower.follower_id"], back_populates="follower")
+    followers = relationship("Follower", foreign_keys=['Follower.followed_id'], back_populates="followed")
+    following = relationship("Follower", foreign_keys=['Follower.follower_id'], back_populates="follower")
     poll_votes = relationship("PollVote", back_populates="user")
     podcasts = relationship("Podcast", back_populates="creator")
     likes = relationship("Like", back_populates="owner")

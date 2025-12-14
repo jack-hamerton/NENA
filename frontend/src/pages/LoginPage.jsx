@@ -9,38 +9,20 @@ import {
   Link as MuiLink,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-
-// This would be in a separate api/auth.js file
-const api = {
-  login: async (email, password) => {
-    const response = await fetch('/api/login/access-token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to login');
-    }
-    return response.json();
-  },
-};
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      const data = await api.login(email, password);
-      // In a real app, you would store the token from `data.access_token`
-      // in your auth context/storage and likely redirect to a dashboard.
-      console.log('Login successful', data);
-      // For now, just navigating to a placeholder 'home' page
+      await login(email, password);
       navigate('/'); 
     } catch (err) {
       setError(err.message);
