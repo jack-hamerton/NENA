@@ -1,0 +1,91 @@
+import React, { useState, useEffect } from 'react';
+import { chatService } from '../services/chatService';
+import { roomService } from '../services/roomService';
+import { useAuth } from '../hooks/useAuth';
+import { useSnackbar } from '../context/SnackbarContext';
+
+export const ChatRoom = ({ roomId }) => {
+  const [messages, setMessages] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [message, setMessage] = useState('');
+  const { user } = useAuth(); // Assume useAuth provides the current user
+  const { showSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    roomService.joinRoom(roomId);
+
+    const handleNewMessage = (newMessage) => {
+      if (newMessage.roomId === roomId) {
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+      }
+    };
+    chatService.on('new-message', handleNewMessage);
+
+    const handleUserJoined = ({ roomId: joinedRoomId, userId }) => {
+      if (joinedRoomId === roomId) {
+        setUsers((prevUsers) => [...prevUsers, userId]);
+        showSnackbar(`${userId} joined the room`, 'info');
+      }
+    };
+    const handleUserLeft = ({ roomId: leftRoomId, userId }) => {
+      if (leftRoomId === roomId) {
+        setUsers((prevUsers) => prevUsers.filter((u) => u !== userId));
+        showSnackbar(`${userId} left the room`, 'info');
+      }
+    };
+    roomService.on('user-joined-room', handleUserJoined);
+    roomService.on('user-left-room', handleUserLeft);
+
+    return () => {
+      roomService.leaveRoom(roomId);
+      chatService.off('new-message', handleNewMessage);
+      roomService.off('user-joined-room', handleUserJoined);
+      roomService.off('user-left-room', handleUserLeft);
+    };
+  }, [roomId, showSnackbar]);
+
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      const messageData = {
+        text: message,
+        sender: {
+          id: user.id,
+          name: user.name,
+        },
+        roomId,
+      };
+      chatService.sendMessage(messageData);
+      setMessage('');
+    }
+  };
+
+  return (
+    <div>
+      <div>
+        <h2>Users</h2>
+        <ul>
+          {users.map((user) => (
+            <li key={user}>{user}</li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h2>Messages</h2>
+        <div>
+          {messages.map((msg) => (
+            <div key={msg.id}>
+              <strong>{msg.author}:</strong> {msg.content}
+            </div>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+        />
+        <button onClick={handleSendMessage}>Send</button>
+      </div>
+    </div>
+  );
+};
