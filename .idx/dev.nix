@@ -59,7 +59,6 @@
         starlette
         tzlocal
         typing-extensions
-        typing-inspection
         urllib3
         uvicorn
         uvloop
@@ -67,7 +66,7 @@
         websockets
         gunicorn
       ]))
-    pkgs.nodejs_20
+    pkgs.nodejs_22
     pkgs.alembic
     pkgs.postgresql
     pkgs.curl
