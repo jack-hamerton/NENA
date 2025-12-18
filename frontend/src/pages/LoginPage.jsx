@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Container,
@@ -12,7 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -22,7 +21,7 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
     try {
-      await login(email, password);
+      await login(username, password);
       navigate('/'); 
     } catch (err) {
       setError(err.message);
@@ -45,10 +44,9 @@ const LoginPage = () => {
             margin='normal'
             required
             fullWidth
-            label='Email Address'
-            type='email'
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            label='Username'
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             autoFocus
           />
           <TextField

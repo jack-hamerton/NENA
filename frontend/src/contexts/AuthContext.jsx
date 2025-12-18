@@ -1,77 +1,59 @@
-
-import { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../services/firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { KeyStore } from '../messages/e2ee/keystore';
-import { publishKeys, getRecipientKeys } from '../services/api';
-import { X3DH } from '../messages/e2ee/x3dh';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [keyStore, setKeyStore] = useState(null);
-  const [recipientId, setRecipientId] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
-        const newKeyStore = new KeyStore();
-        setKeyStore(newKeyStore);
-        
-        await user.getIdToken();
-        try {
-          await publishKeys();
-          console.log('Public keys published successfully');
-        } catch (error) {
-          console.error('Failed to publish public keys:', error);
-        }
+    if (token) {
+      // NOTE: In a real app, you would decode the token to get user info
+      // and also check if the token is expired.
+      // For this example, we'll just use a placeholder user object.
+      setUser({ username: 'user' }); 
+    } else {
+      setUser(null);
+    }
+  }, [token]);
 
-      } else {
-        setKeyStore(null);
-      }
+  const login = async (username, password) => {
+    const response = await fetch('/api/v1/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
     });
 
-    return () => unsubscribe();
-  }, []);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to login');
+    }
 
-  useEffect(() => {
-    const establishSession = async () => {
-      if (user && keyStore && recipientId) {
-        await user.getIdToken();
-        try {
-          const recipientKeys = await getRecipientKeys(recipientId);
-          const x3dh = new X3DH(keyStore);
-          await x3dh.establishSession(recipientKeys.public_identity_key, recipientKeys.signed_public_pre_key, recipientKeys.signature);
-          console.log('Secure session established successfully');
-        } catch (error) {
-          console.error('Failed to establish secure session:', error);
-        }
-      }
-    };
-
-    establishSession();
-  }, [user, keyStore, recipientId]);
-
-  const login = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password);
+    const data = await response.json();
+    localStorage.setItem('token', data.access_token);
+    setToken(data.access_token);
   };
 
-  const register = (email, password) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+  const register = async (username, password, email) => {
+    const response = await fetch('/api/v1/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, email }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to register');
+    }
   };
 
   const logout = () => {
-    return signOut(auth);
-  };
-
-  const selectRecipient = (userId) => {
-    setRecipientId(userId);
+    localStorage.removeItem('token');
+    setToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, keyStore, login, register, logout, selectRecipient }}>
+    <AuthContext.Provider value={{ user, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

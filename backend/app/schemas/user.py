@@ -1,13 +1,12 @@
-
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
 from typing import Optional
+import re
 
 # Shared properties
 class UserBase(BaseModel):
-    email: EmailStr
-    full_name: str | None = None
-    phone_number: str | None = None
-    country_code: str | None = None
+    email: Optional[EmailStr] = None
+    first_name: str
+    last_name: str
     profile_photo_privacy: str = "everyone"
     about_privacy: str = "everyone"
     online_status_privacy: str = "everyone"
@@ -17,14 +16,33 @@ class UserBase(BaseModel):
 # Properties to receive on user creation
 class UserCreate(UserBase):
     password: str
+    username: str
     hashed_pin: Optional[str] = None
+
+    @validator('password')
+    def password_complexity(cls, v):
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters long')
+        if not re.search(r"[A-Z]", v):
+            raise ValueError('Password must contain an uppercase letter')
+        if not re.search(r"[a-z]", v):
+            raise ValueError('Password must contain a lowercase letter')
+        if not re.search(r"[0-9]", v):
+            raise ValueError('Password must contain a number')
+        if not re.search(r"[!@#$%^&*(),.?:{}|<>]", v):
+            raise ValueError('Password must contain a special character')
+        return v
+
+# Properties to receive on user login
+class UserLogin(BaseModel):
+    username: str
+    password: str
 
 # Properties to receive on user update
 class UserUpdate(UserBase):
     email: Optional[EmailStr] = None
-    full_name: Optional[str] = None
-    phone_number: Optional[str] = None
-    country_code: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     profile_photo_privacy: Optional[str] = None
     about_privacy: Optional[str] = None
     online_status_privacy: Optional[str] = None
@@ -37,6 +55,7 @@ class UserInDBBase(UserBase):
     id: int
     is_active: bool
     is_superuser: bool
+    username: str
 
     class Config:
         from_attributes = True
