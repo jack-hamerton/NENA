@@ -4,6 +4,7 @@ from typing import Optional
 
 class PodcastBase(BaseModel):
     title: str
+    artist_name: str
     description: str
     s3_key: str
     cover_art_url: Optional[HttpUrl] = None

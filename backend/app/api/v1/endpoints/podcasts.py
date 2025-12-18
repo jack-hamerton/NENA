@@ -11,6 +11,7 @@ router = APIRouter()
 @router.post("/podcasts", response_model=schemas.Podcast)
 def create_podcast(
     title: str,
+    artist_name: str,
     description: str,
     cover_art: UploadFile = File(...),
     podcast_file: UploadFile = File(...),
@@ -24,6 +25,7 @@ def create_podcast(
 
     podcast_in = schemas.PodcastCreate(
         title=title,
+        artist_name=artist_name,
         description=description,
         s3_key=s3_key,
         cover_art_url=cover_art_url,

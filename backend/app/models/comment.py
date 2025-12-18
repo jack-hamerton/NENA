@@ -1,14 +1,16 @@
-from sqlalchemy import Column, Integer, Text, DateTime, ForeignKey
+
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 import datetime
 
 class Comment(Base):
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    post_id = Column(Integer, ForeignKey('posts.id'))
-    content = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    __tablename__ = "comments"
 
-    commenter = relationship("User")
-    post = relationship("Post")
+    id = Column(Integer, primary_key=True, index=True)
+    text = Column(String, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    podcast_id = Column(Integer, ForeignKey("podcasts.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User")

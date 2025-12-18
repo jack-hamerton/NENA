@@ -1,23 +1,18 @@
-from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime
 
-# Shared properties
+from pydantic import BaseModel
+import datetime
+
 class CommentBase(BaseModel):
     text: str
 
-
-# Properties to receive on item creation
 class CommentCreate(CommentBase):
     pass
 
-
-# Properties to return to client
 class Comment(CommentBase):
     id: int
-    post_id: int
-    owner_id: int
-    created_at: datetime
+    created_at: datetime.datetime
+    user_id: int
+    podcast_id: int
 
     class Config:
         orm_mode = True

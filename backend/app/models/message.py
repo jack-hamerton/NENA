@@ -4,6 +4,7 @@ from app.db.base_class import Base
 import datetime
 
 class Message(Base):
+    __tablename__ = "messages"
     id = Column(Integer, primary_key=True, index=True)
     sender_id = Column(Integer, ForeignKey('users.id'))
     recipient_id = Column(Integer, ForeignKey('users.id'))

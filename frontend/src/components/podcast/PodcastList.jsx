@@ -1,25 +1,19 @@
-import { useState, useEffect } from 'react';
-import { api } from '../../utils/api';
-import { Link } from 'react-router-dom';
+import React from 'react';
 
-export const PodcastList = () => {
-  const [podcasts, setPodcasts] = useState([]);
-
-  useEffect(() => {
-    const fetchPodcasts = async () => {
-      const response = await api.get('/podcasts', {});
-      setPodcasts(response.data);
-    };
-    fetchPodcasts();
-  }, []);
-
+const PodcastList = ({ podcasts }) => {
   return (
     <div>
-      {podcasts.map(podcast => (
-        <div key={podcast.id}>
-          <Link to={`/podcasts/${podcast.id}`}>{podcast.title}</Link>
-        </div>
-      ))}
+      <h2>Your Podcasts</h2>
+      <ul>
+        {podcasts.map((podcast) => (
+          <li key={podcast.id}>
+            <h3>{podcast.title}</h3>
+            <p>{podcast.description}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
+
+export default PodcastList;

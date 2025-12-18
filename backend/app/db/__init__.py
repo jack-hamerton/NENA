@@ -1,11 +1,11 @@
 from .base_class import Base
-from .models.user import User
-from .models.post import Post
-from .models.comment import Comment
-from .models.like import Like
-from .models.message import Message
-from .models.room import Room, RoomParticipant
-from .models.study import Study, Question, Answer
-from .models.collaboration import Challenge, Mitigation, Impact
-from .models.calendar import Event
-from .models.event_participant import EventParticipant
+from app.models.user import User
+from app.models.post import Post
+from app.models.comment import Comment
+from app.models.like import Like
+from app.models.message import Message
+from app.models.room import Room, RoomParticipant
+from app.models.study import Study, Question, Answer
+from app.models.collaboration import Challenge, Mitigation, Impact
+from app.models.calendar import Event
+from app.models.event_participant import EventParticipant

@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.schemas.user import User
-from app.crud import user as crud_user
-from app.core.security import get_current_user
+from backend.app import schemas, services
+from backend.app.core import deps
 
 router = APIRouter()
 
-@router.get("/me", response_model=User)
-def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
+
+@router.get("/{user_id}/podcasts", response_model=list[schemas.Podcast])
+def get_user_podcasts(user_id: int, db: Session = Depends(deps.get_db)):
+    return services.user_service.get_user_podcasts(db, user_id)
