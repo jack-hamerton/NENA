@@ -1,7 +1,7 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, Button, Grid, TextField, List, ListItem, ListItemText, IconButton, Paper } from '@mui/material';
-import { Send, AddReaction, RemoveCircleOutline } from '@mui/icons-material';
 import { chatService } from '../services/chatService';
 import { roomService } from '../services/roomService';
 import { useAuth } from '../hooks/useAuth';
@@ -138,7 +138,7 @@ const Room = () => {
                     <ListItemText primary={p.username} />
                     {room && room.creatorId === user.id && p.id !== user.id && (
                       <IconButton size="small" onClick={() => handleRemoveUser(p.id)}>
-                        <RemoveCircleOutline fontSize="small" sx={{color: 'grey'}}/>
+                        <Typography>Remove</Typography>
                       </IconButton>
                     )}
                   </ListItem>
@@ -157,7 +157,7 @@ const Room = () => {
                       secondaryTypographyProps={{ style: { color: 'grey' } }}
                     />
                     <IconButton size="small">
-                      <AddReaction fontSize="small" sx={{ color: 'grey' }} />
+                      <Typography>React</Typography>
                     </IconButton>
                   </ListItem>
                 ))}
@@ -184,7 +184,7 @@ const Room = () => {
                   }}
                 />
                 <IconButton onClick={handleSendMessage} sx={{ ml: 1 }}>
-                  <Send sx={{ color: 'white' }} />
+                  <Typography>Send</Typography>
                 </IconButton>
               </Box>
             </Box>

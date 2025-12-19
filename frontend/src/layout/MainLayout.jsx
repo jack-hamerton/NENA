@@ -1,12 +1,11 @@
 
 import { Outlet, Link } from 'react-router-dom';
-import { CssBaseline, Box, IconButton, Tooltip } from '@mui/material';
+import { CssBaseline, Box, IconButton, Tooltip, Typography } from '@mui/material';
 import styled from 'styled-components';
-import LeftNav from '../layout/LeftNav';
+import FloatingNav from '../layout/FloatingNav';
 import ScreenshotBlocker from '../layout/ScreenshotBlocker';
 import AIAssistant from '../components/AIAssistant';
 import NotificationBar from '../components/NotificationBar';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { Chat } from '../rooms/Chat';
 
 const MainContainer = styled.div`
@@ -16,7 +15,6 @@ const MainContainer = styled.div`
 `;
 
 const ContentContainer = styled.main`
-  margin-left: 240px; /* Same as LeftNav width */
   padding: 24px;
 `;
 
@@ -34,12 +32,12 @@ const MainLayout = () => {
     <MainContainer>
       <CssBaseline />
       <ScreenshotBlocker />
-      <LeftNav />
+      <FloatingNav />
       <TopRightContainer>
         <NotificationBar />
         <Tooltip title="Calendar">
           <IconButton color="inherit" component={Link} to="/calendar">
-            <CalendarTodayIcon />
+            <Typography>Calendar</Typography>
           </IconButton>
         </Tooltip>
         <AIAssistant />

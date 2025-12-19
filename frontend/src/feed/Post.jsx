@@ -1,6 +1,6 @@
+
 import React, { useState } from 'react';
 import { Box, Avatar, Typography, IconButton } from '@mui/material';
-import { Favorite, Share, Comment, Bookmark, BookmarkBorder } from '@mui/icons-material';
 import { postService } from '../services/postService';
 import { Poll } from '../rooms/Poll';
 
@@ -37,11 +37,11 @@ const Post = ({ post }) => {
       )}
       {post.poll && <Poll poll={post.poll} />}
       <Box>
-        <IconButton><Favorite /></IconButton>
-        <IconButton><Share /></IconButton>
-        <IconButton><Comment /></IconButton>
+        <IconButton><Typography>Like</Typography></IconButton>
+        <IconButton><Typography>Share</Typography></IconButton>
+        <IconButton><Typography>Comment</Typography></IconButton>
         <IconButton onClick={handleBookmarkClick}>
-          {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
+          <Typography>{isBookmarked ? "Bookmarked" : "Bookmark"}</Typography>
         </IconButton>
       </Box>
     </Box>

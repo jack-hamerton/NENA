@@ -1,6 +1,6 @@
+
 import { useNotifications } from '../contexts/NotificationContext';
 import { Badge, IconButton, Menu, MenuItem, Tooltip, Typography, Button } from '@mui/material';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useState } from 'react';
 
 const NotificationBar = () => {
@@ -26,7 +26,7 @@ const NotificationBar = () => {
       <Tooltip title="Notifications">
         <IconButton color="inherit" onClick={handleOpen}>
           <Badge badgeContent={unreadNotifications.length} color="error">
-            <NotificationsIcon />
+            <Typography>Notifications</Typography>
           </Badge>
         </IconButton>
       </Tooltip>

@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { Box, TextField, Button, List, ListItem, ListItemText, Typography, IconButton } from '@mui/material';
-import { Lock, LockOpen } from '@mui/icons-material';
 import { chatService, Message } from '../services/chatService';
 import { useSnackbar } from '../context/SnackbarContext';
 import { PinLock } from '../components/PinLock';
@@ -51,7 +50,7 @@ const Chat = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h5">Chat</Typography>
         <IconButton onClick={() => setLocked(true)}>
-          {locked ? <Lock /> : <LockOpen />}
+          <Typography>Lock</Typography>
         </IconButton>
       </Box>
       <List>

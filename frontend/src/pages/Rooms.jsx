@@ -1,7 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Typography, List, ListItem, ListItemText, Button, TextField, IconButton } from '@mui/material';
-import { Delete, ExitToApp } from '@mui/icons-material';
 import { roomService } from '../services/roomService';
 import { useAuth } from '../hooks/useAuth';
 
@@ -70,11 +70,11 @@ const Rooms = () => {
                 </Link>
                 {room.creatorId === user.id ? (
                   <IconButton onClick={() => handleDeleteRoom(room.id)} sx={{ ml: 1}}>
-                    <Delete sx={{color: 'white'}}/>
+                    <Typography>Delete</Typography>
                   </IconButton>
                 ) : (
                   <IconButton onClick={() => handleLeaveRoom(room.id)} sx={{ ml: 1}}>
-                    <ExitToApp sx={{color: 'white'}}/>
+                    <Typography>Leave</Typography>
                   </IconButton>
                 )}
               </Box>

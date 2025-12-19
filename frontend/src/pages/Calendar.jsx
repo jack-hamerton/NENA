@@ -8,8 +8,6 @@ import {
   TextField, Button, Modal, Box, List, ListItem, ListItemText, IconButton, Typography, Badge, Select, MenuItem, InputLabel, FormControl 
 } from '@mui/material';
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import calendarService from '../services/calendar.service.js';
 import userService from '../services/userService';
 import { format, isSameDay } from 'date-fns';
@@ -133,10 +131,10 @@ const Calendar = () => {
               <ListItem key={event.id} secondaryAction={
                 <>
                   <IconButton edge="end" aria-label="edit" onClick={() => handleEditEvent(event)}>
-                    <EditIcon />
+                    <Typography>Edit</Typography>
                   </IconButton>
                   <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteEvent(event.id)}>
-                    <DeleteIcon />
+                    <Typography>Delete</Typography>
                   </IconButton>
                 </>
               }>
