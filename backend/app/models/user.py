@@ -1,3 +1,4 @@
+
 import uuid
 from sqlalchemy import Boolean, Column, String, DateTime
 from sqlalchemy.orm import relationship
@@ -27,6 +28,7 @@ class User(Base):
 
     # Call settings
     silence_unknown_callers = Column(Boolean(), default=False)
+    call_setting = Column(String, default="anyone") # anyone, friends, none
 
     posts = relationship("Post", back_populates="owner")
     followers = relationship("Follower", foreign_keys=['Follower.followed_id'], back_populates="followed")

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.core import deps
+from app.services import like_service
 
 router = APIRouter()
 
@@ -83,3 +84,35 @@ def delete_post(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     post = crud.post.remove(db=db, id=post_id)
     return post
+
+@router.post("/{post_id}/like", response_model=schemas.Like)
+def like_post(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    post_id: int, 
+    current_user: models.User = Depends(deps.get_current_active_user)
+):
+    """
+    Like a post.
+    """
+    post = crud.post.get(db=db, id=post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    like = like_service.like_post(db, post_id=post_id, user=current_user)
+    return like
+
+@router.post("/{post_id}/unlike", response_model=schemas.Like)
+def unlike_post(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    post_id: int, 
+    current_user: models.User = Depends(deps.get_current_active_user)
+):
+    """
+    Unlike a post.
+    """
+    post = crud.post.get(db=db, id=post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    like = like_service.unlike_post(db, post_id=post_id, user=current_user)
+    return like

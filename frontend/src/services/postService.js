@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/api/v1';
@@ -51,23 +52,23 @@ const likePost = (postId) => {
 };
 
 const unlikePost = (postId) => {
-  return axios.delete(`${API_URL}/posts/${postId}/like`, {
+  return axios.post(`${API_URL}/posts/${postId}/unlike`, {}, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`
     }
   });
 };
 
-const createComment = (postId, commentData) => {
-  return axios.post(`${API_URL}/posts/${postId}/comments`, commentData, {
+const addComment = (comment) => {
+  return axios.post(`${API_URL}/posts/${comment.postId}/comments`, comment, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`
     }
   });
 };
 
-const getCommentsForPost = (postId) => {
-  return axios.get(`${API_URL}/posts/${postId}/comments`, {
+const getComments = (postId) => {
+  return axios.get(`${API_wURL}/posts/${postId}/comments`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`
     }
@@ -90,7 +91,7 @@ export const postService = {
     unbookmarkPost,
     likePost,
     unlikePost,
-    createComment,
-    getCommentsForPost,
+    addComment,
+    getComments,
     reportPost,
 };
