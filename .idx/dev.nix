@@ -8,6 +8,8 @@
   packages = [
     (pkgs.python311.withPackages
       (ps: with ps; [
+        pip
+        pytest
         aiosmtplib
         alembic
         annotated-types
@@ -37,7 +39,6 @@
         mako
         markupsafe
         passlib
-        psycopg2
         pyasn1
         pycparser
         pydantic
@@ -72,5 +73,6 @@
     pkgs.curl
     pkgs.docker
     pkgs.docker-compose
+    pkgs.pkg-config
   ];
 }

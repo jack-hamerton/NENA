@@ -5,9 +5,9 @@ from starlette.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1.api import api_router
 from app.api.endpoints import notifications as notifications_router
+from app.api.endpoints import podcasts as podcasts_router
 from app.ai.services import ai_service
 from app.reminders import start_scheduler
-from app.routes import impact as impact_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -18,7 +18,7 @@ app = FastAPI(
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGins],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -47,5 +47,5 @@ def startup_event():
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.include_router(notifications_router.router, prefix="/notifications", tags=["notifications"])
+app.include_router(podcasts_router.router, prefix="/api/podcasts", tags=["podcasts"])
 app.include_router(ai_router, prefix="/ai")
-app.include_router(impact_router.router, prefix="/impact", tags=["impact"])

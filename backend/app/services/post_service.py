@@ -4,12 +4,20 @@ from typing import List
 from app import schemas
 from app.models import Post, User, followers, Bookmark, Poll
 from sqlalchemy.orm import Session
+from app.services.moderation import ModerationService, ModerationResult
+from fastapi import HTTPException
 
 
 def create_post(db: Session, post_in: schemas.PostCreate, owner: User) -> Post:
     """
     Create a new post.
     """
+    moderation_service = ModerationService()
+    moderation_result = moderation_service.moderate_text(post_in.content)
+
+    if moderation_result.is_flagged:
+        raise HTTPException(status_code=400, detail=f"Post content flagged for: {moderation_result.details}")
+
     post_data = post_in.dict(exclude={"poll"})
     db_post = Post(**post_data, owner_id=owner.id)
 

@@ -5,6 +5,7 @@ from app.db.base_class import Base
 import datetime
 
 class Collaboration(Base):
+    __tablename__ = "collaborations"
     id = Column(Integer, primary_key=True, index=True)
     creator_id = Column(Integer, ForeignKey('users.id'))
     title = Column(String, nullable=False)

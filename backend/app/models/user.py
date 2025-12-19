@@ -1,12 +1,14 @@
-from sqlalchemy import Boolean, Column, Integer, String, DateTime
+import uuid
+from sqlalchemy import Boolean, Column, String, DateTime
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
 from app.db.base_class import Base
 import datetime
 
 class User(Base):
     __tablename__ = "users"
     __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=True)
     hashed_password = Column(String, nullable=False)
@@ -34,3 +36,6 @@ class User(Base):
     likes = relationship("Like", back_populates="owner")
     events = relationship("Event", back_populates="owner")
     event_participations = relationship("EventParticipant", back_populates="user")
+    notifications = relationship("Notification", back_populates="user")
+    profile = relationship("Profile", uselist=False, back_populates="user")
+    rooms = relationship("Room", back_populates="owner")

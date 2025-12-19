@@ -1,152 +1,85 @@
 
 from typing import List
-
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import schemas
-from app.core import deps, security
-from app.db.models import User
-from app.services import post_service, like_service, comment_service, podcast_service
+from app import crud, models, schemas
+from app.core import deps
 
 router = APIRouter()
 
-
-@router.get("/feed/for-you", response_model=List[schemas.Post])
-def get_for_you_feed(
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
-):
-    return post_service.get_for_you_feed(db, current_user)
-
-
-@router.get("/feed/following", response_model=List[schemas.Post])
-def get_following_feed(
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
-):
-    return post_service.get_following_feed(db, current_user)
-
-
-@router.post("/posts", response_model=schemas.Post)
+@router.post("/", response_model=schemas.Post)
 def create_post(
-    post_in: schemas.PostCreate,
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
+    *, 
+    db: Session = Depends(deps.get_db), 
+    post_in: schemas.PostCreate, 
+    current_user: models.User = Depends(deps.get_current_active_user)
 ):
-    return post_service.create_post(db, post_in, current_user)
+    """
+    Create new post.
+    """
+    post = crud.post.create_with_author(db=db, obj_in=post_in, author_id=current_user.id)
+    return post
 
-
-@router.post("/posts/{post_id}/bookmark", response_model=schemas.Bookmark)
-def bookmark_post(
-    post_id: int,
+@router.get("/", response_model=List[schemas.Post])
+def read_posts(
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
+    skip: int = 0,
+    limit: int = 100,
 ):
-    return post_service.bookmark_post(db, post_id, current_user)
+    """
+    Retrieve posts.
+    """
+    posts = crud.post.get_multi(db, skip=skip, limit=limit)
+    return posts
 
-
-@router.delete("/posts/{post_id}/bookmark", response_model=schemas.Bookmark)
-def unbookmark_post(
-    post_id: int,
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
+@router.get("/{post_id}", response_model=schemas.Post)
+def read_post(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    post_id: int
 ):
-    return post_service.unbookmark_post(db, post_id, current_user)
+    """
+    Get post by ID.
+    """
+    post = crud.post.get(db=db, id=post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return post
 
-
-@router.post("/posts/{post_id}/like", response_model=schemas.Like)
-def like_post(
-    post_id: int,
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
+@router.put("/{post_id}", response_model=schemas.Post)
+def update_post(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    post_id: int, 
+    post_in: schemas.PostUpdate, 
+    current_user: models.User = Depends(deps.get_current_active_user)
 ):
-    return like_service.like_post(db, post_id, current_user)
+    """
+    Update a post.
+    """
+    post = crud.post.get(db=db, id=post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post.author_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    post = crud.post.update(db=db, db_obj=post, obj_in=post_in)
+    return post
 
-
-@router.delete("/posts/{post_id}/like", response_model=schemas.Like)
-def unlike_post(
-    post_id: int,
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
+@router.delete("/{post_id}", response_model=schemas.Post)
+def delete_post(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    post_id: int, 
+    current_user: models.User = Depends(deps.get_current_active_user)
 ):
-    return like_service.unlike_post(db, post_id, current_user)
-
-
-@router.get("/posts/{post_id}/likes", response_model=List[schemas.Like])
-def get_likes_for_post(
-    post_id: int,
-    db: Session = Depends(deps.get_db),
-):
-    return like_service.get_likes_for_post(db, post_id)
-
-
-@router.post("/posts/{post_id}/comments", response_model=schemas.Comment)
-def create_comment_for_post(
-    post_id: int,
-    comment_in: schemas.CommentCreate,
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
-):
-    return comment_service.create_comment(db, comment_in, current_user, post_id)
-
-
-@router.get("/posts/{post_id}/comments", response_model=List[schemas.Comment])
-def get_comments_for_post(
-    post_id: int,
-    db: Session = Depends(deps.get_db),
-):
-    return comment_service.get_comments_for_post(db, post_id)
-
-
-@router.post("/podcasts/{podcast_id}/like", response_model=schemas.Like)
-def like_podcast(
-    podcast_id: int,
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
-):
-    return like_service.like_post(db, podcast_id, current_user)
-
-
-@router.delete("/podcasts/{podcast_id}/like", response_model=schemas.Like)
-def unlike_podcast(
-    podcast_id: int,
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
-):
-    return like_service.unlike_post(db, podcast_id, current_user)
-
-
-@router.get("/podcasts/{podcast_id}/likes", response_model=List[schemas.Like])
-def get_likes_for_podcast(
-    podcast_id: int,
-    db: Session = Depends(deps.get_db),
-):
-    return like_service.get_likes_for_post(db, podcast_id)
-
-
-@router.post("/podcasts/{podcast_id}/comments", response_model=schemas.Comment)
-def create_comment_for_podcast(
-    podcast_id: int,
-    comment_in: schemas.CommentCreate,
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
-):
-    return comment_service.create_comment(db, comment_in, current_user, podcast_id)
-
-
-@router.get("/podcasts/{podcast_id}/comments", response_model=List[schemas.Comment])
-def get_comments_for_podcast(
-    podcast_id: int,
-    db: Session = Depends(deps.get_db),
-):
-    return comment_service.get_comments_for_post(db, podcast_id)
-
-
-@router.post("/podcasts", response_model=schemas.Post)
-def create_podcast(
-    post_in: schemas.PostCreate,
-    db: Session = Depends(deps.get_db),
-    current_user: User = Depends(security.get_current_user),
-):
-    return podcast_service.create_podcast(db, post_in, current_user)
+    """
+    Delete a post.
+    """
+    post = crud.post.get(db=db, id=post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post.author_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    post = crud.post.remove(db=db, id=post_id)
+    return post

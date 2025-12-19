@@ -1,4 +1,4 @@
-import { useNotifications } from '../context/NotificationContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { Badge, IconButton, Menu, MenuItem, Tooltip, Typography, Button } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useState } from 'react';

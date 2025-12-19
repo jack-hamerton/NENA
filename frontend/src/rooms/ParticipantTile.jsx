@@ -1,6 +1,7 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Participant } from '../services/callService';
+import './ParticipantTile.css';
 
 interface ParticipantTileProps {
   participant: Participant;
@@ -8,6 +9,7 @@ interface ParticipantTileProps {
 
 export const ParticipantTile: React.FC<ParticipantTileProps> = ({ participant }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [background, setBackground] = useState('/backgrounds/background1.jpg');
 
   useEffect(() => {
     if (participant.videoStream && videoRef.current) {
@@ -16,9 +18,9 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({ participant })
   }, [participant.videoStream]);
 
   return (
-    <div>
+    <div className="participant-tile-container" style={{ backgroundImage: `url(${background})` }}>
       <video ref={videoRef} autoPlay muted={participant.isLocal} />
-      <div>{participant.identity}</div>
+      <div className="participant-identity">{participant.identity}</div>
     </div>
   );
 };

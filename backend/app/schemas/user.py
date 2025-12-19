@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, validator
-from typing import Optional
+from typing import Optional, List
 import re
+from app.rooms.schemas.room import Room
 
 # Shared properties
 class UserBase(BaseModel):
@@ -62,7 +63,7 @@ class UserInDBBase(UserBase):
 
 # Properties to return to client
 class User(UserInDBBase):
-    pass
+    rooms: List[Room] = []
 
 # Properties stored in DB
 class UserInDB(UserInDBBase):

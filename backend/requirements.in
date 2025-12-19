@@ -14,3 +14,5 @@ requests
 fastapi-mail
 pydantic-settings
 apscheduler
+transformers
+torch

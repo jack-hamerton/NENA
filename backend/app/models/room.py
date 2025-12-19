@@ -1,7 +1,12 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+import enum
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 import datetime
+
+class RoomRole(enum.Enum):
+    ADMIN = "admin"
+    MEMBER = "member"
 
 class Room(Base):
     __tablename__ = "rooms"
@@ -17,6 +22,7 @@ class RoomParticipant(Base):
     id = Column(Integer, primary_key=True, index=True)
     room_id = Column(Integer, ForeignKey('rooms.id'))
     user_id = Column(Integer, ForeignKey('users.id'))
+    role = Column(Enum(RoomRole), default=RoomRole.MEMBER)
     joined_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     room = relationship("Room", back_populates="participants")

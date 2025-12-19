@@ -1,7 +1,7 @@
-
 from sqlalchemy.orm import Session
-import models
-import schemas
+from backend.app.models import user as models
+from backend.app.schemas import user as schemas
+from backend.app.models.room import Room, RoomParticipant, RoomRole
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -21,20 +21,20 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 def get_room(db: Session, room_id: int):
-    return db.query(models.Room).filter(models.Room.id == room_id).first()
+    return db.query(Room).filter(Room.id == room_id).first()
 
 def get_rooms(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Room).offset(skip).limit(limit).all()
+    return db.query(Room).offset(skip).limit(limit).all()
 
 def create_room(db: Session, room: schemas.RoomCreate, user_id: int):
-    db_room = models.Room(name=room.name)
+    db_room = Room(name=room.name)
     db.add(db_room)
     db.commit()
     db.refresh(db_room)
 
     # Add the creator as the owner of the room
-    db_membership = models.RoomMembership(
-        user_id=user_id, room_id=db_room.id, role=models.RoomRole.OWNER
+    db_membership = RoomParticipant(
+        user_id=user_id, room_id=db_room.id, role=RoomRole.ADMIN
     )
     db.add(db_membership)
     db.commit()
@@ -52,15 +52,15 @@ def create_message(db: Session, message: schemas.MessageCreate):
     db.refresh(db_message)
     return db_message
 
-def add_user_to_room(db: Session, user_id: int, room_id: int, role: models.RoomRole = models.RoomRole.MEMBER):
-    membership = models.RoomMembership(user_id=user_id, room_id=room_id, role=role)
+def add_user_to_room(db: Session, user_id: int, room_id: int, role: RoomRole = RoomRole.MEMBER):
+    membership = RoomParticipant(user_id=user_id, room_id=room_id, role=role)
     db.add(membership)
     db.commit()
     db.refresh(membership)
     return membership
 
 def get_room_members(db: Session, room_id: int):
-    return db.query(models.RoomMembership).filter(models.RoomMembership.room_id == room_id).all()
+    return db.query(RoomParticipant).filter(RoomParticipant.room_id == room_id).all()
 
 def create_post(db: Session, post: schemas.PostCreate, author_id: int):
     db_post = models.Post(**post.model_dump(), author_id=author_id)

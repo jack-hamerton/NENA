@@ -1,3 +1,9 @@
 import os
+import sys
+import runpy
+from dotenv import load_dotenv
 
-os.system("source backend/venv/bin/activate && alembic -c backend/alembic.ini revision --autogenerate -m 'Add Response and Answer models'")
+load_dotenv()
+os.chdir('backend')
+sys.path.insert(0, os.getcwd())
+runpy.run_module('alembic', run_name='__main__', alter_sys=True)

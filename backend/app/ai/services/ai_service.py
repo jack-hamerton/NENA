@@ -1,9 +1,16 @@
 import random
+import json
 
-# In a real application, you would import and use various AI/ML libraries
-# (e.g., transformers, PyTorch, TensorFlow, scikit-learn) and pre-trained models.
-
-# --- Self-Learning Mechanisms & Orchestration ---
+# --- AI's Knowledge Base ---
+# In a real application, this would be a sophisticated database or a set of learned model weights.
+# Here, we simulate it with a simple dictionary to store outcomes.
+knowledge_base = {
+    "coding_challenges": {
+        "reverse_string": {"success_rate": 1.0, "attempts": 1},
+        "palindrome_check": {"success_rate": 1.0, "attempts": 1},
+        "find_max": {"success_rate": 0.5, "attempts": 1},
+    }
+}
 
 def self_generate_challenges(domain="coding"):
     '''
@@ -24,67 +31,99 @@ def self_generate_challenges(domain="coding"):
 def attempt_solution(challenge: dict) -> str:
     '''
     Attempts to solve a given coding challenge. This acts as the "student" agent.
+    The AI's success is influenced by its historical performance (knowledge_base).
     '''
     task = challenge.get("task")
     print(f"Attempting to solve challenge: {task}")
-    # In a real system, this would call a powerful code generation model.
-    # Here, we'll simulate solutions, including an incorrect one to show learning.
-    solutions = {
+    
+    # Simulate solution generation, influenced by past performance.
+    # A lower success_rate increases the chance of generating a flawed solution.
+    success_rate = knowledge_base["coding_challenges"].get(task, {}).get("success_rate", 0.5)
+    
+    # --- Simulated Solution Library ---
+    correct_solutions = {
         "reverse_string": "def reverse_string(s):\n    return s[::-1]",
         "palindrome_check": "def is_palindrome(s):\n    return s == s[::-1]",
-        "find_max": "def find_max(numbers):\n    # Incorrect solution on purpose to demonstrate failure and learning\n    return numbers[0] if numbers else None",
+        "find_max": "def find_max(numbers):\n    if not numbers:\n        return None\n    return max(numbers)",
     }
-    solution = solutions.get(task, "# No solution found.")
+    
+    # This version has a bug: it doesn't handle negative numbers correctly.
+    buggy_find_max = "def find_max(numbers):\n    max_val = 0\n    for n in numbers:\n        if n > max_val:\n            max_val = n\n    return max_val"
+
+    # Decide whether to produce a correct or incorrect solution based on success_rate
+    if task == "find_max" and random.random() > success_rate:
+        print("Injecting a known bug to simulate an imperfect AI...")
+        solution = buggy_find_max
+    else:
+        solution = correct_solutions.get(task, "# No solution found.")
+        
     print(f"Generated solution:\n{solution}")
     return solution
 
-def evaluate_with_ai_judge(challenge: dict, generated_code: str) -> bool:
+def evaluate_with_ai_judge(challenge: dict, generated_code: str) -> dict:
     '''
-    Uses another AI model (a "judge") to evaluate the output of the primary AI.
-    Here, we simulate the judge by running simple tests.
+    Uses another AI model (a "judge") to evaluate the output.
+    Returns a dictionary with success status and a reason.
     '''
     task = challenge.get("task")
     print(f"AI Judge is evaluating the solution for: {task}")
     try:
-        # Create a safe execution environment for the code
         local_scope = {}
         exec(generated_code, globals(), local_scope)
-        
-        # Get the function from the executed code
         func_name = next(iter(local_scope))
         func = local_scope[func_name]
 
-        # Define test cases
         test_cases = {
-            "reverse_string": [("hello", "olleh")],
+            "reverse_string": [("hello", "olleh"), ("world", "dlrow")],
             "palindrome_check": [("madam", True), ("hello", False)],
-            "find_max": [([1, 5, 2], 5), ([-10, 0, -1], 0)],
+            "find_max": [([1, 5, 2], 5), ([-10, 0, -1], 0), ([10, 20, -5], 20)],
         }
 
-        # Run tests
         for args, expected in test_cases.get(task, []):
             result = func(args)
             if result != expected:
-                print(f"AI Judge: Test Failed. Input: {args}, Got: {result}, Expected: {expected}")
-                return False
+                reason = f"Test Failed. Input: {args}, Got: {result}, Expected: {expected}"
+                print(f"AI Judge: {reason}")
+                return {"success": False, "reason": reason}
         
         print("AI Judge: All tests passed.")
-        return True
+        return {"success": True, "reason": "All tests passed."}
     except Exception as e:
-        print(f"AI Judge: Code execution failed. Error: {e}")
-        return False
+        reason = f"Code execution failed. Error: {e}"
+        print(f"AI Judge: {reason}")
+        return {"success": False, "reason": reason}
 
 def update_internal_parameters(feedback_data: dict):
     '''
-    Adjusts internal model parameters (weights in a neural network) based on
-    feedback to minimize error and improve accuracy.
+    Adjusts internal model parameters (our simulated knowledge_base) based on feedback.
     '''
-    success = feedback_data.get("success")
-    if success:
-        print("Updating model parameters: Reinforcing successful patterns.")
+    task = feedback_data["challenge"]
+    success = feedback_data["success"]
+    
+    # Update knowledge base
+    task_stats = knowledge_base["coding_challenges"].get(task)
+    if task_stats:
+        old_rate = task_stats["success_rate"]
+        attempts = task_stats["attempts"]
+        # Update success rate using a simple moving average
+        new_rate = ((old_rate * attempts) + (1 if success else 0)) / (attempts + 1)
+        task_stats["success_rate"] = new_rate
+        task_stats["attempts"] += 1
+        
+        print(f"Updating knowledge base for '{task}': Success rate changed from {old_rate:.2f} to {new_rate:.2f}")
     else:
-        print("Updating model parameters: Adjusting weights to correct for failure.")
-    return "AI model parameters updated (dummy)."
+        print("No prior knowledge for this task. Could initialize here.")
+
+    if success:
+        print("Reinforcing successful patterns.")
+    else:
+        print(f"Adjusting weights to correct for failure. Reason: {feedback_data.get('reason')}")
+    
+    print("\n--- Current AI Knowledge Base ---")
+    print(json.dumps(knowledge_base, indent=2))
+    print("---------------------------------")
+    
+    return "AI model parameters updated."
 
 def run_self_improvement_cycle(domain="coding"):
     '''
@@ -97,72 +136,28 @@ def run_self_improvement_cycle(domain="coding"):
         return
 
     solution = attempt_solution(challenge)
-    is_correct = evaluate_with_ai_judge(challenge, solution)
-    feedback = {"challenge": challenge["task"], "success": is_correct}
+    evaluation = evaluate_with_ai_judge(challenge, solution)
+    
+    feedback = {
+        "challenge": challenge["task"],
+        "success": evaluation["success"],
+        "reason": evaluation["reason"]
+    }
+    
     update_internal_parameters(feedback)
-    
-    # --- Integrating other learning methods ---
-    
-    # 1. Supervised Learning Example
-    # In a real system, you'd have a stream of labeled data.
-    labeled_data = [
-        ({"text": "This is great!"}, "positive"),
-        ({"text": "This is terrible."}, "negative"),
-    ]
-    supervised_learning_train(labeled_data)
-    
-    # 2. Unsupervised Learning Example
-    # In a real system, you'd use large unlabeled datasets.
-    unlabeled_data = [
-        {"text": "Python is a versatile language."},
-        {"text": "Java is used in enterprise systems."},
-        {"text": "C++ is known for its performance."},
-    ]
-    unsupervised_learning_discover(unlabeled_data)
-
-    # 3. Reinforcement Learning Example
-    # Here we simulate a simple environment
-    reinforcement_learning_optimize("game_environment", "player_agent")
     
     print("--- Self-improvement cycle complete ---")
     return feedback
 
-# --- Core Learning Methods (Placeholders) ---
-
+# The other learning methods remain as placeholders for now.
 def supervised_learning_train(labeled_data):
-    '''Trains the AI on labeled data.'''
-    print(f"Starting supervised training on {len(labeled_data)} examples.")
-    # In a real system, this would involve:
-    # 1. Preprocessing the data (tokenization, vectorization)
-    # 2. Feeding it into a model (e.g., a text classifier)
-    # 3. Calculating loss and using an optimizer (e.g., Adam) to adjust weights via backpropagation.
-    for data, label in labeled_data:
-        print(f"  - Training on: {data['text']} -> {label}")
+    print(f"Starting supervised training on {len(labeled_data)} examples (dummy).")
     return "Supervised training complete (dummy)."
 
 def unsupervised_learning_discover(unlabeled_data):
-    '''Analyzes unlabeled data to discover hidden patterns.'''
-    print(f"Running unsupervised discovery on {len(unlabeled_data)} data points.")
-    # In a real system, this would involve:
-    # 1. Using algorithms like K-Means for clustering or PCA for dimensionality reduction.
-    # 2. Identifying topics, anomalies, or customer segments.
-    print("  - Discovered cluster of programming language discussions.")
+    print(f"Running unsupervised discovery on {len(unlabeled_data)} data points (dummy).")
     return "Unsupervised discovery complete (dummy)."
 
 def reinforcement_learning_optimize(environment, agent):
-    '''Optimizes an AI agent's behavior through rewards and penalties.'''
-    print(f"Starting reinforcement learning for agent '{agent}' in '{environment}'.")
-    # In a real system, this would involve:
-    # 1. Defining the state space, action space, and reward function.
-    # 2. The agent taking actions in the environment.
-    # 3. The environment providing the next state and a reward.
-    # 4. Using algorithms like Q-learning or PPO to update the agent's policy.
-    actions = ["move_left", "move_right", "jump"]
-    action = random.choice(actions)
-    reward = random.choice([-1, 1])
-    print(f"  - Agent took action '{action}' and received reward: {reward}.")
-    if reward > 0:
-        print("  - Reinforcing this action.")
-    else:
-        print("  - Discouraging this action.")
+    print(f"Starting reinforcement learning for agent '{agent}' in '{environment}' (dummy).")
     return "Reinforcement learning optimization complete (dummy)."
