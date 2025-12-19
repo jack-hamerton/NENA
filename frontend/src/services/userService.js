@@ -11,6 +11,8 @@ export const userService = {
             id: '1',
             name: 'Test User',
             email: 'test@example.com',
+            username: 'testuser',
+            profilePicture: 'https://via.placeholder.com/150'
           };
           resolve(currentUser);
         } else {
@@ -37,4 +39,16 @@ export const userService = {
       return Promise.reject(new Error('Cannot update another user\'s profile'));
     }
   },
+
+  async uploadProfilePicture(file) {
+    // In a real application, you would upload the file to a cloud storage service like Firebase Storage or AWS S3.
+    // For this mock service, we'll just return a new placeholder image URL.
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const newProfilePictureUrl = `https://via.placeholder.com/150?text=${file.name}`;
+        currentUser = { ...currentUser, profilePicture: newProfilePictureUrl };
+        resolve(currentUser);
+      }, 500);
+    });
+  }
 };

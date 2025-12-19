@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { Box, Avatar, Typography, IconButton } from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
 import { postService } from '../services/postService';
 import { Poll } from '../rooms/Poll';
+import UserAvatar from '../components/UserAvatar';
 
 const Post = ({ post }) => {
   const [isBookmarked, setIsBookmarked] = useState(post.is_bookmarked);
@@ -23,9 +24,8 @@ const Post = ({ post }) => {
   return (
     <Box sx={{ p: 2, mb: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-        <Avatar src={post.author.profile_picture_url} />
+        <UserAvatar user={post.author} />
         <Box sx={{ ml: 2 }}>
-          <Typography variant="subtitle1">{post.author.full_name}</Typography>
           <Typography variant="body2" color="text.secondary">{new Date(post.created_at).toLocaleString()}</Typography>
         </Box>
       </Box>
