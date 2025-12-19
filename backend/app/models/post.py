@@ -1,10 +1,9 @@
 import uuid
 from sqlalchemy import Column, String, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 from datetime import datetime
-
+from .hashtag import post_hashtags
 
 class Post(Base):
     __tablename__ = "posts"
@@ -15,3 +14,4 @@ class Post(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", back_populates="posts")
+    hashtags = relationship("Hashtag", secondary=post_hashtags, back_populates="posts")

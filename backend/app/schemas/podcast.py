@@ -1,69 +1,55 @@
 
+from typing import List, Optional
 from pydantic import BaseModel
-from typing import Optional, List
-from uuid import UUID
-from datetime import datetime
 
-
-# Shortcut properties
-class Shortcut(BaseModel):
-    timestamp: str
+class ShortcutBase(BaseModel):
+    label: str
     url: str
 
+class ShortcutCreate(ShortcutBase):
+    pass
 
-# Podcast properties
+class Shortcut(ShortcutBase):
+    id: int
+    episode_id: int
+
+    class Config:
+        orm_mode = True
+
+class EpisodeBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    audio_url: str
+    video_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+
+class EpisodeCreate(EpisodeBase):
+    pass
+
+class Episode(EpisodeBase):
+    id: int
+    podcast_id: int
+    transcription: Optional[str] = None
+    shortcuts: List[Shortcut] = []
+
+    class Config:
+        orm_mode = True
+
 class PodcastBase(BaseModel):
     title: str
     description: Optional[str] = None
-    artist_name: Optional[str] = None
-    category: Optional[str] = "Podcast"
-
+    cover_art_url: Optional[str] = None
 
 class PodcastCreate(PodcastBase):
-    shortcuts: Optional[List[Shortcut]] = None
+    pass
 
+class Podcast(PodcastBase):
+    id: int
+    creator_id: int
+    episodes: List[Episode] = []
+
+    class Config:
+        orm_mode = True
 
 class PodcastUpdate(PodcastBase):
-    pass
-
-
-class PodcastInDBBase(PodcastBase):
-    id: UUID
-    user_id: UUID
-    cover_art_url: Optional[str] = None
-    media_url: str
-    video_thumbnail_url: Optional[str] = None
-    video_url: Optional[str] = None
-    transcription_url: Optional[str] = None
-    shortcuts: Optional[List[Shortcut]] = None
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class Podcast(PodcastInDBBase):
-    pass
-
-
-# Follow properties
-class FollowBase(BaseModel):
-    podcast_id: UUID
-
-
-class FollowCreate(FollowBase):
-    pass
-
-
-class FollowInDBBase(FollowBase):
-    id: UUID
-    user_id: UUID
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class Follow(FollowInDBBase):
     pass

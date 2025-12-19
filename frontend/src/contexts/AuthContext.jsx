@@ -1,23 +1,42 @@
-import { createContext, useState, useContext } from 'react';
 
-const AuthContext = createContext(null);
+import React, { createContext, useContext, useState } from 'react';
+
+const AuthContext = createContext();
+
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  const login = (userData) => {
-    setUser(userData);
+  const login = async (username, password) => {
+    // Mock API call
+    if (username === 'user' && password === 'password') {
+      setUser({ username });
+    } else {
+      throw new Error('Invalid credentials');
+    }
+  };
+
+  const register = async (username, email, password) => {
+    // Mock API call
+    if (!username || !email || !password) {
+      throw new Error('All fields are required');
+    }
+    setUser({ username });
   };
 
   const logout = () => {
     setUser(null);
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  const value = {
+    user,
+    login,
+    register,
+    logout,
+  };
 
-export const useAuth = () => useContext(AuthContext);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
