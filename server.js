@@ -1,20 +1,23 @@
-const express = require('express');
-const path = require('path');
+const WebSocket = require('ws');
 
-const app = express();
-const port = process.env.PORT || 3000;
+const wss = new WebSocket.Server({ port: 8080 });
 
-// Serve static files from the 'frontend/dist' directory
-app.use(express.static(path.join(__dirname, 'frontend/dist')));
+console.log('Signaling server started on port 8080');
 
-// API routes
-app.use('/api/v1', require('./backend/routes'));
+wss.on('connection', ws => {
+    console.log('Client connected');
 
-// For any other request, serve the 'index.html' file
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend/dist', 'index.html'));
-});
+    ws.on('message', message => {
+        console.log(`Received message: ${message}`);
+        // Broadcast the message to all other clients
+        wss.clients.forEach(client => {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+                client.send(message);
+            }
+        });
+    });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
 });
