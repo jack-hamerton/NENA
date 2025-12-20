@@ -1,21 +1,32 @@
-
 import React from 'react';
+import styled from 'styled-components';
 
-interface InsightListProps {
-  insights: string[];
-}
+const ListContainer = styled.div`
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+`;
 
-const InsightList: React.FC<InsightListProps> = ({ insights }) => {
+const Title = styled.h4`
+    margin-bottom: 1rem;
+`;
+
+const InsightItem = styled.li`
+    margin-bottom: 0.5rem;
+`;
+
+const InsightList = ({ insights }) => {
   return (
-    <div className="p-4 bg-white rounded-lg shadow">
-      <h3 className="text-lg font-bold mb-2">Key Learnings</h3>
-      <ul className="list-disc list-inside">
+    <ListContainer>
+      <Title>Key Insights</Title>
+      <ul>
         {insights.map((insight, index) => (
-          <li key={index}>{insight}</li>
+          <InsightItem key={index}>{insight}</InsightItem>
         ))}
       </ul>
-    </div>
+    </ListContainer>
   );
 };
 
-export default InsightList;
+export { InsightList };

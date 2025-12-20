@@ -1,14 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
-import Post from './Post';
+import { PostCard } from './PostCard';
 
 const ActivityFeedContainer = styled.div``;
 
-const ActivityFeed = ({ posts }) => {
+const ActivityFeed = ({ posts, onReportPost }) => {
   return (
     <ActivityFeedContainer>
       {posts.map(post => (
-        <Post key={post.id} post={post} />
+        <PostCard key={post.id} post={post} onReportPost={onReportPost} />
       ))}
     </ActivityFeedContainer>
   );

@@ -1,25 +1,21 @@
+from pydantic import BaseModel, HttpUrl
+import uuid
+from datetime import datetime
+from typing import List, Optional
 
-from pydantic import BaseModel
-from typing import Optional
-import datetime
-
-# Shared properties
 class PostBase(BaseModel):
     content: str
+    media_url: Optional[HttpUrl] = None
+    audience_control: str = 'everyone'
 
-# Properties to receive on post creation
 class PostCreate(PostBase):
     pass
 
-# Properties to receive on post update
-class PostUpdate(PostBase):
-    content: Optional[str] = None
-
-# Properties to return to client
 class Post(PostBase):
-    id: int
-    author_id: int
-    created_at: datetime.datetime
+    id: uuid.UUID
+    user_id: uuid.UUID
+    created_at: datetime
+    parent_post_id: Optional[uuid.UUID] = None
 
     class Config:
-        from_attributes = True
+        orm_mode = True

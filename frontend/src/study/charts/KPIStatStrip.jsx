@@ -1,24 +1,41 @@
-
 import React from 'react';
+import styled from 'styled-components';
 
-interface KPIStatStripProps {
-  stats: {
-    label: string;
-    value: string;
-  }[];
-}
+const StripContainer = styled.div`
+  display: flex;
+  justify-content: space-around;
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+`;
 
-const KPIStatStrip: React.FC<KPIStatStripProps> = ({ stats }) => {
+const StatContainer = styled.div`
+  text-align: center;
+`;
+
+const StatTitle = styled.h4`
+    margin: 0;
+    color: #666;
+`;
+
+const StatValue = styled.p`
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+`;
+
+const KPIStatStrip = ({ stats }) => {
   return (
-    <div className="flex justify-around p-4 bg-white rounded-lg shadow">
+    <StripContainer>
       {stats.map((stat, index) => (
-        <div key={index} className="text-center">
-          <p className="text-2xl font-bold">{stat.value}</p>
-          <p className="text-gray-600">{stat.label}</p>
-        </div>
+        <StatContainer key={index}>
+          <StatTitle>{stat.title}</StatTitle>
+          <StatValue>{stat.value}</StatValue>
+        </StatContainer>
       ))}
-    </div>
+    </StripContainer>
   );
 };
 
-export default KPIStatStrip;
+export { KPIStatStrip };

@@ -8,7 +8,9 @@ interface CreatePollProps {
 
 export const CreatePoll: React.FC<CreatePollProps> = ({ onPollCreated }) => {
     const [question, setQuestion] = useState('');
-    const [options, setOptions] = useState('');
+    const [options, setOptions] = useState(['', '']);
+    const [duration, setDuration] = useState(24);
+    const [anonymous, setAnonymous] = useState(false);
     const { roomId } = useParams<{ roomId: string }>();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -16,13 +18,30 @@ export const CreatePoll: React.FC<CreatePollProps> = ({ onPollCreated }) => {
         try {
             const response = await api.post(`/rooms/${roomId}/polls`, {
                 question,
-                options: options.split(',').map(opt => opt.trim()),
+                options,
+                duration,
+                anonymous,
             }, {});
             onPollCreated(response.data);
             setQuestion('');
-            setOptions('');
+            setOptions(['', '']);
+            setDuration(24);
+            setAnonymous(false);
         } catch (error) {
             console.error('Error creating poll:', error);
+        }
+    };
+
+    const handleOptionChange = (index: number, value: string) => {
+        if (value.length > 25) return;
+        const newOptions = [...options];
+        newOptions[index] = value;
+        setOptions(newOptions);
+    };
+
+    const addOption = () => {
+        if (options.length < 4) {
+            setOptions([...options, '']);
         }
     };
 
@@ -35,13 +54,35 @@ export const CreatePoll: React.FC<CreatePollProps> = ({ onPollCreated }) => {
                 onChange={(e) => setQuestion(e.target.value)}
                 required
             />
-            <input
-                type="text"
-                placeholder="Options (comma-separated)"
-                value={options}
-                onChange={(e) => setOptions(e.target.value)}
-                required
-            />
+            {options.map((option, index) => (
+                <input
+                    key={index}
+                    type="text"
+                    placeholder={`Option ${index + 1}`}
+                    value={option}
+                    onChange={(e) => handleOptionChange(index, e.target.value)}
+                    required
+                />
+            ))}
+            {options.length < 4 && <button type="button" onClick={addOption}>Add Option</button>}
+            <label>
+                Duration (in hours):
+                <input
+                    type="number"
+                    value={duration}
+                    onChange={(e) => setDuration(parseInt(e.target.value))}
+                    min={1}
+                    max={168} // 7 days
+                />
+            </label>
+            <label>
+                <input
+                    type="checkbox"
+                    checked={anonymous}
+                    onChange={(e) => setAnonymous(e.target.checked)}
+                />
+                Anonymous Voting
+            </label>
             <button type="submit">Create Poll</button>
         </form>
     );

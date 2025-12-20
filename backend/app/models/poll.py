@@ -1,14 +1,21 @@
-import sqlalchemy as sa
+import uuid
+from sqlalchemy import Column, String, ForeignKey, Integer
 from sqlalchemy.orm import relationship
-from ..db.base_class import Base
+from app.db.base_class import Base
 
 class Poll(Base):
     __tablename__ = "polls"
 
-    id = sa.Column(sa.Integer, primary_key=True, index=True)
-    question = sa.Column(sa.String, index=True)
-    options = sa.Column(sa.JSON, nullable=False)
-    duration_minutes = sa.Column(sa.Integer)
-    created_at = sa.Column(sa.DateTime, default=sa.func.now())
-    post_id = sa.Column(sa.Integer, sa.ForeignKey("posts.id"))
-    post = relationship("Post", back_populates="poll")
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    post_id = Column(UUID(as_uuid=True), ForeignKey("posts.id"), nullable=False)
+    options = relationship("PollOption", back_populates="poll")
+
+class PollOption(Base):
+    __tablename__ = "poll_options"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    poll_id = Column(UUID(as_uuid=True), ForeignKey("polls.id"), nullable=False)
+    text = Column(String, nullable=False)
+    votes = Column(Integer, default=0)
+
+    poll = relationship("Poll", back_populates="options")

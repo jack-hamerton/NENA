@@ -1,12 +1,19 @@
-
 import React from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-const BarChart = ({ data, options }) => {
-  return <Bar data={data} options={options} />;
+const BarChart = ({ data }) => {
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <RechartsBarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="value" fill="#8884d8" />
+      </RechartsBarChart>
+    </ResponsiveContainer>
+  );
 };
 
-export default BarChart;
+export { BarChart };

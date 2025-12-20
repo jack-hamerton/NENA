@@ -1,12 +1,31 @@
-
 import React from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-const DonutChart = ({ data, options }) => {
-  return <Doughnut data={data} options={options} />;
+const DonutChart = ({ data }) => {
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          innerRadius={60}
+          outerRadius={80}
+          fill="#8884d8"
+          paddingAngle={5}
+          dataKey="value"
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  );
 };
 
-export default DonutChart;
+export { DonutChart };

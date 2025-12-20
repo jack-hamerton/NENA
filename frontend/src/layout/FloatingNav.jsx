@@ -1,70 +1,72 @@
-
-import { NavLink } from 'react-router-dom';
-import { Avatar, Box, List, ListItem, ListItemText, useTheme } from '@mui/material';
+import React from 'react';
+import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import UserAvatar from '../components/UserAvatar';
+import { darkTheme } from '../theme';
 
-const navItems = [
-  { path: '/discover', text: 'Discover' },
-  { path: '/profile/me', text: 'Profile' },
-  { path: '/messages', text: 'Messages' },
-  { path: '/rooms', text: 'Rooms' },
-  { path: '/study', text: 'Study' },
-  { path: '/podcasts', text: 'Podcasts' },
-  { path: '/analytics', text: 'Analytics' },
-  { path: '/calendar', text: 'Calendar' },
-];
+const NavContainer = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 20px;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 20px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+`;
+
+const NavLinks = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+`;
+
+const NavLink = styled(Link)`
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+`;
+
+const AvatarContainer = styled(Link)`
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid ${darkTheme.palette.primary.main};
+  padding: 2px; // To create the ring effect
+  img {
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
 
 const FloatingNav = () => {
   const { user } = useAuth();
-  const theme = useTheme();
 
   return (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: '50%',
-        left: 20,
-        transform: 'translateY(-50%)',
-        bgcolor: 'transparent',
-        zIndex: 1000
-      }}
-    >
-      <List>
-        {navItems.map((item) => {
-          if (item.text === 'Profile') {
-            return (
-              <NavLink to={item.path} key={item.path} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <ListItem button>
-                  <Avatar
-                    alt={user?.name}
-                    src={user?.profilePicture}
-                    sx={{
-                      width: 50,
-                      height: 50,
-                      border: `2px solid ${theme.palette.primary.main}`,
-                    }}
-                  />
-                </ListItem>
-              </NavLink>
-            );
-          }
-          return (
-            <NavLink to={item.path} key={item.path} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <ListItem button>
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontSize: '1.2rem',
-                    fontWeight: 'bold',
-                    color: 'white'
-                  }}
-                />
-              </ListItem>
-            </NavLink>
-          );
-        })}
-      </List>
-    </Box>
+    <NavContainer>
+      <NavLinks>
+        <NavLink to="/">Home</NavLink>
+        <NavLink to="/discover">Discover</NavLink>
+        <NavLink to="/messages">Messages</NavLink>
+        <NavLink to="/room">Room</NavLink>
+        <NavLink to="/study">Study</NavLink>
+        <NavLink to="/calendar">Calendar</NavLink>
+        <NavLink to="/analytics">Analytics</NavLink>
+        {user ? (
+          <AvatarContainer to="/profile">
+            <UserAvatar user={user} />
+          </AvatarContainer>
+        ) : (
+          <NavLink to="/profile">Profile</NavLink>
+        )}
+      </NavLinks>
+    </NavContainer>
   );
 };
 

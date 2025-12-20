@@ -1,17 +1,16 @@
 
 import React, { useState } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { postService } from '../services/postService';
 import { Poll } from '../rooms/Poll';
 import UserAvatar from '../components/UserAvatar';
 import { ThreadedCommentSection } from './ThreadedCommentSection';
-import CallPopup from '../components/call/CallPopup';
 
 const Post = ({ post }) => {
   const [isBookmarked, setIsBookmarked] = useState(post.is_bookmarked);
   const [showComments, setShowComments] = useState(false);
-  const [showCallPopup, setShowCallPopup] = useState(false);
-  const [callUser, setCallUser] = useState(null);
+  const navigate = useNavigate();
 
   const handleBookmarkClick = async () => {
     try {
@@ -27,13 +26,7 @@ const Post = ({ post }) => {
   };
 
   const handleUserClick = (user) => {
-    setCallUser(user);
-    setShowCallPopup(true);
-  };
-
-  const handleStartCall = (callType) => {
-    console.log(`Starting ${callType} call with ${callUser.name}`);
-    setShowCallPopup(false);
+    navigate(`/profile/${user.id}`);
   };
 
   return (
@@ -68,7 +61,6 @@ const Post = ({ post }) => {
         </IconButton>
       </Box>
       {showComments && <ThreadedCommentSection postId={post.id} />}
-      {showCallPopup && <CallPopup user={callUser} onStartCall={handleStartCall} onClose={() => setShowCallPopup(false)} />}
     </Box>
   );
 };

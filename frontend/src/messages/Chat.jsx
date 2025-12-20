@@ -4,11 +4,14 @@ import { Box, TextField, Button, List, ListItem, ListItemText, Typography, IconB
 import { chatService, Message } from '../services/chatService';
 import { useSnackbar } from '../context/SnackbarContext';
 import { PinLock } from '../components/PinLock';
+import CallPopup from '../components/call/CallPopup';
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [locked, setLocked] = useState(false);
+  const [showCallPopup, setShowCallPopup] = useState(false);
+  const [callUser, setCallUser] = useState(null);
   const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
@@ -40,6 +43,16 @@ const Chat = () => {
   const handleUnlock = () => {
     setLocked(false);
   };
+  
+  const handleUserClick = (user) => {
+    setCallUser(user);
+    setShowCallPopup(true);
+  };
+  
+    const handleStartCall = (callType) => {
+    console.log(`Starting ${callType} call with ${callUser.name}`);
+    setShowCallPopup(false);
+  };
 
   if (locked) {
     return <PinLock onUnlock={handleUnlock} />;
@@ -49,9 +62,14 @@ const Chat = () => {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h5">Chat</Typography>
-        <IconButton onClick={() => setLocked(true)}>
-          <Typography>Lock</Typography>
-        </IconButton>
+		    <Box>
+          <IconButton onClick={() => handleUserClick({name: "User"})}>
+            <Typography>Call</Typography>
+          </IconButton>
+          <IconButton onClick={() => setLocked(true)}>
+            <Typography>Lock</Typography>
+          </IconButton>
+		</Box>
       </Box>
       <List>
         {messages.map((message) => (
@@ -72,6 +90,7 @@ const Chat = () => {
           Send
         </Button>
       </Box>
+      {showCallPopup && <CallPopup user={callUser} onStartCall={handleStartCall} onClose={() => setShowCallPopup(false)} />}
     </Box>
   );
 };

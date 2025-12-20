@@ -1,30 +1,64 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import styled from 'styled-components';
+import ActivityFeed from '../feed/ActivityFeed';
+import { postService } from '../services/postService';
 
-import React from 'react';
-import { Container, Typography, Button, Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+const FeedContainer = styled.div`
+  /* Add your styles here */
+`;
 
-const HomePage: React.FC = () => {
-  const navigate = useNavigate();
+const Tabs = styled.div`
+  display: flex;
+  border-bottom: 1px solid #ccc;
+`;
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    navigate('/login');
+const Tab = styled.div<{ active: boolean }>`
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: ${props => (props.active ? '2px solid blue' : 'none')};
+`;
+
+const RestartButton = styled.button`
+  margin-left: auto;
+  padding: 5px 10px;
+  cursor: pointer;
+`;
+
+const HomePage = () => {
+  const [feedType, setFeedType] = useState('for-you');
+  const [posts, setPosts] = useState([]);
+
+  const fetchPosts = useCallback(async () => {
+    let response;
+    if (feedType === 'for-you') {
+      response = await postService.getForYouFeed();
+    } else {
+      response = await postService.getFollowingFeed();
+    }
+    setPosts(response.data);
+  }, [feedType]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  const handleRestart = () => {
+    fetchPosts();
   };
 
   return (
-    <Container maxWidth='md'>
-      <Box sx={{ mt: 8, textAlign: 'center' }}>
-        <Typography variant='h4' component='h1' gutterBottom>
-          Welcome to the App!
-        </Typography>
-        <Typography variant='body1' sx={{ mb: 4 }}>
-          You have successfully logged in and can now access the app&apos;s features.
-        </Typography>
-        <Button variant='contained' color='primary' onClick={handleLogout}>
-          Logout
-        </Button>
-      </Box>
-    </Container>
+    <FeedContainer>
+      <Tabs>
+        <Tab active={feedType === 'for-you'} onClick={() => setFeedType('for-you')}>
+          For You
+        </Tab>
+        <Tab active={feedType === 'following'} onClick={() => setFeedType('following')}>
+          Following
+        </Tab>
+        <RestartButton onClick={handleRestart}>Restart</RestartButton>
+      </Tabs>
+      <ActivityFeed posts={posts} />
+    </FeedContainer>
   );
 };
 

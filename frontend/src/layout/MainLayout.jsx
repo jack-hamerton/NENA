@@ -1,51 +1,34 @@
-
-import { Outlet, Link } from 'react-router-dom';
-import { CssBaseline, Box, IconButton, Tooltip, Typography } from '@mui/material';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import styled from 'styled-components';
 import FloatingNav from '../layout/FloatingNav';
-import ScreenshotBlocker from '../layout/ScreenshotBlocker';
-import AIAssistant from '../components/AIAssistant';
-import NotificationBar from '../components/NotificationBar';
-import { Chat } from '../rooms/Chat';
+import HomePage from '../pages/HomePage';
+import Discover from '../pages/Discover';
+import MessagesPage from '../pages/Community';
+import RoomPage from '../pages/RoomPage';
+import StudyPage from '../pages/StudyPage';
+import Calendar from '../pages/Calendar';
+import Analytics from '../pages/Analytics';
+import ProfilePage from '../pages/ProfilePage';
 
 const MainContainer = styled.div`
-  background-color: ${props => props.theme.background};
-  min-height: 100vh;
   position: relative;
 `;
 
-const ContentContainer = styled.main`
-  padding: 24px;
-`;
-
-const TopRightContainer = styled.div`
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  display: flex;
-  align-items: center;
-`;
-
 const MainLayout = () => {
-  const localParticipant = { id: '1', name: 'John Doe' };
   return (
     <MainContainer>
-      <CssBaseline />
-      <ScreenshotBlocker />
       <FloatingNav />
-      <TopRightContainer>
-        <NotificationBar />
-        <Tooltip title="Calendar">
-          <IconButton color="inherit" component={Link} to="/calendar">
-            <Typography>Calendar</Typography>
-          </IconButton>
-        </Tooltip>
-        <AIAssistant />
-      </TopRightContainer>
-      <ContentContainer>
-        <Outlet />
-        <Chat channelId="general" localParticipant={localParticipant} />
-      </ContentContainer>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/discover" element={<Discover />} />
+        <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/room" element={<RoomPage />} />
+        <Route path="/study" element={<StudyPage />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/profile" element={<ProfilePage />} />
+      </Routes>
     </MainContainer>
   );
 };

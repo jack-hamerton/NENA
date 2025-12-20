@@ -1,118 +1,89 @@
-
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import Any, List
 
 from app import crud, models, schemas
-from app.core import deps
-from app.services import like_service
+from app.api import deps
 
 router = APIRouter()
 
-@router.post("/", response_model=schemas.Post)
-def create_post(
-    *, 
-    db: Session = Depends(deps.get_db), 
-    post_in: schemas.PostCreate, 
-    current_user: models.User = Depends(deps.get_current_active_user)
-):
-    """
-    Create new post.
-    """
-    post = crud.post.create_with_author(db=db, obj_in=post_in, author_id=current_user.id)
-    return post
 
 @router.get("/", response_model=List[schemas.Post])
 def read_posts(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-):
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
     """
     Retrieve posts.
     """
     posts = crud.post.get_multi(db, skip=skip, limit=limit)
     return posts
 
-@router.get("/{post_id}", response_model=schemas.Post)
-def read_post(
+
+@router.post("/", response_model=schemas.Post)
+def create_post(
     *, 
-    db: Session = Depends(deps.get_db), 
-    post_id: int
-):
+    db: Session = Depends(deps.get_db),
+    post_in: schemas.PostCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
     """
-    Get post by ID.
+    Create new post.
     """
-    post = crud.post.get(db=db, id=post_id)
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
+    post = crud.post.create_with_owner(db, obj_in=post_in, user_id=current_user.id)
     return post
 
-@router.put("/{post_id}", response_model=schemas.Post)
-def update_post(
+@router.post("/{post_id}/poll", response_model=schemas.Poll)
+def create_poll_for_post(
+    post_id: uuid.UUID,
     *, 
-    db: Session = Depends(deps.get_db), 
-    post_id: int, 
-    post_in: schemas.PostUpdate, 
-    current_user: models.User = Depends(deps.get_current_active_user)
-):
+    db: Session = Depends(deps.get_db),
+    poll_in: schemas.PollCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
     """
-    Update a post.
+    Create a poll for a post.
     """
-    post = crud.post.get(db=db, id=post_id)
+    post = crud.post.get(db, id=post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    if post.author_id != current_user.id:
+    if post.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    post = crud.post.update(db=db, db_obj=post, obj_in=post_in)
-    return post
+    poll = crud.poll.create_with_options(db, obj_in=poll_in, post_id=post_id)
+    return poll
 
-@router.delete("/{post_id}", response_model=schemas.Post)
-def delete_post(
+@router.post("/{post_id}/reshare", response_model=schemas.Reshare)
+def reshare_post(
+    post_id: uuid.UUID,
     *, 
-    db: Session = Depends(deps.get_db), 
-    post_id: int, 
-    current_user: models.User = Depends(deps.get_current_active_user)
-):
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
     """
-    Delete a post.
+    Reshare a post.
     """
-    post = crud.post.get(db=db, id=post_id)
+    post = crud.post.get(db, id=post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    if post.author_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    post = crud.post.remove(db=db, id=post_id)
-    return post
+    reshare_in = schemas.ReshareCreate(post_id=post_id)
+    reshare = crud.reshare.create_with_owner(db, obj_in=reshare_in, user_id=current_user.id)
+    return reshare
 
-@router.post("/{post_id}/like", response_model=schemas.Like)
-def like_post(
+@router.post("/{post_id}/quote-post", response_model=schemas.QuotePost)
+def quote_post(
+    post_id: uuid.UUID,
     *, 
-    db: Session = Depends(deps.get_db), 
-    post_id: int, 
-    current_user: models.User = Depends(deps.get_current_active_user)
-):
+    db: Session = Depends(deps.get_db),
+    quote_post_in: schemas.QuotePostCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
     """
-    Like a post.
+    Quote a post.
     """
-    post = crud.post.get(db=db, id=post_id)
+    post = crud.post.get(db, id=post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    like = like_service.like_post(db, post_id=post_id, user=current_user)
-    return like
-
-@router.post("/{post_id}/unlike", response_model=schemas.Like)
-def unlike_post(
-    *, 
-    db: Session = Depends(deps.get_db), 
-    post_id: int, 
-    current_user: models.User = Depends(deps.get_current_active_user)
-):
-    """
-    Unlike a post.
-    """
-    post = crud.post.get(db=db, id=post_id)
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
-    like = like_service.unlike_post(db, post_id=post_id, user=current_user)
-    return like
+    quote_post = crud.quote_post.create_with_owner(db, obj_in=quote_post_in, user_id=current_user.id)
+    return quote_post
