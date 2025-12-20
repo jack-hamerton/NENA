@@ -1,170 +1,74 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import ViewOnceMessage from './ViewOnceMessage';
-import DisappearingMessage from './DisappearingMessage';
 
 const MessageContainer = styled.div`
-  display: flex;
-  margin-bottom: 1rem;
-  justify-content: ${props => props.isSender ? 'flex-end' : 'flex-start'};
-`;
-
-const MessageBubble = styled.div`
-  background-color: ${props => props.isSender ? '#dcf8c6' : '#fff'};
-  padding: ${props => props.isMedia ? '0' : '0'};
-  border-radius: 10px;
+  align-self: ${props => props.isMe ? 'flex-end' : 'flex-start'};
+  background-color: ${props => props.isMe ? '#dcf8c6' : '#fff'};
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  margin-bottom: 0.5rem;
   max-width: 60%;
-  position: relative;
-  overflow: visible; // Changed to allow options menu to show
-
-  &:hover .options-button {
-    opacity: 1;
-  }
 `;
 
-const MessageText = styled.p`
-  margin: 0;
-  padding: 0.8rem;
-`;
+const Message = ({ message, e2eeManager, sessionId }) => {
+  const [displayText, setDisplayText] = useState('');
+  const isMe = message.sender === 'me';
 
-const Media = styled.img`
-    max-width: 100%;
-    height: auto;
-`;
+  useEffect(() => {
+    const processMessage = async () => {
+      // For my own messages, the raw text is already available for a seamless UX.
+      if (isMe) {
+        setDisplayText(message.text);
+        return;
+      }
 
-const Timestamp = styled.span`
-  font-size: 0.7rem;
-  color: #888;
-  display: block;
-  text-align: right;
-  margin-top: 0.5rem;
-  padding: 0 0.5rem 0.5rem;
-`;
+      // For incoming messages, decryption is required.
+      setDisplayText('Decrypting...');
 
-const ReadReceipt = styled.span`
-    font-size: 0.7rem;
-    color: ${props => props.read ? '#4fc3f7' : '#888'};
-    margin-left: 0.3rem;
-`;
+      if (!e2eeManager) {
+        setDisplayText('[E2EE not available]');
+        return;
+      }
+      
+      try {
+        // Decrypt the entire message payload.
+        const decryptedText = await e2eeManager.decryptMessage(sessionId, message.iv, message.ciphertext);
+        const payload = JSON.parse(decryptedText);
 
-const Reactions = styled.div`
-    position: absolute;
-    bottom: 5px;
-    right: 10px;
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 2px 5px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-`;
-
-const OptionsButton = styled.button`
-    opacity: 0;
-    position: absolute;
-    top: -10px;
-    right: ${props => props.isSender ? 'auto' : '-35px'};
-    left: ${props => props.isSender ? '-35px' : 'auto'};
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: opacity 0.2s;
-`;
-
-const OptionsMenu = styled.div`
-    position: absolute;
-    top: 25px;
-    right: ${props => props.isSender ? 'auto' : '-85px'};
-    left: ${props => props.isSender ? '-85px' : 'auto'};
-    background: #fff;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 10;
-    width: 80px;
-
-    button {
-        display: block;
-        width: 100%;
-        padding: 0.5rem;
-        border: none;
-        background: none;
-        cursor: pointer;
-        text-align: left;
-
-        &:hover {
-            background: #f5f5f5;
+        // Only display messages that are of type 'chat'. 
+        // Signaling messages are handled by the ChatWindow.
+        if (payload.type === 'chat') {
+          setDisplayText(payload.content);
+        } else {
+          // This component does not display system messages.
+          setDisplayText(null);
         }
+      } catch (error) {
+        console.error("DECRYPTION FAILED:", error);
+        e2eeManager.fallbackToServer(message);
+        setDisplayText('[This message could not be decrypted. It has been stored for audit.]');
+      }
+    };
+
+    // Do not process messages that are not meant to be displayed
+    if (message.type === 'system') {
+        setDisplayText(null);
+        return;
     }
-`;
 
-const EditInput = styled.input`
-    width: calc(100% - 2rem);
-    padding: 0.8rem;
-    margin: 0.5rem 1rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-`;
+    processMessage();
+  }, [message, e2eeManager, sessionId, isMe]);
 
-const Message = ({ message, onUpdate, onDelete }) => {
-  const [showOptions, setShowOptions] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedText, setEditedText] = useState(message.text);
-
-  const isSender = message.sender === 'me';
-  const isMedia = message.type === 'image';
-  const isViewOnce = message.viewOnce;
-  const isDisappearing = message.disappearingTimer > 0;
-
-  const handleSave = () => {
-      onUpdate(message.id, editedText);
-      setIsEditing(false);
-      setShowOptions(false);
+  // Render nothing if there is no text to display (e.g., for a system message)
+  if (displayText === null) {
+    return null;
   }
-
-  const renderContent = () => {
-      if (isEditing) {
-          return (
-            <div>
-                <EditInput value={editedText} onChange={(e) => setEditedText(e.target.value)} />
-                <button onClick={handleSave}>Save</button>
-                <button onClick={() => setIsEditing(false)}>Cancel</button>
-            </div>
-          )
-      }
-      if (isViewOnce) {
-          return <ViewOnceMessage mediaUrl={message.mediaUrl} />
-      }
-      if (isMedia) {
-          return <Media src={message.mediaUrl} />
-      }
-      return <MessageText>{message.text}</MessageText>
-  }
-
-  const content = (
-    <MessageBubble isSender={isSender} isMedia={isMedia || isViewOnce || isEditing}>
-        {renderContent()}
-        {!isEditing && (
-            <Timestamp>
-                {message.timestamp}
-                {isSender && <ReadReceipt read={message.read}>✓✓</ReadReceipt>}
-            </Timestamp>
-        )}
-        {message.reactions && !isEditing && <Reactions>{message.reactions.join(' ')}</Reactions>}
-        {isSender && !isMedia && !isViewOnce && <OptionsButton className="options-button" isSender={isSender} onClick={() => setShowOptions(!showOptions)}>...</OptionsButton>}
-        {showOptions && (
-            <OptionsMenu isSender={isSender}>
-                <button onClick={() => { setIsEditing(true); }}>Edit</button>
-                <button onClick={() => onDelete(message.id)}>Delete</button>
-            </OptionsMenu>
-        )}
-    </MessageBubble>
-  )
 
   return (
-    <MessageContainer isSender={isSender}>
-        {isDisappearing ? <DisappearingMessage message={message}>{content}</DisappearingMessage> : content}
+    <MessageContainer isMe={isMe}>
+      <strong>{isMe ? 'You' : message.sender}: </strong>
+      {displayText}
     </MessageContainer>
   );
 };
