@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Box, TextField, Button, List, ListItem, ListItemText, Typography, IconButton } from '@mui/material';
 import { chatService, Message } from '../services/chatService';
@@ -7,7 +6,7 @@ import { PinLock } from '../components/PinLock';
 import CallPopup from '../components/call/CallPopup';
 
 const Chat = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [locked, setLocked] = useState(false);
   const [showCallPopup, setShowCallPopup] = useState(false);
@@ -15,17 +14,37 @@ const Chat = () => {
   const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
+    // Establish E2EE session when the component mounts
+    const establishE2EESession = async () => {
+      try {
+        // In a real application, you would get the recipient's identity and pre-keys from a server
+        const recipientId = 'some-recipient-id';
+        const recipientIdentityKey = null; // Fetch from server
+        const recipientPreKey = null; // Fetch from server
+        await chatService.establishSession(recipientId, recipientIdentityKey, recipientPreKey);
+        showSnackbar('E2EE session established', 'success');
+      } catch (error) {
+        showSnackbar('Failed to establish E2EE session', 'error');
+        console.error(error);
+      }
+    };
+
+    establishE2EESession();
+
+    // Get initial messages
     chatService.getMessages('some-room').then(setMessages);
 
-    const handleNewMessage = (message: Message) => {
+    // Subscribe to new messages
+    const handleNewMessage = (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
       showSnackbar(`New message from ${message.sender.name}`, 'success');
     };
 
-    chatService.on('new-message', handleNewMessage);
+    chatService.onNewMessage(handleNewMessage);
 
+    // Cleanup subscription
     return () => {
-      chatService.off('new-message', handleNewMessage);
+      chatService.offNewMessage();
     };
   }, [showSnackbar]);
 
@@ -34,7 +53,8 @@ const Chat = () => {
       chatService.sendMessage({ 
         text: newMessage, 
         sender: { id: 'me', name: 'Me' },
-        // In a real app, the sender would be the logged in user.
+       }).then(sentMessage => {
+        setMessages(prevMessages => [...prevMessages, sentMessage]);
        });
       setNewMessage('');
     }

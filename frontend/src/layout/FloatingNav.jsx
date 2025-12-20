@@ -57,7 +57,6 @@ const FloatingNav = () => {
         <NavLink to="/room">Room</NavLink>
         <NavLink to="/study">Study</NavLink>
         <NavLink to="/calendar">Calendar</NavLink>
-        <NavLink to="/analytics">Analytics</NavLink>
         {user ? (
           <AvatarContainer to="/profile">
             <UserAvatar user={user} />

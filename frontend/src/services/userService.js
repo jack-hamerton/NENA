@@ -1,3 +1,4 @@
+import { cryptoUtils } from '../utils/crypto';
 // This is a mock user service. In a real application, this would be replaced with a proper authentication service like Firebase Auth or Auth0.
 
 let currentUser = null;
@@ -33,7 +34,14 @@ export const userService = {
 
   async updateProfile(user, updates) {
     if (user.id === currentUser?.id) {
-      currentUser = { ...currentUser, ...updates };
+        const encryptedUpdates = { ...updates };
+        if (updates.name) {
+            encryptedUpdates.name = cryptoUtils.encrypt(updates.name);
+        }
+        if (updates.email) {
+            encryptedUpdates.email = cryptoUtils.encrypt(updates.email);
+        }
+      currentUser = { ...currentUser, ...encryptedUpdates };
       return Promise.resolve(currentUser);
     } else {
       return Promise.reject(new Error('Cannot update another user\'s profile'));
