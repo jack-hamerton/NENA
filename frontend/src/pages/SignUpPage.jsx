@@ -17,7 +17,7 @@ const SignUpPage = () => {
     setError('');
     try {
       await register(username, password, email);
-      navigate('/login');
+      navigate('/');
     } catch (err) {
       setError(err.message);
     }
