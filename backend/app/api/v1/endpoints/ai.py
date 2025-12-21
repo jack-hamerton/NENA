@@ -1,36 +1,28 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 from pydantic import BaseModel
-
-# Import the new service
-from app.services.moderation import ModerationService
-from app.schemas.moderation import ModerationResult
+from app.ai.main import process_user_prompt, run_background_tasks
 
 router = APIRouter()
-moderation_service = ModerationService()
 
 
-class ConversationRequest(BaseModel):
+class AIRequest(BaseModel):
     prompt: str
 
 
-class ModerationRequest(BaseModel):
-    text: str
-
-
 @router.post("/conversation")
-def conversation(request: ConversationRequest):
+def conversation(request: AIRequest):
     """
-    AI conversation endpoint.
+    Handles a user's conversation with the AI assistant.
     """
-    # In a real application, you would integrate with a real AI service (e.g., OpenAI, Google AI).
-    # For now, we'll just echo the prompt back.
-    return {"response": f"You said: {request.prompt}"}
+    # Process the prompt using the new AI service entry point
+    return process_user_prompt(request.prompt)
 
 
-@router.post("/moderation/text", response_model=ModerationResult)
-def moderate_text_endpoint(request: ModerationRequest):
+@router.post("/background-task")
+def trigger_background_task(background_tasks: BackgroundTasks):
     """
-    Endpoint to moderate text content.
+    Triggers the AI's self-improvement cycle as a background task.
     """
-    result = moderation_service.moderate_text(text=request.text)
-    return result
+    # Add the self-improvement cycle to the background tasks
+    background_tasks.add_task(run_background_tasks)
+    return {"message": "AI self-improvement cycle started in the background."}

@@ -1,95 +1,74 @@
 
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import styled from 'styled-components';
-import Sidebar from './components/Sidebar';
-import ChatWindow from './messages/ChatWindow';
-import { KeyStore } from './messages/e2ee/keystore';
-import { E2EEManager } from './messages/e2ee/e2eeManager';
-import { DataEncryptor } from './messages/e2ee/DataEncryptor';
+import FloatingNav from './layout/FloatingNav';
+import SplashScreen from './layout/SplashScreen/SplashScreen'; // Import the Splash Screen
+import HomePage from './pages/HomePage'; // Corrected HomePage import
+import { UserProfile } from './components/user/UserProfile';
+import { PodcastArtistProfile } from './components/podcast/PodcastArtistProfile';
+import { ListenersPage } from './components/podcast/ListenersPage';
+
+// --- Placeholder Pages (keeping for routes that are not yet built) ---
+const DiscoverPage = () => <div>Discover Page</div>;
+const MessagesPage = () => <div>Messages Page</div>;
+const RoomPage = () => <div>Room Page</div>;
+const StudyPage = () => <div>Study Page</div>;
+const CalendarPage = () => <div>Calendar Page</div>;
+const CreatePodcastPage = () => <div>Create Podcast Page</div>;
+const PrivacySettingsPage = () => <div>Privacy Settings Page</div>;
 
 const AppContainer = styled.div`
   display: flex;
-  height: 100vh;
-  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #ffffff;
+  min-height: 100vh;
+`;
+
+const MainContent = styled.main`
+  flex-grow: 1;
+  padding-left: 100px; /* Space for the floating nav */
+  padding-right: 2rem;
 `;
 
 const App = () => {
-  const [conversations, setConversations] = useState([]);
-  const [currentConversation, setCurrentConversation] = useState(null);
-  
-  const [keyStore, setKeyStore] = useState(null);
-  const [e2eeManager, setE2eeManager] = useState(null);
-  const [sessionId, setSessionId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize KeyStore and DataEncryptor
   useEffect(() => {
-    const initCrypto = async () => {
-      const store = new KeyStore();
-      await store.init();
-      setKeyStore(store);
+    // Simulate loading time for the splash screen animation
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 4000); // 4 seconds, adjust as needed
 
-      const dataEncryptor = new DataEncryptor(store);
-
-      // 1. RAW DATA: This is what we want to store securely.
-      const rawConversationData = [
-        { id: 1, name: 'Alice', avatar: 'https://i.pravatar.cc/150?u=alice' },
-        { id: 2, name: 'Bob', avatar: 'https://i.pravatar.cc/150?u=bob' },
-        { id: 3, name: 'Charlie', avatar: 'https://i.pravatar.cc/150?u=charlie' },
-      ];
-
-      // 2. ENCRYPTED BLOB: This is what is stored on your server. It is zero-knowledge.
-      const encryptedDataBlob = await dataEncryptor.encryptForServer(rawConversationData);
-      console.log("This is what your server would store:", encryptedDataBlob);
-
-      // 3. DECRYPTION ON CLIENT: The app fetches the blob and decrypts it locally.
-      try {
-        const decryptedData = await dataEncryptor.decryptFromServer(encryptedDataBlob);
-        setConversations(decryptedData);
-        console.log("Decrypted conversation data on the client:", decryptedData);
-      } catch (error) {
-        console.error("Failed to decrypt server data:", error);
-        // Handle error - maybe show a global error message
-      }
-    };
-    
-    initCrypto();
+    return () => clearTimeout(timer);
   }, []);
 
-  const handleSelectConversation = async (conversation) => {
-    setCurrentConversation(conversation);
-    setSessionId(null); 
-    setE2eeManager(null);
-
-    if (keyStore) {
-      console.log("Establishing E2EE session for the chat...");
-      const manager = new E2EEManager(keyStore);
-      
-      const recipientKeyStore = new KeyStore();
-      await recipientKeyStore.init();
-      const recipientIdentityKey = await recipientKeyStore.getIdentityKey();
-      const recipientPreKey = await recipientKeyStore.getPreKey();
-
-      const id = await manager.establishSession(
-        conversation.id,
-        recipientIdentityKey,
-        recipientPreKey
-      );
-      
-      setE2eeManager(manager);
-      setSessionId(id);
-      console.log(`E2EE session established with ID: ${id}`);
-    }
-  };
+  // If the app is loading, show the splash screen, otherwise show the app
+  if (isLoading) {
+    return <SplashScreen />;
+  }
 
   return (
-    <AppContainer>
-      <Sidebar conversations={conversations} onSelectConversation={handleSelectConversation} />
-      <ChatWindow
-        conversation={currentConversation}
-        e2eeManager={e2eeManager}
-        sessionId={sessionId}
-      />
-    </AppContainer>
+    <Router>
+      <AppContainer>
+        <FloatingNav />
+        <MainContent>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/discover" element={<DiscoverPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/room" element={<RoomPage />} />
+            <Route path="/study" element={<StudyPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/profile/:userId" element={<UserProfile />} />
+            <Route path="/podcast/create" element={<CreatePodcastPage />} />
+            <Route path="/podcast/:artistId" element={<PodcastArtistProfile />} />
+            <Route path="/podcast/:artistId/listeners" element={<ListenersPage />} />
+            <Route path="/settings/privacy" element={<PrivacySettingsPage />} />
+          </Routes>
+        </MainContent>
+      </AppContainer>
+    </Router>
   );
 };
 

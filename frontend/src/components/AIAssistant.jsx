@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAI } from '../hooks/useAI';
-import { Paper, TextField, Button, Typography, Box, IconButton } from '@mui/material';
+import { Paper, TextField, Button, Typography, Box, IconButton, Switch } from '@mui/material';
 
 const AIAssistant = () => {
   const [prompt, setPrompt] = useState('');
@@ -9,6 +9,7 @@ const AIAssistant = () => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const { conversation } = useAI();
+  const [isConsentGiven, setIsConsentGiven] = useState(false);
 
   // Draggable state
   const [position, setPosition] = useState({ x: 20, y: 20 });
@@ -59,8 +60,8 @@ const AIAssistant = () => {
     if (!prompt) return;
     setLoading(true);
     try {
-      const res = await conversation(prompt);
-      setResponse(res.data.response);
+        const res = await conversation(prompt);
+        setResponse(res.data.response);
     } catch (error) {
       console.error('Error communicating with AI:', error);
       setResponse('Error: Could not get a response from the AI.');
@@ -129,20 +130,29 @@ const AIAssistant = () => {
         >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography component="span" sx={{ fontSize: '1.5rem' }}>🤖</Typography>
-                <Typography variant="h6">AI Assistant</Typography>
+                <Typography variant="h6">Nena AI</Typography>
             </Box>
             <IconButton onClick={() => setIsOpen(false)} size="small" sx={{ color: 'primary.contrastText' }}>
                 <Typography>▼</Typography>
             </IconButton>
         </Box>
         <Box sx={{ p: 2, overflowY: 'auto', maxHeight: 400, backgroundColor: 'background.paper' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="body1">Enable Nena AI</Typography>
+                <Switch
+                    checked={isConsentGiven}
+                    onChange={(e) => setIsConsentGiven(e.target.checked)}
+                    name="consentSwitch"
+                    color="primary"
+                />
+            </Box>
             <TextField
                 fullWidth
-                label="Ask the AI anything..."
+                label="Ask Nena to do something..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && !loading && handleSend()}
-                disabled={loading}
+                disabled={loading || !isConsentGiven}
                 multiline
                 rows={2}
                 variant="outlined"
@@ -150,7 +160,7 @@ const AIAssistant = () => {
             <Button
                 variant="contained"
                 onClick={handleSend}
-                disabled={loading || !prompt}
+                disabled={loading || !prompt || !isConsentGiven}
                 sx={{ mt: 1, width: '100%' }}
             >
                 {loading ? 'Thinking...' : 'Send'}

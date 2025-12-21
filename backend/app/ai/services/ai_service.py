@@ -1,32 +1,58 @@
-import random
 import json
+import random
 
-# --- AI's Knowledge Base ---
-# In a real application, this would be a sophisticated database or a set of learned model weights.
-# Here, we simulate it with a simple dictionary to store outcomes.
+# In-memory "knowledge base" for the AI
 knowledge_base = {
     "coding_challenges": {
-        "reverse_string": {"success_rate": 1.0, "attempts": 1},
-        "palindrome_check": {"success_rate": 1.0, "attempts": 1},
-        "find_max": {"success_rate": 0.5, "attempts": 1},
+        "reverse_string": {"success_rate": 0.7, "attempts": 10},
+        "palindrome_check": {"success_rate": 0.8, "attempts": 15},
+        "find_max": {"success_rate": 0.6, "attempts": 8},
     }
 }
 
+# --- User Assistant AI ---
+def assist_user(prompt: str):
+    """
+    Processes a user's prompt and returns an action or a response.
+    """
+    prompt = prompt.lower().strip()
+    if "send message" in prompt:
+        message = prompt.split("send message", 1)[1].strip()
+        return {"action": "send_message", "payload": {"message": message}}
+    elif "call" in prompt:
+        user = prompt.split("call", 1)[1].strip()
+        return {"action": "call", "payload": {"user": user}}
+    elif "comment on post" in prompt:
+        comment = prompt.split("comment on post", 1)[1].strip()
+        return {"action": "comment", "payload": {"comment": comment}}
+    elif "help" in prompt:
+        return {
+            "response": "I can help you with the following tasks: \n"
+                        "- send message [your message]\n"
+                        "- call [user]\n"
+                        "- comment on post [your comment]"
+        }
+    else:
+        # If no specific action is found, return a generic response.
+        # This can be expanded to use a more sophisticated NLU/NLG model.
+        return {"response": f"I'm not sure how to help with that. You said: '{prompt}'"}
+
+
+# --- Self-Improving Programmer AI ---
+
 def self_generate_challenges(domain="coding"):
-    '''
-    Generates its own problems (e.g., coding challenges, math problems) to solve,
-    creating a feedback loop for self-improvement.
-    '''
-    if domain == "coding":
-        challenges = [
-            {"task": "reverse_string", "description": "Generate a Python function to reverse a string."},
-            {"task": "palindrome_check", "description": "Generate a Python function to check if a string is a palindrome."},
-            {"task": "find_max", "description": "Generate a Python function to find the maximum number in a list."},
-        ]
-        challenge = random.choice(challenges)
-        print(f"Generated coding challenge: {challenge['description']}")
-        return challenge
-    return None
+    """
+    Generates a new coding challenge for the AI to solve.
+    """
+    challenges = list(knowledge_base["coding_challenges"].keys())
+    if not challenges:
+        return None
+    task = random.choice(challenges)
+    print(f"Generated challenge: {task}")
+    # In a real scenario, this would be more complex, maybe using an LLM.
+    return {"domain": domain, "task": task, "test_cases": [
+        {"input": "hello", "output": "olleh"} # Example for reverse_string
+    ]}
 
 def attempt_solution(challenge: dict) -> str:
     '''
@@ -36,8 +62,6 @@ def attempt_solution(challenge: dict) -> str:
     task = challenge.get("task")
     print(f"Attempting to solve challenge: {task}")
     
-    # Simulate solution generation, influenced by past performance.
-    # A lower success_rate increases the chance of generating a flawed solution.
     success_rate = knowledge_base["coding_challenges"].get(task, {}).get("success_rate", 0.5)
     
     # --- Simulated Solution Library ---
@@ -47,51 +71,38 @@ def attempt_solution(challenge: dict) -> str:
         "find_max": "def find_max(numbers):\n    if not numbers:\n        return None\n    return max(numbers)",
     }
     
-    # This version has a bug: it doesn't handle negative numbers correctly.
-    buggy_find_max = "def find_max(numbers):\n    max_val = 0\n    for n in numbers:\n        if n > max_val:\n            max_val = n\n    return max_val"
-
-    # Decide whether to produce a correct or incorrect solution based on success_rate
-    if task == "find_max" and random.random() > success_rate:
-        print("Injecting a known bug to simulate an imperfect AI...")
-        solution = buggy_find_max
+    buggy_solutions = {
+        "reverse_string": "def reverse_string(s):\n    return s[::2]", # Bug: skips chars
+        "palindrome_check": "def is_palindrome(s):\n    return s == s.reverse()", # Bug: reverse is not a string method
+        "find_max": "def find_max(numbers):\n    return min(numbers)", # Bug: returns min instead of max
+    }
+    
+    if random.random() < success_rate:
+        print("Generating a correct solution.")
+        return correct_solutions.get(task, "pass # No solution found")
     else:
-        solution = correct_solutions.get(task, "# No solution found.")
-        
-    print(f"Generated solution:\n{solution}")
-    return solution
+        print("Generating a buggy solution.")
+        return buggy_solutions.get(task, "pass # No solution found")
 
-def evaluate_with_ai_judge(challenge: dict, generated_code: str) -> dict:
-    '''
-    Uses another AI model (a "judge") to evaluate the output.
-    Returns a dictionary with success status and a reason.
-    '''
+def evaluate_code(code: str, challenge: dict) -> dict:
+    """
+    Evaluates the generated code against test cases. This acts as the "judge" agent.
+    """
+    print("Evaluating code...")
+    # For simplicity, we'll just check if the generated code is the correct one.
+    # A real implementation would execute the code in a sandbox.
     task = challenge.get("task")
-    print(f"AI Judge is evaluating the solution for: {task}")
-    try:
-        local_scope = {}
-        exec(generated_code, globals(), local_scope)
-        func_name = next(iter(local_scope))
-        func = local_scope[func_name]
-
-        test_cases = {
-            "reverse_string": [("hello", "olleh"), ("world", "dlrow")],
-            "palindrome_check": [("madam", True), ("hello", False)],
-            "find_max": [([1, 5, 2], 5), ([-10, 0, -1], 0), ([10, 20, -5], 20)],
-        }
-
-        for args, expected in test_cases.get(task, []):
-            result = func(args)
-            if result != expected:
-                reason = f"Test Failed. Input: {args}, Got: {result}, Expected: {expected}"
-                print(f"AI Judge: {reason}")
-                return {"success": False, "reason": reason}
-        
-        print("AI Judge: All tests passed.")
-        return {"success": True, "reason": "All tests passed."}
-    except Exception as e:
-        reason = f"Code execution failed. Error: {e}"
-        print(f"AI Judge: {reason}")
-        return {"success": False, "reason": reason}
+    correct_solutions = {
+        "reverse_string": "def reverse_string(s):\n    return s[::-1]",
+        "palindrome_check": "def is_palindrome(s):\n    return s == s[::-1]",
+        "find_max": "def find_max(numbers):\n    if not numbers:\n        return None\n    return max(numbers)",
+    }
+    if code == correct_solutions.get(task):
+        print("Evaluation: Success!")
+        return {"success": True, "challenge": task}
+    else:
+        print("Evaluation: Failure.")
+        return {"success": False, "challenge": task, "reason": "Generated code did not match expected output."}
 
 def update_internal_parameters(feedback_data: dict):
     '''
@@ -113,6 +124,10 @@ def update_internal_parameters(feedback_data: dict):
         print(f"Updating knowledge base for '{task}': Success rate changed from {old_rate:.2f} to {new_rate:.2f}")
     else:
         print("No prior knowledge for this task. Could initialize here.")
+        knowledge_base["coding_challenges"][task] = {
+            "success_rate": 1.0 if success else 0.0,
+            "attempts": 1,
+        }
 
     if success:
         print("Reinforcing successful patterns.")
@@ -135,29 +150,8 @@ def run_self_improvement_cycle(domain="coding"):
         print("Could not generate a challenge.")
         return
 
-    solution = attempt_solution(challenge)
-    evaluation = evaluate_with_ai_judge(challenge, solution)
-    
-    feedback = {
-        "challenge": challenge["task"],
-        "success": evaluation["success"],
-        "reason": evaluation["reason"]
-    }
-    
+    solution_code = attempt_solution(challenge)
+    feedback = evaluate_code(solution_code, challenge)
     update_internal_parameters(feedback)
     
-    print("--- Self-improvement cycle complete ---")
-    return feedback
-
-# The other learning methods remain as placeholders for now.
-def supervised_learning_train(labeled_data):
-    print(f"Starting supervised training on {len(labeled_data)} examples (dummy).")
-    return "Supervised training complete (dummy)."
-
-def unsupervised_learning_discover(unlabeled_data):
-    print(f"Running unsupervised discovery on {len(unlabeled_data)} data points (dummy).")
-    return "Unsupervised discovery complete (dummy)."
-
-def reinforcement_learning_optimize(environment, agent):
-    print(f"Starting reinforcement learning for agent '{agent}' in '{environment}' (dummy).")
-    return "Reinforcement learning optimization complete (dummy)."
+    print("--- Self-improvement cycle finished ---")
