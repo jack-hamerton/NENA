@@ -1,15 +1,15 @@
 
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import FloatingNav from './layout/FloatingNav';
-import SplashScreen from './layout/SplashScreen/SplashScreen'; // Import the Splash Screen
-import HomePage from './pages/HomePage'; // Corrected HomePage import
-import { UserProfile } from './components/user/UserProfile';
-import { PodcastArtistProfile } from './components/podcast/PodcastArtistProfile';
-import { ListenersPage } from './components/podcast/ListenersPage';
+import SplashScreen from './layout/SplashScreen/SplashScreen';
+import HomePage from './pages/HomePage';
+import UserProfile from './pages/UserProfile'; 
+import FollowList from './components/FollowList'; 
+import * as userService from './services/user.service';
 
-// --- Placeholder Pages (keeping for routes that are not yet built) ---
+// --- Placeholder Pages ---
 const DiscoverPage = () => <div>Discover Page</div>;
 const MessagesPage = () => <div>Messages Page</div>;
 const RoomPage = () => <div>Room Page</div>;
@@ -31,19 +31,59 @@ const MainContent = styled.main`
   padding-right: 2rem;
 `;
 
+const FollowerList = () => {
+  const { username } = useParams();
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchFollowers = async () => {
+      try {
+        const userRes = await userService.getUserByUsername(username);
+        // Assuming the API returns a nested object with user details
+        setUsers(userRes.data.followers.map(f => f.follower)); 
+      } catch (error) {
+        console.error("Failed to fetch followers:", error);
+      }
+    };
+
+    fetchFollowers();
+  }, [username]);
+
+  return <FollowList title="Followers" users={users} />;
+};
+
+const FollowingList = () => {
+  const { username } = useParams();
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchFollowing = async () => {
+      try {
+        const userRes = await userService.getUserByUsername(username);
+        // Assuming the API returns a nested object with user details
+        setUsers(userRes.data.following.map(f => f.followed)); 
+      } catch (error) {
+        console.error("Failed to fetch following:", error);
+      }
+    };
+
+    fetchFollowing();
+  }, [username]);
+
+  return <FollowList title="Following" users={users} />;
+};
+
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading time for the splash screen animation
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 4000); // 4 seconds, adjust as needed
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // If the app is loading, show the splash screen, otherwise show the app
   if (isLoading) {
     return <SplashScreen />;
   }
@@ -60,10 +100,10 @@ const App = () => {
             <Route path="/room" element={<RoomPage />} />
             <Route path="/study" element={<StudyPage />} />
             <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/profile/:userId" element={<UserProfile />} />
+            <Route path="/user/:username" element={<UserProfile />} />
+            <Route path="/user/:username/followers" element={<FollowerList />} />
+            <Route path="/user/:username/following" element={<FollowingList />} />
             <Route path="/podcast/create" element={<CreatePodcastPage />} />
-            <Route path="/podcast/:artistId" element={<PodcastArtistProfile />} />
-            <Route path="/podcast/:artistId/listeners" element={<ListenersPage />} />
             <Route path="/settings/privacy" element={<PrivacySettingsPage />} />
           </Routes>
         </MainContent>
