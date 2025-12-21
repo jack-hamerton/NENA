@@ -8,11 +8,15 @@ import HomePage from './pages/HomePage';
 import UserProfile from './pages/UserProfile'; 
 import FollowList from './components/FollowList'; 
 import * as userService from './services/user.service';
+import DiscoverPage from './discover/DiscoverPage';
+import MessagesPage from './messages/MessagesPage';
+import RoomsPage from './rooms/RoomsPage';
+import { Room } from './rooms/Room';
+import Podcasts from './pages/Podcasts';
+import PodcastPlayer from './components/podcast/PodcastPlayer';
+
 
 // --- Placeholder Pages ---
-const DiscoverPage = () => <div>Discover Page</div>;
-const MessagesPage = () => <div>Messages Page</div>;
-const RoomPage = () => <div>Room Page</div>;
 const StudyPage = () => <div>Study Page</div>;
 const CalendarPage = () => <div>Calendar Page</div>;
 const CreatePodcastPage = () => <div>Create Podcast Page</div>;
@@ -97,7 +101,10 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/room" element={<RoomPage />} />
+            <Route path="/room" element={<RoomsPage />} />
+            <Route path="/room/:id" element={<Room />} />
+            <Route path="/podcasts" element={<Podcasts />} />
+            <Route path="/player" element={<PodcastPlayer />} />
             <Route path="/study" element={<StudyPage />} />
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/user/:username" element={<UserProfile />} />

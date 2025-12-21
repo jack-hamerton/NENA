@@ -1,9 +1,11 @@
+
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import UserAvatar from '../components/UserAvatar';
 import { darkTheme } from '../theme';
+import NotificationBar from '../components/NotificationBar';
 
 const NavContainer = styled.div`
   position: fixed;
@@ -52,9 +54,11 @@ const FloatingNav = () => {
     <NavContainer>
       <NavLinks>
         <NavLink to="/">Home</NavLink>
+        <NotificationBar />
         <NavLink to="/discover">Discover</NavLink>
         <NavLink to="/messages">Messages</NavLink>
         <NavLink to="/room">Room</NavLink>
+        <NavLink to="/podcasts">Podcasts</NavLink>
         <NavLink to="/study">Study</NavLink>
         <NavLink to="/calendar">Calendar</NavLink>
         {user ? (
