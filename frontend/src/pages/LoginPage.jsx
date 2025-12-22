@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Container,
@@ -22,7 +23,7 @@ const LoginPage = () => {
     setError('');
     try {
       await login(username, password);
-      navigate('/'); 
+      navigate('/success'); 
     } catch (err) {
       setError(err.message);
     }

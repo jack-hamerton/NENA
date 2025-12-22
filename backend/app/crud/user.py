@@ -1,5 +1,5 @@
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 from sqlalchemy.orm import Session
 from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
@@ -18,11 +18,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             'username': obj_in.username,
             'first_name': obj_in.first_name,
             'last_name': obj_in.last_name,
+            'email': obj_in.email,
             'hashed_password': get_password_hash(obj_in.password),
         }
-        if obj_in.email:
-            create_data['email'] = obj_in.email
-
         db_obj = User(**create_data)
         db.add(db_obj)
         db.commit()

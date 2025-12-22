@@ -30,8 +30,6 @@ class UserCreate(UserBase):
             raise ValueError('Password must contain a lowercase letter')
         if not re.search(r"[0-9]", v):
             raise ValueError('Password must contain a number')
-        if not re.search(r"[!@#$%^&*(),.?:{}|<>]", v):
-            raise ValueError('Password must contain a special character')
         return v
 
 # Properties to receive on user login
@@ -49,7 +47,7 @@ class UserUpdate(UserBase):
     online_status_privacy: Optional[str] = None
     pin_enabled: Optional[bool] = None
     hashed_pin: Optional[str] = None
-    silence_unknown_callers: Optional[bool] = None
+    silence_.unknown_callers: Optional[bool] = None
 
 # Properties shared by models stored in DB
 class UserInDBBase(UserBase):

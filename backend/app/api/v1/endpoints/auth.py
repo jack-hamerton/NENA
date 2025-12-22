@@ -17,8 +17,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         if db_user_by_email:
             raise HTTPException(status_code=400, detail="Email already registered")
 
-    crud_user.create(db=db, obj_in=user)
-    return {"message": "User registered successfully"}
+    db_user = crud_user.create(db=db, obj_in=user)
+    access_token = create_access_token(data={"sub": db_user.username})
+    return {"token": access_token, "token_type": "bearer"}
 
 @router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
@@ -26,4 +27,4 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     if not db_user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
     access_token = create_access_token(data={"sub": db_user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"token": access_token, "token_type": "bearer"}

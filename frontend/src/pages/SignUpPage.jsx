@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Container,
@@ -17,7 +18,7 @@ const SignUpPage = () => {
     setError('');
     try {
       await register(username, password, email);
-      navigate('/');
+      navigate('/success');
     } catch (err) {
       setError(err.message);
     }

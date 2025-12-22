@@ -26,6 +26,8 @@ import StudyBuilder from '../study/StudyBuilder';
 import CreatorStudio from '../study/CreatorStudio';
 import ParticipantGate from '../study/ParticipantGate';
 import StudyParticipantView from '../study/StudyParticipantView';
+import LoginPage from '../pages/LoginPage';
+import SignUpPage from '../pages/SignUpPage';
 
 
 // --- Placeholder Pages ---
@@ -147,6 +149,8 @@ const MainLayout = () => {
           <FloatingNav />
           <MainContent>
             <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
               <Route path="/" element={<HomePage />} />
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/messages" element={<MessagesPage />} />
