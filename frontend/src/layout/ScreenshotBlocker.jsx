@@ -1,8 +1,10 @@
+
 import { useEffect } from 'react';
-import { Box } from '@mui/material';
 
 const ScreenshotBlocker = () => {
   useEffect(() => {
+    document.body.classList.add('screenshot-blocker-active');
+
     const handleKeyDown = (e) => {
       if (e.key === 'PrintScreen') {
         e.preventDefault();
@@ -13,11 +15,12 @@ const ScreenshotBlocker = () => {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      document.body.classList.remove('screenshot-blocker-active');
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
-  return <Box sx={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }} className="screenshot-blocker" />;
+  return null;
 };
 
 export default ScreenshotBlocker;

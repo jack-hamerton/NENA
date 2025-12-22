@@ -1,6 +1,13 @@
+
 import React, { useState } from 'react';
 import { mockUser } from '../mock/user'; // Assuming mock data is stored here
-import './ProfileHeader.css';
+import {
+    ProfileHeaderContainer,
+    ProfilePicture,
+    RoleBadge,
+    ProfileInfo,
+    FollowSection
+} from './ProfileHeader.styled';
 
 const ProfileHeader = () => {
   const [showIntentOptions, setShowIntentOptions] = useState(false);
@@ -16,16 +23,16 @@ const ProfileHeader = () => {
   };
 
   return (
-    <div className="profile-header">
-      <div className="profile-picture">
+    <ProfileHeaderContainer>
+      <ProfilePicture>
         <img src={mockUser.avatar} alt={mockUser.name} />
-        <span className="role-badge">{mockUser.role}</span>
-      </div>
-      <div className="profile-info">
+        <RoleBadge>{mockUser.role}</RoleBadge>
+      </ProfilePicture>
+      <ProfileInfo>
         <h2>{mockUser.name}</h2>
         <p className="handle">{mockUser.handle}</p>
         <p className="tagline">{mockUser.tagline}</p>
-        <div className="follow-section">
+        <FollowSection>
           <button onClick={handleFollowClick}>Follow</button>
           {showIntentOptions && (
             <div className="intent-options">
@@ -34,9 +41,9 @@ const ProfileHeader = () => {
               <button onClick={() => handleIntentSelect('Learner')}>Learner</button>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+        </FollowSection>
+      </ProfileInfo>
+    </ProfileHeaderContainer>
   );
 };
 

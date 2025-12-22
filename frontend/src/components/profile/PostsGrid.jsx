@@ -13,15 +13,15 @@ const PostGrid = styled.div`
 `;
 
 const PostCard = styled.div`
-  background-color: #222;
+  background-color: ${({ theme }) => theme.palette.primary};
   border-radius: 8px;
   padding: 1rem;
-  color: #fff;
+  color: ${({ theme }) => theme.text.primary};
 `;
 
 const ShowMoreButton = styled.button`
-  background-color: #333;
-  color: #fff;
+  background-color: ${({ theme }) => theme.palette.primary};
+  color: ${({ theme }) => theme.text.primary};
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;

@@ -11,7 +11,7 @@ const NavContainer = styled.div`
   top: 50%;
   left: 20px;
   transform: translateY(-50%);
-  background-color: ${props => props.theme.palette.primary};
+  background-color: transparent;
   padding: 20px 10px;
   border-radius: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -84,6 +84,9 @@ const FloatingNav = () => {
         </NavLink>
         <NavLink to="/calendar" theme={theme}>
           Calendar
+        </NavLink>
+        <NavLink to="/settings" theme={theme}> {/* Add settings link */}
+          Settings
         </NavLink>
         {user ? (
           <AvatarContainer to="/profile" theme={theme}>

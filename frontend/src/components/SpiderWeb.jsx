@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import './SpiderWeb.css';
+import { SpiderWebContainer } from './SpiderWeb.styled';
 
 // Mock data representing intentional follows
 const mockGraphData = {
@@ -121,9 +121,9 @@ const SpiderWeb = () => {
   }
 
   return (
-    <div className="spider-web-container">
+    <SpiderWebContainer>
       <svg ref={ref}></svg>
-    </div>
+    </SpiderWebContainer>
   );
 };
 

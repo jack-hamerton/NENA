@@ -14,8 +14,8 @@ const PodcastGrid = styled.div`
 `;
 
 const ShowMoreButton = styled.button`
-  background-color: #333;
-  color: #fff;
+  background-color: ${({ theme }) => theme.palette.primary};
+  color: ${({ theme }) => theme.text.primary};
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -24,7 +24,7 @@ const ShowMoreButton = styled.button`
 `;
 
 const AddPodcastButton = styled(ShowMoreButton)`
-    background-color: #3897f0;
+    background-color: ${({ theme }) => theme.palette.accent};
 `;
 
 const PodcastsGrid = ({ podcasts }) => {

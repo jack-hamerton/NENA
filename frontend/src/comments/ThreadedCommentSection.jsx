@@ -1,52 +1,42 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { Comment } from './Comment';
+import { CommentComposer } from './CommentComposer';
 
-const Comment = ({ comment, replies }) => {
-  return (
-    <div style={{ marginLeft: '20px', borderLeft: '1px solid #ccc', paddingLeft: '10px' }}>
-      <div>{comment.text}</div>
-      <small>{comment.author}</small>
-      {replies && replies.length > 0 && (
-        <div>
-          {replies.map(reply => (
-            <Comment key={reply.id} comment={reply} replies={[]} />
-          ))}
+export const ThreadedCommentSection = ({ comments, onCommentSubmitted }) => {
+  const [showReplies, setShowReplies] = useState({});
+
+  const handleToggleReplies = (commentId) => {
+    setShowReplies(prev => ({ ...prev, [commentId]: !prev[commentId] }));
+  };
+
+  const renderComments = (commentList, parentId = null) => {
+    return commentList
+      .filter(comment => comment.parentId === parentId)
+      .map(comment => (
+        <div key={comment.id} style={{ marginLeft: parentId ? '20px' : '0' }}>
+          <Comment comment={comment} />
+          <button onClick={() => handleToggleReplies(comment.id)}>
+            {showReplies[comment.id] ? 'Hide Replies' : 'Show Replies'}
+          </button>
+          {showReplies[comment.id] && (
+            <>
+              <CommentComposer 
+                postId={comment.postId} 
+                parentId={comment.id} 
+                onCommentSubmitted={onCommentSubmitted} 
+              />
+              {renderComments(comments, comment.id)}
+            </>
+          )}
         </div>
-      )}
-    </div>
-  );
-};
-
-const ThreadedCommentSection = ({ postId }) => {
-  const [comments, setComments] = useState([]);
-
-  useEffect(() => {
-    const fetchComments = async () => {
-      // In a real app, you would fetch comments for the given postId
-      const mockComments = [
-        { id: 1, text: 'This is the first comment', author: 'User A', parentId: null },
-        { id: 2, text: 'This is a reply to the first comment', author: 'User B', parentId: 1 },
-        { id: 3, text: 'This is another reply to the first comment', author: 'User C', parentId: 1 },
-        { id: 4, text: 'This is a nested reply', author: 'User D', parentId: 2 },
-        { id: 5, text: 'This is a second-level comment', author: 'User E', parentId: null },
-      ];
-      setComments(mockComments);
-    };
-
-    fetchComments();
-  }, [postId]);
-
-  const getReplies = (commentId) => {
-    return comments.filter(comment => comment.parentId === commentId);
+      ));
   };
 
   return (
     <div>
-      {comments.filter(comment => comment.parentId === null).map(comment => (
-        <Comment key={comment.id} comment={comment} replies={getReplies(comment.id)} />
-      ))}
+      <CommentComposer postId={comments[0]?.postId} onCommentSubmitted={onCommentSubmitted} />
+      {renderComments(comments)}
     </div>
   );
 };
-
-export default ThreadedCommentSection;

@@ -1,9 +1,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import styled, { ThemeProvider } from 'styled-components';
+import styled from 'styled-components';
 import ActivityFeed from '../feed/ActivityFeed';
 import * as postService from '../services/post.service';
-import { theme } from '../theme/theme';
 
 const FeedContainer = styled.div`
   max-width: 600px;
@@ -100,7 +99,6 @@ const HomePage = () => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
       <FeedContainer>
         <CreatePostButton onClick={handleCreatePost}>Create Post</CreatePostButton>
         <Tabs>
@@ -114,7 +112,6 @@ const HomePage = () => {
         </Tabs>
         <ActivityFeed posts={posts} onReportPost={handleReportPost} />
       </FeedContainer>
-    </ThemeProvider>
   );
 };
 
