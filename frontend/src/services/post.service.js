@@ -1,16 +1,26 @@
 
-import axios from 'axios';
-import authHeader from './auth-header';
+import { api } from './api';
 
-const API_URL = '/api/v1/posts';
+export const getForYouFeed = () => {
+  return api.get('/posts/for-you');
+};
 
-// ... (existing functions) ...
+export const getFollowingFeed = () => {
+  return api.get('/posts/following');
+};
 
-/**
- * Fetches all posts created by a specific user.
- * @param {string} userId - The ID of the user.
- * @returns {Promise<axios.AxiosResponse<any>>}
- */
 export const getPostsByUser = (userId) => {
-  return axios.get(`${API_URL}/by-user/${userId}`, { headers: authHeader() });
+  return api.get(`/posts/by-user/${userId}`);
+};
+
+export const getPostById = (postId) => {
+  return api.get(`/posts/${postId}`);
+};
+
+export const createPost = (postData) => {
+  return api.post('/posts/', postData);
+};
+
+export const reportPost = (postId) => {
+  return api.post(`/posts/${postId}/report`);
 };

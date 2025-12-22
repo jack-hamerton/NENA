@@ -10,7 +10,7 @@ export const Poll: React.FC<{ poll: any }> = ({ poll }) => {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            const endsAt = new Date(poll.createdAt).getTime() + poll.duration * 60 * 60 * 1000;
+            const endsAt = new Date(poll.created_at).getTime() + poll.duration * 1000;
             const now = new Date().getTime();
             const distance = endsAt - now;
 
@@ -30,10 +30,10 @@ export const Poll: React.FC<{ poll: any }> = ({ poll }) => {
         return () => clearInterval(interval);
     }, [poll]);
 
-    const handleVote = async (option: string) => {
+    const handleVote = async (optionId: number) => {
         if (voted) return;
         try {
-            const response = await api.post(`/rooms/${roomId}/polls/${poll.id}/vote`, { option }, {});
+            const response = await api.post(`/rooms/${roomId}/polls/${poll.id}/vote`, { option_id: optionId });
             setResults(response.data.results);
             setVoted(true);
         } catch (error) {
@@ -46,9 +46,9 @@ export const Poll: React.FC<{ poll: any }> = ({ poll }) => {
             <h3>{poll.question}</h3>
             {!voted && (
                 <ul>
-                    {poll.options.map((option: string, index: number) => (
-                        <li key={index} onClick={() => handleVote(option)}>
-                            {option}
+                    {poll.options.map((option: any) => (
+                        <li key={option.id} onClick={() => handleVote(option.id)}>
+                            {option.text}
                         </li>
                     ))}
                 </ul>

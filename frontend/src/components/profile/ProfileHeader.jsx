@@ -1,90 +1,47 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { Avatar, Button, Typography } from '@mui/material';
 
 const HeaderContainer = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
   margin-bottom: 2rem;
 `;
 
-const ProfilePicture = styled.img`
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  margin-right: 2rem;
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const DisplayName = styled.h1`
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 0;
-`;
-
-const Handle = styled.h2`
+const RoleBadge = styled.p`
   font-size: 1.2rem;
-  font-weight: 300;
-  color: #aaa;
-  margin: 0.2rem 0;
-`;
-
-const RoleBadge = styled.span`
-  background-color: #3897f0;
-  color: white;
-  padding: 0.3rem 0.6rem;
-  border-radius: 1rem;
-  font-size: 0.8rem;
-  margin-right: 0.5rem;
-  display: inline-block;
+  font-weight: bold;
+  margin: 0.5rem 0;
 `;
 
 const Tagline = styled.p`
-  margin-top: 0.5rem;
-  font-size: 1rem;
+  font-style: italic;
+  margin-bottom: 1rem;
+  max-width: 600px;
 `;
 
 const FollowButtonGroup = styled.div`
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
 `;
 
-const FollowButton = styled.button`
-  background-color: ${props => props.color || '#3897f0'};
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-
-  &:hover {
-    opacity: 0.8;
-  }
-`;
-
-const ProfileHeader = ({ user }) => {
+const ProfileHeader = ({ user, onFollow }) => {
   return (
     <HeaderContainer>
-      <ProfilePicture src={user.profilePicture} alt={user.displayName} />
-      <UserInfo>
-        <div>
-          <RoleBadge>{user.role.icon} {user.role.name}</RoleBadge>
-          <DisplayName>{user.displayName}</DisplayName>
-        </div>
-        <Handle>@{user.handle}</Handle>
-        <Tagline>{user.tagline}</Tagline>
-        <FollowButtonGroup>
-            <FollowButton color="#2ecc71">Follow as Supporter</FollowButton>
-            <FollowButton color="#e67e22">Follow as Amplifier</FollowButton>
-            <FollowButton color="#3498db">Follow as Learner</FollowButton>
-        </FollowButtonGroup>
-      </UserInfo>
+      <Avatar src={user.profilePicture} sx={{ width: 120, height: 120, mb: 2 }} />
+      <Typography variant="h4">{user.displayName}</Typography>
+      <Typography variant="body1" color="text.secondary">@{user.handle}</Typography>
+      <RoleBadge>👑 {user.role}</RoleBadge>
+      <Tagline>{user.tagline}</Tagline>
+      <FollowButtonGroup>
+        <Button variant="contained" color="success" onClick={() => onFollow('supporter')}>Follow as Supporter</Button>
+        <Button variant="contained" color="warning" onClick={() => onFollow('amplifier')}>Follow as Amplifier</Button>
+        <Button variant="contained" color="info" onClick={() => onFollow('learner')}>Follow as Learner</Button>
+      </FollowButtonGroup>
     </HeaderContainer>
   );
 };

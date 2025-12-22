@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import ActivityFeed from '../feed/ActivityFeed';
 import * as postService from '../services/post.service';
+import CreatePostModal from '../components/modals/CreatePostModal';
 
 const FeedContainer = styled.div`
   max-width: 600px;
@@ -60,6 +61,7 @@ const CreatePostButton = styled.button`
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [feedType, setFeedType] = useState('for-you');
+  const [isCreatePostModalOpen, setCreatePostModalOpen] = useState(false);
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -83,24 +85,36 @@ const HomePage = () => {
     fetchPosts();
   };
 
-  const handleReportPost = (postId) => {
-    setPosts(prevPosts =>
-      prevPosts.map(post =>
-        post.id === postId ? { ...post, isReported: true } : post
-      )
-    );
-    console.log(`Client-side report for post: ${postId}`);
+  const handleReportPost = async (postId) => {
+    try {
+      await postService.reportPost(postId);
+      setPosts(prevPosts =>
+        prevPosts.map(post =>
+          post.id === postId ? { ...post, isReported: true } : post
+        )
+      );
+    } catch (error) {
+      console.error("Failed to report post:", error);
+    }
   };
 
-  const handleCreatePost = () => {
-    // For now, we'll just log a message to the console.
-    // In the future, this will navigate to a create post page or open a modal.
-    console.log("Create Post button clicked!");
+  const handleCreatePost = async (content) => {
+    try {
+      const response = await postService.createPost({ content });
+      setPosts(prevPosts => [response.data, ...prevPosts]);
+    } catch (error) {
+      console.error("Failed to create post:", error);
+    }
   };
 
   return (
       <FeedContainer>
-        <CreatePostButton onClick={handleCreatePost}>Create Post</CreatePostButton>
+        <CreatePostButton onClick={() => setCreatePostModalOpen(true)}>Create Post</CreatePostButton>
+        <CreatePostModal
+          open={isCreatePostModalOpen}
+          onClose={() => setCreatePostModalOpen(false)}
+          onCreatePost={handleCreatePost}
+        />
         <Tabs>
           <Tab active={feedType === 'for-you'} onClick={() => setFeedType('for-you')}>
             For You

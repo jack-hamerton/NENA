@@ -1,8 +1,5 @@
-
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { Participant } from '../services/callService';
-import { ParticipantTile } from './ParticipantTile';
 
 const VideoGrid = styled.div`
   flex-grow: 1;
@@ -11,18 +8,42 @@ const VideoGrid = styled.div`
   gap: 10px;
   padding: 10px;
   overflow-y: auto;
-  background-color: ${props => props.theme.palette.dark};
 `;
 
-interface RoomVideoGridProps {
-  participants: Participant[];
-}
+const VideoContainer = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+`;
 
-export const RoomVideoGrid: React.FC<RoomVideoGridProps> = ({ participants }) => {
+const StyledVideo = styled.video`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const Video = ({ stream, muted }) => {
+  const ref = useRef();
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.srcObject = stream;
+    }
+  }, [stream]);
+
+  return (
+    <VideoContainer>
+      <StyledVideo ref={ref} autoPlay playsInline muted={muted} />
+    </VideoContainer>
+  );
+};
+
+export const RoomVideoGrid = ({ localStream, remoteStreams }) => {
   return (
     <VideoGrid>
-      {participants.map((participant) => (
-        <ParticipantTile key={participant.id} participant={participant} />
+      {localStream && <Video stream={localStream} muted={true} />}
+      {Object.entries(remoteStreams).map(([clientId, stream]) => (
+        <Video key={clientId} stream={stream} muted={false} />
       ))}
     </VideoGrid>
   );

@@ -2,63 +2,39 @@
 import styled from 'styled-components';
 
 export const ProfilePageContainer = styled.div`
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 20px;
-  color: ${({ theme }) => theme.text.primary};
+  padding: 2rem;
 `;
 
-export const ProfileBody = styled.div`
-  .tabs {
-    border-bottom: 1px solid ${({ theme }) => theme.palette.dark};
-    margin-bottom: 20px;
+export const HeaderSection = styled.section`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
 
-    button {
-      background: none;
-      border: none;
-      color: ${({ theme }) => theme.text.secondary};
-      padding: 10px 20px;
-      cursor: pointer;
-      font-size: 1rem;
+export const SpiderWebCanvasSection = styled.section`
+  height: 400px;
+  margin-bottom: 2rem;
+`;
 
-      &.active {
-        color: ${({ theme }) => theme.text.primary};
-        border-bottom: 2px solid ${({ theme }) => theme.palette.secondary};
-      }
-    }
+export const ContentSection = styled.section`
+  margin-bottom: 2rem;
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
   }
 `;
 
-export const PodcastsSection = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-`;
-
-export const ProfileMetrics = styled.div`
-  margin-top: 40px;
-  padding: 20px;
-  background-color: ${({ theme }) => theme.palette.dark};
+export const MetricsSection = styled.section`
+  background-color: #222;
+  padding: 1rem;
   border-radius: 8px;
+  margin-bottom: 2rem;
 `;
 
 export const ProfileFooter = styled.footer`
-  margin-top: 40px;
-  padding: 20px;
-  background-color: ${({ theme }) => theme.palette.dark};
-  border-radius: 8px;
-
-  button {
-    margin-top: 10px;
-    background-color: ${({ theme }) => theme.palette.primary};
-    color: ${({ theme }) => theme.text.primary};
-    border: 1px solid ${({ theme }) => theme.palette.tertiary};
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-
-    &:hover {
-      background-color: ${({ theme }) => theme.palette.tertiary};
-    }
-  }
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
 `;

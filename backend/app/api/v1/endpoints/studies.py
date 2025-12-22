@@ -13,12 +13,11 @@ def create_study(
     *, 
     db: Session = Depends(get_db),
     study_in: schemas.StudyCreate,
-    # current_user: models.User = Depends(deps.get_current_active_user) # Assuming you have user authentication
 ) -> Any:
     """
     Create new study.
     """
-    study = crud.study.create_with_owner(db=db, obj_in=study_in, owner_id=1) # Replace 1 with current_user.id
+    study = crud.study.create(db=db, obj_in=study_in)
     return study
 
 @router.get("/", response_model=List[schemas.Study])
@@ -26,12 +25,11 @@ def read_studies(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    # current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Retrieve studies for the current user.
+    Retrieve studies.
     """
-    studies = crud.study.get_multi_by_owner(db, owner_id=1, skip=skip, limit=limit) # Replace 1 with current_user.id
+    studies = crud.study.get_multi(db, skip=skip, limit=limit)
     return studies
 
 @router.get("/{id}", response_model=schemas.Study)
@@ -39,7 +37,6 @@ def read_study(
     *, 
     db: Session = Depends(get_db),
     id: int,
-    # current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get study by ID.
@@ -63,14 +60,30 @@ def read_study_by_code(
         raise HTTPException(status_code=404, detail="Study not found")
     return study
 
-@router.post("/responses/", response_model=schemas.Response)
-def create_response(
+@router.post("/{study_id}/answers", response_model=List[schemas.Answer])
+def create_answers(
     *, 
     db: Session = Depends(get_db),
-    response_in: schemas.ResponseCreate,
+    study_id: int,
+    answers_in: schemas.AnswersCreate,
 ) -> Any:
     """
-    Create new response for a study.
+    Create new answers for a study.
     """
-    response = crud.response.create_response(db=db, response=response_in)
-    return response
+    answers = []
+    for answer_in in answers_in.answers:
+        answer = crud.answer.create(db=db, obj_in=schemas.AnswerCreate(text=answer_in, question_id=1, study_id=study_id))
+        answers.append(answer)
+    return answers
+
+@router.get("/{study_id}/answers", response_model=List[schemas.Answer])
+def read_answers(
+    *, 
+    db: Session = Depends(get_db),
+    study_id: int,
+) -> Any:
+    """
+    Retrieve answers for a study.
+    """
+    answers = crud.answer.get_multi_by_study(db, study_id=study_id)
+    return answers

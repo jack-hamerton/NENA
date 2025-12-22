@@ -1,106 +1,48 @@
 
-import React, { useState, useMemo } from 'react';
-import ReactFlow, { MiniMap, Controls, Background } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
+import React, { useMemo } from 'react';
+import ReactFlow, { Background, Controls } from 'react-flow-renderer';
 import styled from 'styled-components';
-import CustomNode from './CustomNode';
 
 const CanvasContainer = styled.div`
-  height: 500px;
-  background-color: #1a1a1a;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  position: relative;
+  width: 100%;
+  height: 100%;
 `;
 
-const Tooltip = styled.div`
-  position: absolute;
-  background: rgba(40, 40, 40, 0.9);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  pointer-events: none;
-  z-index: 100;
-  white-space: nowrap;
-`;
+const SpiderWebCanvas = ({ currentUser, follows }) => {
+  const elements = useMemo(() => {
+    const initialElements = [
+      {
+        id: 'user',
+        data: { label: currentUser.username },
+        position: { x: 250, y: 250 },
+        style: { backgroundColor: '#8bc34a', color: 'white' },
+      },
+    ];
 
-const FilterContainer = styled.div`
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    z-index: 10;
-    display: flex;
-    gap: 0.5rem;
-`;
-
-const FilterButton = styled.button`
-    background-color: ${props => props.active ? props.color : '#444'};
-    color: white;
-    border: 1px solid ${props => props.color};
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: 600;
-
-    &:hover {
-        opacity: 0.9;
+    if (follows) {
+      follows.forEach((follow, index) => {
+        initialElements.push({
+          id: `follow-${index}`,
+          data: { label: follow.username },
+          position: { x: 250 + (index % 2 === 0 ? -1 : 1) * (100 + (index * 20)), y: 250 + (index % 3 === 0 ? -1 : 1) * (100 + (index * 20)) },
+        });
+        initialElements.push({
+          id: `edge-${index}`,
+          source: 'user',
+          target: `follow-${index}`,
+          label: follow.intent,
+        });
+      });
     }
-`;
 
-const nodeTypes = { custom: CustomNode };
-
-const SpiderWebCanvas = ({ nodes, edges }) => {
-  const [tooltip, setTooltip] = useState(null);
-  const [filters, setFilters] = useState({ supporter: true, amplifier: true, learner: true });
-
-  const onEdgeMouseEnter = (event, edge) => {
-    if (edge.label) {
-      setTooltip({ content: edge.label, x: event.clientX, y: event.clientY });
-    }
-  };
-
-  const onEdgeMouseLeave = () => setTooltip(null);
-  
-  const onEdgeMouseMove = (event) => {
-      if (tooltip) {
-          setTooltip(prev => ({...prev, x: event.clientX, y: event.clientY}));
-      }
-  }
-
-  const onNodeClick = (_, node) => console.log(`Navigating to profile of ${node.data.label}`);
-
-  const toggleFilter = (intent) => {
-      setFilters(prev => ({...prev, [intent]: !prev[intent]}));
-  }
-
-  const filteredEdges = useMemo(() => {
-      const activeFilters = Object.keys(filters).filter(key => filters[key]);
-      // Always include edges that don't have a specific intent (e.g., incoming follows)
-      return edges.filter(edge => !edge.data?.intent || activeFilters.includes(edge.data.intent));
-  }, [edges, filters]);
+    return initialElements;
+  }, [currentUser, follows]);
 
   return (
     <CanvasContainer>
-      {tooltip && <Tooltip style={{ left: tooltip.x + 15, top: tooltip.y + 15 }}>{tooltip.content}</Tooltip>}
-      <FilterContainer>
-          <FilterButton color="#2ecc71" active={filters.supporter} onClick={() => toggleFilter('supporter')}>Supporters</FilterButton>
-          <FilterButton color="#e67e22" active={filters.amplifier} onClick={() => toggleFilter('amplifier')}>Amplifiers</FilterButton>
-          <FilterButton color="#3498db" active={filters.learner} onClick={() => toggleFilter('learner')}>Learners</FilterButton>
-      </FilterContainer>
-      <ReactFlow
-        nodes={nodes.map(node => ({...node, type: 'custom'}))} // Use custom node type
-        edges={filteredEdges}
-        nodeTypes={nodeTypes}
-        onEdgeMouseEnter={onEdgeMouseEnter}
-        onEdgeMouseLeave={onEdgeMouseLeave}
-        onEdgeMouseMove={onEdgeMouseMove}
-        onNodeClick={onNodeClick}
-        fitView
-      >
+      <ReactFlow elements={elements} >
+        <Background />
         <Controls />
-        <MiniMap nodeColor={n => n.data.color || '#555'}/>
-        <Background variant="dots" gap={12} size={1} />
       </ReactFlow>
     </CanvasContainer>
   );

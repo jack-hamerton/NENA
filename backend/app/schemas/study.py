@@ -3,29 +3,19 @@ from typing import List, Optional
 
 # Answer Schemas
 class AnswerBase(BaseModel):
-    question_id: int
-    answer_text: str
+    text: str
 
 class AnswerCreate(AnswerBase):
-    pass
+    question_id: int
+    study_id: int
+
+class AnswersCreate(BaseModel):
+    answers: List[str]
 
 class Answer(AnswerBase):
     id: int
-    response_id: int
-
-    class Config:
-        orm_mode = True
-
-# Response Schemas
-class ResponseBase(BaseModel):
+    question_id: int
     study_id: int
-    answers: List[AnswerCreate]
-
-class ResponseCreate(ResponseBase):
-    pass
-
-class Response(ResponseBase):
-    id: int
 
     class Config:
         orm_mode = True
@@ -64,7 +54,6 @@ class StudyUpdate(StudyBase):
 
 class StudyInDBBase(StudyBase):
     id: int
-    creator_id: int
     questions: List[Question] = []
     unique_code: str
 

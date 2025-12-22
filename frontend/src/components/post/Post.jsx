@@ -1,58 +1,82 @@
 
 import { useState, useEffect } from 'react';
-import { api } from '../../utils/api';
+import { Avatar, Card, CardHeader, CardContent, CardActions, IconButton, Typography } from '@mui/material';
+import { Favorite, Comment } from '@mui/icons-material';
+import { useUser } from '../../hooks/useUser';
+import { usePosts } from '../../hooks/usePosts';
 import { ThreadedCommentSection } from '../../comments/ThreadedCommentSection';
 
-export const Post = ({ postId }) => {
-  const [post, setPost] = useState(null);
-  const [comments, setComments] = useState([]);
+export const Post = ({ post }) => {
+  const [author, setAuthor] = useState(null);
+  const [showComments, setShowComments] = useState(false);
+  const { getUser } = useUser();
+  const { likePost, unlikePost } = usePosts();
 
   useEffect(() => {
-    const fetchPost = async () => {
+    const fetchAuthor = async () => {
       try {
-        const postRes = await api.get(`/posts/${postId}`, {});
-        setPost(postRes.data);
+        const response = await getUser(post.user_id);
+        setAuthor(response.data);
       } catch (error) {
-        console.error("Error fetching post:", error);
+        console.error("Error fetching author:", error);
       }
     };
 
-    const fetchComments = async () => {
-      try {
-        const commentsRes = await api.get(`/posts/${postId}/comments`, {});
-        setComments(commentsRes.data);
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-      }
-    };
-    
-    fetchPost();
-    fetchComments();
-  }, [postId]);
+    if (post.user_id) {
+      fetchAuthor();
+    }
+  }, [post.user_id, getUser]);
 
-  const handleCommentSubmit = async (commentData) => {
+  const handleLike = async () => {
     try {
-      const response = await api.post(`/posts/${postId}/comments`, commentData);
-      if (response.status === 201) { // 201 Created
-        // Add the new comment to the state for an instant UI update
-        setComments(prevComments => [...prevComments, response.data]);
+      if (post.is_liked) {
+        await unlikePost(post.id);
+      } else {
+        await likePost(post.id);
       }
     } catch (error) {
-      console.error("Error posting comment:", error);
+      console.error('Error liking/unliking post:', error);
     }
+  };
+
+  const handleCommentClick = () => {
+    setShowComments(!showComments);
   };
 
   if (!post) return <div>Loading...</div>;
 
   return (
-    <div>
-      <h2>{post.title}</h2>
-      <p>{post.content}</p>
-      <ThreadedCommentSection 
-        postId={postId}
-        comments={comments} 
-        onCommentSubmitted={handleCommentSubmit} 
+    <Card sx={{ mb: 2 }}>
+      <CardHeader
+        avatar={<Avatar src={author?.profile_picture_url} />}
+        title={author?.username || 'Loading...'}
+        subheader={new Date(post.created_at).toLocaleDateString()}
       />
-    </div>
+      <CardContent>
+        <Typography variant="body2" color="text.secondary">
+          {post.content}
+        </Typography>
+        {post.media_url && (
+          <img src={post.media_url} alt="Post media" style={{ maxWidth: '100%', marginTop: '1rem' }} />
+        )}
+      </CardContent>
+      <CardActions disableSpacing>
+        <IconButton aria-label="add to favorites" onClick={handleLike}>
+          <Favorite color={post.is_liked ? 'error' : 'inherit'} />
+        </IconButton>
+        <Typography>{post.like_count}</Typography>
+        <IconButton aria-label="comment" onClick={handleCommentClick}>
+          <Comment />
+        </IconButton>
+        <Typography>{post.comment_count}</Typography>
+      </CardActions>
+      {showComments && (
+        <ThreadedCommentSection 
+          postId={post.id}
+          comments={[]}
+          onCommentSubmitted={() => {}}
+        />
+      )}
+    </Card>
   );
 };

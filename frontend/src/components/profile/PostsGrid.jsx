@@ -1,52 +1,38 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
+import { Card, CardContent, CardMedia, Typography } from '@mui/material';
 
-const PostsContainer = styled.div`
-  margin-bottom: 2rem;
-`;
-
-const PostGrid = styled.div`
+const GridContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
 `;
 
-const PostCard = styled.div`
-  background-color: ${({ theme }) => theme.palette.primary};
-  border-radius: 8px;
-  padding: 1rem;
-  color: ${({ theme }) => theme.text.primary};
-`;
-
-const ShowMoreButton = styled.button`
-  background-color: ${({ theme }) => theme.palette.primary};
-  color: ${({ theme }) => theme.text.primary};
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 1rem;
+const PostCard = styled(Card)`
+  background-color: ${props => props.theme.palette.lightDark};
+  color: ${props => props.theme.text.primary};
 `;
 
 const PostsGrid = ({ posts }) => {
-  const [showAll, setShowAll] = useState(false);
-  const visiblePosts = showAll ? posts : posts.slice(0, 8);
-
   return (
-    <PostsContainer>
-      <h2>Posts</h2>
-      <PostGrid>
-        {visiblePosts.map(post => (
-          <PostCard key={post.id}>{post.content}</PostCard>
-        ))}
-      </PostGrid>
-      {posts.length > 8 && (
-        <ShowMoreButton onClick={() => setShowAll(!showAll)}>
-          {showAll ? 'Show Less' : 'Show More'}
-        </ShowMoreButton>
-      )}
-    </PostsContainer>
+    <GridContainer>
+      {posts.map(post => (
+        <PostCard key={post.id}>
+          {post.media_url && (
+            <CardMedia
+              component="img"
+              height="140"
+              image={post.media_url}
+              alt="Post media"
+            />
+          )}
+          <CardContent>
+            <Typography variant="body2">{post.content}</Typography>
+          </CardContent>
+        </PostCard>
+      ))}
+    </GridContainer>
   );
 };
 

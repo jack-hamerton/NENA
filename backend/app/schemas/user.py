@@ -64,6 +64,9 @@ class UserInDBBase(UserBase):
 # Properties to return to client
 class User(UserInDBBase):
     rooms: List[Room] = []
+    name: str
+    profile_picture_url: Optional[str] = None
+    username: str
 
 # Properties stored in DB
 class UserInDB(UserInDBBase):

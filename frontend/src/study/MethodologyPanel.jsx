@@ -14,11 +14,11 @@ const Title = styled.h2`
   color: ${({ theme }) => theme.text.primary};
 `;
 
-const MethodologyPanel = ({ kiiCount, surveyCount }) => {
+const MethodologyPanel = ({ study }) => {
   return (
     <PanelContainer>
       <Title>Methodology</Title>
-      <p>This study is based on {kiiCount} Key Informant Interviews and {surveyCount} surveys.</p>
+      <p>{study.description}</p>
     </PanelContainer>
   );
 };

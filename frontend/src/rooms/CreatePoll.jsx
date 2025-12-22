@@ -16,12 +16,14 @@ export const CreatePoll: React.FC<CreatePollProps> = ({ onPollCreated }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            const formattedOptions = options.map(option => ({ text: option }));
+            const durationInSeconds = duration * 60 * 60;
             const response = await api.post(`/rooms/${roomId}/polls`, {
                 question,
-                options,
-                duration,
+                options: formattedOptions,
+                duration: durationInSeconds,
                 anonymous,
-            }, {});
+            });
             onPollCreated(response.data);
             setQuestion('');
             setOptions(['', '']);

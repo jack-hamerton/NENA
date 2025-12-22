@@ -1,7 +1,7 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { VirtualBackground } from './VirtualBackground';
+import { ReactionPanel } from './ReactionPanel';
 
 const ControlsBarContainer = styled.div`
   display: flex;
@@ -29,13 +29,40 @@ const ControlButton = styled.button`
   }
 `;
 
-export const ControlsBar: React.FC = () => {
+export const ControlsBar = ({ onSendReaction, localStream, onLeave }) => {
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
   const [showVirtualBackground, setShowVirtualBackground] = useState(false);
+  const [showReactionPanel, setShowReactionPanel] = useState(false);
+
+  useEffect(() => {
+    if (localStream) {
+      if (localStream.getAudioTracks().length > 0) {
+        localStream.getAudioTracks()[0].enabled = !isAudioMuted;
+      }
+      if (localStream.getVideoTracks().length > 0) {
+        localStream.getVideoTracks()[0].enabled = !isVideoMuted;
+      }
+    }
+  }, [localStream, isAudioMuted, isVideoMuted]);
+
+  const toggleAudio = () => {
+    setIsAudioMuted(!isAudioMuted);
+  };
+
+  const toggleVideo = () => {
+    setIsVideoMuted(!isVideoMuted);
+  };
+
+  const handleReactionSelect = (emoji) => {
+    onSendReaction(emoji);
+    setShowReactionPanel(false);
+  };
 
   return (
     <ControlsBarContainer>
-      <ControlButton>Mute</ControlButton>
-      <ControlButton>Stop Video</ControlButton>
+      <ControlButton onClick={toggleAudio}>{isAudioMuted ? 'Unmute' : 'Mute'}</ControlButton>
+      <ControlButton onClick={toggleVideo}>{isVideoMuted ? 'Start Video' : 'Stop Video'}</ControlButton>
       <ControlButton onClick={() => setShowVirtualBackground(!showVirtualBackground)}>
         Virtual Background
       </ControlButton>
@@ -43,8 +70,9 @@ export const ControlsBar: React.FC = () => {
       <ControlButton>Share Screen</ControlButton>
       <ControlButton>Record</ControlButton>
       <ControlButton>Chat</ControlButton>
-      <ControlButton>Reactions</ControlButton>
-      <ControlButton className="end-call">End Call</ControlButton>
+      <ControlButton onClick={() => setShowReactionPanel(!showReactionPanel)}>Reactions</ControlButton>
+      {showReactionPanel && <ReactionPanel onSelect={handleReactionSelect} />}
+      <ControlButton className="end-call" onClick={onLeave}>End Call</ControlButton>
     </ControlsBarContainer>
   );
 };

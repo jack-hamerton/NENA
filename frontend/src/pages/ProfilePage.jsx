@@ -1,83 +1,127 @@
 
-import React, { useState } from 'react';
-import styled, { ThemeProvider } from 'styled-components';
-import ProfileHeader from '../profile/ProfileHeader';
-import SpiderWeb from '../components/SpiderWeb';
+import React, { useState, useEffect } from 'react';
+import { ThemeProvider } from 'styled-components';
 import PostsGrid from '../components/profile/PostsGrid';
 import PodcastsGrid from '../components/profile/PodcastsGrid';
-import { mockUser } from '../mock/user';
+import SpiderWebCanvas from '../components/profile/SpiderWebCanvas';
+import ProfileHeader from '../components/profile/ProfileHeader';
+import IntentModal from '../components/profile/IntentModal';
+import CreatePodcast from '../components/profile/CreatePodcast';
 import { theme } from '../theme/theme';
+import { getUserById, getFollowers, followUser, getUserPosts, getUserPodcasts } from '../services/user.service';
 import {
     ProfilePageContainer,
-    ProfileBody,
-    ProfileMetrics,
+    SpiderWebCanvasSection,
+    ContentSection,
+    MetricsSection,
     ProfileFooter
 } from './ProfilePage.styled';
-
-const SectionContainer = styled.div`
-  margin-bottom: 2rem;
-  background-color: ${props => props.theme.palette.primary};
-  padding: 1rem;
-  border-radius: 8px;
-
-  h2 {
-    color: ${props => props.theme.palette.secondary};
-    border-bottom: 2px solid ${props => props.theme.palette.secondary};
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
-  }
-`;
+import { Button, CircularProgress, Typography, Modal } from '@mui/material';
+import { useParams } from 'react-router-dom';
 
 const ProfilePage = () => {
-  const [activeTab, setActiveTab] = useState('Posts');
+  const { id } = useParams();
+  const [user, setUser] = useState(null);
+  const [followers, setFollowers] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [podcasts, setPodcasts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showMorePosts, setShowMorePosts] = useState(false);
+  const [showMorePodcasts, setShowMorePodcasts] = useState(false);
+  const [intentModalOpen, setIntentModalOpen] = useState(false);
+  const [createPodcastModalOpen, setCreatePodcastModalOpen] = useState(false);
 
-  const userPodcasts = [
-    { id: 1, title: 'My First Podcast', author: 'Elena Rodriguez', imageUrl: 'https://via.placeholder.com/150' },
-    { id: 2, title: 'Nyalenda B Stories', author: 'Elena Rodriguez', imageUrl: 'https://via.placeholder.com/150' },
-  ];
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const [userResponse, followersResponse, postsResponse, podcastsResponse] = await Promise.all([
+          getUserById(id),
+          getFollowers(id),
+          getUserPosts(id),
+          getUserPodcasts(id),
+        ]);
+        setUser(userResponse.data);
+        setFollowers(followersResponse.data);
+        setPosts(postsResponse.data);
+        setPodcasts(podcastsResponse.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setLoading(false);
+      }
+    };
 
-  const userPosts = [
-      { id: 1, content: 'This is my first post!' },
-      { id: 2, content: 'Here is another post!' },
-      { id: 3, content: 'I am really enjoying this platform.' },
-      { id: 4, content: 'Just posted a new podcast, check it out!' },
-      { id: 5, content: 'Thinking about my next project...' },
-      { id: 6, content: 'Just hit 1000 followers! Thank you all!' },
-      { id: 7, content: 'The community here is amazing.' },
-      { id: 8, content: 'I love sharing my stories with you all.' },
-      { id: 9, content: 'This is my ninth post.' },
-  ];
+    fetchUserData();
+  }, [id]);
+
+  const handleFollow = async (intent) => {
+    try {
+      await followUser(id, intent);
+      // Refresh followers after following
+      const followersResponse = await getFollowers(id);
+      setFollowers(followersResponse.data);
+      setIntentModalOpen(false);
+    } catch (error) {
+      console.error("Error following user:", error);
+    }
+  };
+
+  if (loading) {
+    return <CircularProgress />;
+  }
+
+  if (!user) {
+    return <Typography>User not found</Typography>;
+  }
 
   return (
     <ThemeProvider theme={theme}>
-        <ProfilePageContainer>
-        <ProfileHeader />
+      <ProfilePageContainer>
+        <ProfileHeader user={user} onFollow={() => setIntentModalOpen(true)} />
+        <IntentModal open={intentModalOpen} onClose={() => setIntentModalOpen(false)} onFollow={handleFollow} />
 
-        <ProfileBody>
-            <div className="tabs">
-            <button onClick={() => setActiveTab('Posts')} className={activeTab === 'Posts' ? 'active' : ''}>Posts</button>
-            <button onClick={() => setActiveTab('Spider Web')} className={activeTab === 'Spider Web' ? 'active' : ''}>Spider Web</button>
-            <button onClick={() => setActiveTab('Podcasts')} className={activeTab === 'Podcasts' ? 'active' : ''}>Podcasts</button>
-            </div>
+        <SpiderWebCanvasSection>
+          <SpiderWebCanvas currentUser={user} follows={followers} />
+        </SpiderWebCanvasSection>
 
-            {activeTab === 'Posts' && <PostsGrid posts={userPosts} />}
-            {activeTab === 'Spider Web' && <SpiderWeb />}
-            {activeTab === 'Podcasts' && <PodcastsGrid podcasts={userPodcasts} />}
-        </ProfileBody>
+        <ContentSection>
+          <div className="section-header">
+            <Typography variant="h5">Posts</Typography>
+            <Button onClick={() => setShowMorePosts(!showMorePosts)}>
+              {showMorePosts ? 'Show Less' : 'Show More'}
+            </Button>
+          </div>
+          <PostsGrid posts={showMorePosts ? posts : posts.slice(0, 8)} />
+        </ContentSection>
 
-        <ProfileMetrics>
-            <h3>Metrics & Impact</h3>
-            <p>Followers by Intent: Supporters ({mockUser.followers.supporters}), Amplifiers ({mockUser.followers.amplifiers}), Learners ({mockUser.followers.learners})</p>
-            <p>Topics Engaged: {mockUser.topics.join(', ')}</p>
-            <p>Community Impact Badges: {mockUser.impactBadges.join(', ')}</p>
-        </ProfileMetrics>
+        <ContentSection>
+        <div className="section-header">
+            <Typography variant="h5">Podcasts</Typography>
+            <Button onClick={() => setCreatePodcastModalOpen(true)}>Create Podcast</Button>
+            <Button onClick={() => setShowMorePodcasts(!showMorePodcasts)}>
+                {showMorePodcasts ? 'Show Less' : 'Show More'}
+            </Button>
+        </div>
+        <PodcastsGrid podcasts={showMorePodcasts ? podcasts : podcasts.slice(0, 4)} />
+        </ContentSection>
+        
+        <Modal open={createPodcastModalOpen} onClose={() => setCreatePodcastModalOpen(false)}>
+            <CreatePodcast />
+        </Modal>
+
+        <MetricsSection>
+          <h3>Metrics & Impact</h3>
+          <p>Followers by Intent (Supporters: 120, Amplifiers: 45, Learners: 200)</p>
+          <p>Topics Engaged (#YouthVoices, #ClimateJustice)</p>
+          <p>Community Impact Badge (Challenge Contributor)</p>
+        </MetricsSection>
 
         <ProfileFooter>
-            <p>Community Rooms: {mockUser.communityRooms.join(', ')}</p>
-            <p>Pinned Story: [Link to {mockUser.pinnedStoryId}]</p>
-            <button>Request to Collaborate</button>
+          <Button>Community Rooms</Button>
+          <Button>Pinned Story</Button>
+          <Button>Request to Collaborate</Button>
         </ProfileFooter>
-        </ProfilePageContainer>
+      </ProfilePageContainer>
     </ThemeProvider>
   );
 };

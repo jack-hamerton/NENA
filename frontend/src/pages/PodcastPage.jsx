@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { podcasts } from '../mock/podcasts';
+import { getPodcasts } from '../services/podcast.service';
 import PodcastCard from '../components/podcast/PodcastCard';
 import Discovery from '../components/podcast/Discovery';
 import BestPlaceToStart from '../components/podcast/BestPlaceToStart';
@@ -43,6 +43,14 @@ const AdditionalFeaturesContainer = styled.div`
 `;
 
 const PodcastPage = () => {
+  const [podcasts, setPodcasts] = useState([]);
+
+  useEffect(() => {
+    getPodcasts().then((response) => {
+      setPodcasts(response.data);
+    });
+  }, []);
+
   return (
     <PodcastPageContainer>
       <h1 style={{ color: theme.palette.secondary }}>Podcasts</h1>

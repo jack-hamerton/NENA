@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import SearchResults from '../discover/SearchResults';
+import { search } from '../services/discover.service';
 
 const Discover = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -9,32 +10,24 @@ const Discover = () => {
 
   useEffect(() => {
     const fetchResults = async () => {
-      if (searchQuery.length > 2) { // Avoid searching for very short queries
-        // In a real application, you would make an API call here
-        // For demonstration purposes, we'll use mock data
-        const mockData = {
-          users: [
-            { id: 1, name: 'John Doe', handle: 'johndoe', avatar: 'https://i.pravatar.cc/150?u=johndoe' },
-            { id: 2, name: 'Jane Doe', handle: 'janedoe', avatar: 'https://i.pravatar.cc/150?u=janedoe' },
-          ],
-          posts: [
-            { id: 1, author: { name: 'John Doe', avatar: 'https://i.pravatar.cc/150?u=johndoe' }, content: 'This is a sample post' },
-            { id: 2, author: { name: 'Jane Doe', avatar: 'https://i.pravatar.cc/150?u=janedoe' }, content: 'Another sample post' },
-          ],
-          hashtags: [
-            { id: 1, name: 'react', postCount: 123 },
-            { id: 2, name: 'webdev', postCount: 456 },
-          ],
-        };
-
-        setSearchResults(mockData[searchType]);
-      }
-      else {
+      if (searchQuery.length > 0) {
+        try {
+          const response = await search(searchQuery, searchType);
+          setSearchResults(response.data);
+        } catch (error) {
+          console.error(`Failed to fetch ${searchType}:`, error);
+          setSearchResults([]);
+        }
+      } else {
         setSearchResults([]);
       }
     };
 
-    fetchResults();
+    const debounceFetch = setTimeout(() => {
+        fetchResults();
+    }, 500);
+
+    return () => clearTimeout(debounceFetch);
   }, [searchQuery, searchType]);
 
   const handleSearchChange = (event) => {

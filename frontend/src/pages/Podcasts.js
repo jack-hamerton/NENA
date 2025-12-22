@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
 import PodcastCard from '../components/podcast/PodcastCard';
 import PodcastPlayer from '../components/podcast/PodcastPlayer';
-import { podcasts } from '../mock/podcasts';
+import { getPodcasts } from '../services/podcast.service';
 import { useSearchParams } from 'react-router-dom';
 import { theme } from '../theme/theme';
 
@@ -40,6 +40,13 @@ const Podcasts = () => {
   const podcastId = searchParams.get('id');
   const [activeTab, setActiveTab] = useState('recommendations');
   const [searchQuery, setSearchQuery] = useState('');
+  const [podcasts, setPodcasts] = useState([]);
+
+  useEffect(() => {
+    getPodcasts().then(response => {
+      setPodcasts(response.data);
+    });
+  }, []);
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);

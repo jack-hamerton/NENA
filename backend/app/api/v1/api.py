@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import challenges, trending_audio, posts, users, utils, login
+from app.api.v1.endpoints import challenges, trending_audio, posts, users, utils, login, search, studies, feed_polls
 
 api_router = APIRouter()
 api_router.include_router(login.router, tags=["login"])
@@ -9,3 +9,6 @@ api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
 api_router.include_router(challenges.router, prefix="/challenges", tags=["challenges"])
 api_router.include_router(trending_audio.router, prefix="/trending-audio", tags=["trending-audio"])
 api_router.include_router(posts.router, prefix="/posts", tags=["posts"])
+api_router.include_router(search.router, prefix="/search", tags=["search"])
+api_router.include_router(studies.router, prefix="/studies", tags=["studies"])
+api_router.include_router(feed_polls.router, prefix="/feed-polls", tags=["feed_polls"])

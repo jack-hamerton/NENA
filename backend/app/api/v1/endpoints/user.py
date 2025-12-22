@@ -1,10 +1,15 @@
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from app import models, crud
 from app.api import deps
 from app.schemas.user import User, UserCreate, UserUpdate
 from app.services.user import UserService
+import uuid
+from pydantic import BaseModel
+
+class FollowIntent(BaseModel):
+    intent: str
 
 router = APIRouter()
 user_service = UserService()
@@ -35,9 +40,24 @@ def get_user_by_username(
     return user
 
 
+@router.get("/{user_id}", response_model=User)
+def get_user(
+    user_id: uuid.UUID,
+    db: Session = Depends(deps.get_db),
+):
+    """
+    Get user by ID.
+    """
+    user = user_service.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 @router.post("/{user_id}/follow")
 def follow_user(
-    user_id: str,
+    user_id: uuid.UUID,
+    intent: FollowIntent,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ):
@@ -50,13 +70,13 @@ def follow_user(
     if current_user.id == user_to_follow.id:
         raise HTTPException(status_code=400, detail="You cannot follow yourself")
 
-    user_service.follow_user(db, follower_id=current_user.id, followed_id=user_to_follow.id)
+    user_service.follow_user(db, follower_id=current_user.id, followed_id=user_to_follow.id, intent=intent.intent)
     return {"message": "Successfully followed user"}
 
 
 @router.delete("/{user_id}/follow")
 def unfollow_user(
-    user_id: str,
+    user_id: uuid.UUID,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ):

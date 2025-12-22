@@ -5,7 +5,6 @@ import styled, { ThemeProvider } from 'styled-components';
 import FloatingNav from './FloatingNav';
 import SplashScreen from './SplashScreen/SplashScreen';
 import HomePage from '../pages/HomePage';
-import UserProfile from '../pages/UserProfile'; 
 import ProfilePage from '../pages/ProfilePage';
 import FollowList from '../components/FollowList'; 
 import * as userService from '../services/user.service';
@@ -22,9 +21,14 @@ import Footer from './Footer';
 import GlobalPinLock from '../components/GlobalPinLock'; 
 import SettingsPage from '../settings/SettingsPage'; 
 import { useBiometricAuth } from '../hooks/useBiometricAuth'; // Import the new hook
+import StudyPage from '../study/StudyPage';
+import StudyBuilder from '../study/StudyBuilder';
+import CreatorStudio from '../study/CreatorStudio';
+import ParticipantGate from '../study/ParticipantGate';
+import StudyParticipantView from '../study/StudyParticipantView';
+
 
 // --- Placeholder Pages ---
-const StudyPage = () => <div>Study Page</div>;
 const CalendarPage = () => <div>Calendar Page</div>;
 const CreatePodcastPage = () => <div>Create Podcast Page</div>;
 const PrivacySettingsPage = () => <div>Privacy Settings Page</div>;
@@ -47,33 +51,33 @@ const MainContent = styled.main`
 `;
 
 const FollowerList = () => {
-  const { username } = useParams();
+  const { id } = useParams();
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
     const fetchFollowers = async () => {
       try {
-        const userRes = await userService.getUserByUsername(username);
-        setUsers(userRes.data.followers.map(f => f.follower)); 
+        const userRes = await userService.getFollowers(id);
+        setUsers(userRes.data.map(f => f.follower));
       } catch (error) {
         console.error("Failed to fetch followers:", error);
       }
     };
 
     fetchFollowers();
-  }, [username]);
+  }, [id]);
 
   return <FollowList title="Followers" users={users} />;
 };
 
 const FollowingList = () => {
-  const { username } = useParams();
+  const { id } = useParams();
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
     const fetchFollowing = async () => {
       try {
-        const userRes = await userService.getUserByUsername(username);
+        const userRes = await userService.getUserById(id);
         setUsers(userRes.data.following.map(f => f.followed)); 
       } catch (error) {
         console.error("Failed to fetch following:", error);
@@ -81,7 +85,7 @@ const FollowingList = () => {
     };
 
     fetchFollowing();
-  }, [username]);
+  }, [id]);
 
   return <FollowList title="Following" users={users} />;
 };
@@ -151,11 +155,14 @@ const MainLayout = () => {
               <Route path="/podcasts" element={<Podcasts />} />
               <Route path="/player" element={<PodcastPlayer />} />
               <Route path="/study" element={<StudyPage />} />
+              <Route path="/study/new" element={<StudyBuilder />} />
+              <Route path="/study/access" element={<ParticipantGate />} />
+              <Route path="/study/participant/:id" element={<StudyParticipantView />} />
+              <Route path="/study/:id" element={<CreatorStudio />} />
               <Route path="/calendar" element={<CalendarPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/user/:username" element={<UserProfile />} />
-              <Route path="/user/:username/followers" element={<FollowerList />} />
-              <Route path="/user/:username/following" element={<FollowingList />} />
+              <Route path="/profile/:id" element={<ProfilePage />} />
+              <Route path="/user/:id/followers" element={<FollowerList />} />
+              <Route path="/user/:id/following" element={<FollowingList />} />
               <Route path="/podcast/create" element={<CreatePodcastPage />} />
               <Route path="/settings/privacy" element={<PrivacySettingsPage />} />
               <Route path="/settings" element={<SettingsPage />} />

@@ -12,7 +12,9 @@ def search(db: Session, query: str, type: str = None):
         for user in users:
             results.append({
                 "id": user.id,
-                "title": user.username,
+                "name": user.username,
+                "handle": user.username, 
+                "avatar": user.profile_picture_url, 
                 "summary": f"User since {user.created_at.strftime('%Y-%m-%d')}",
                 "type": "user",
             })
@@ -32,8 +34,11 @@ def search(db: Session, query: str, type: str = None):
         for post in posts:
             results.append({
                 "id": post.id,
-                "title": f"Post by {post.owner.username}",
-                "summary": post.content[:100],
+                "content": post.content,
+                "author": {
+                    "name": post.owner.username,
+                    "avatar": post.owner.profile_picture_url
+                },
                 "type": "post",
             })
 
@@ -42,8 +47,8 @@ def search(db: Session, query: str, type: str = None):
         for hashtag in hashtags:
             results.append({
                 "id": hashtag.id,
-                "title": f"#{hashtag.text}",
-                "summary": f"{len(hashtag.posts)} posts",
+                "name": hashtag.text,
+                "postCount": len(hashtag.posts),
                 "type": "hashtag",
             })
 

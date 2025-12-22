@@ -7,11 +7,10 @@ from app.models.study import Study, Question, Answer
 from app.schemas.study import StudyCreate, StudyUpdate, QuestionCreate, AnswerCreate
 
 class CRUDStudy(CRUDBase[Study, StudyCreate, StudyUpdate]):
-    def create_with_owner(self, db: Session, *, obj_in: StudyCreate, owner_id: int) -> Study:
+    def create(self, db: Session, *, obj_in: StudyCreate) -> Study:
         db_obj = Study(
             title=obj_in.title,
             description=obj_in.description,
-            creator_id=owner_id
         )
         db.add(db_obj)
         db.commit()
@@ -25,12 +24,11 @@ class CRUDStudy(CRUDBase[Study, StudyCreate, StudyUpdate]):
     def get_by_unique_code(self, db: Session, *, unique_code: str) -> Optional[Study]:
         return db.query(Study).filter(Study.unique_code == unique_code).first()
 
-    def get_multi_by_owner(
-        self, db: Session, *, owner_id: int, skip: int = 0, limit: int = 100
+    def get_multi(
+        self, db: Session, *, skip: int = 0, limit: int = 100
     ) -> List[Study]:
         return (
             db.query(self.model)
-            .filter(Study.creator_id == owner_id)
             .offset(skip)
             .limit(limit)
             .all()
@@ -45,12 +43,23 @@ class CRUDQuestion(CRUDBase[Question, QuestionCreate, StudyUpdate]):
         return db_obj
 
 class CRUDAnswer(CRUDBase[Answer, AnswerCreate, StudyUpdate]):
-    def create_with_owner(self, db: Session, *, obj_in: AnswerCreate, owner_id: int) -> Answer:
-        db_obj = Answer(text=obj_in.text, question_id=obj_in.question_id, owner_id=owner_id)
+    def create(self, db: Session, *, obj_in: AnswerCreate) -> Answer:
+        db_obj = Answer(text=obj_in.text, question_id=obj_in.question_id, study_id=obj_in.study_id)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
         return db_obj
+    
+    def get_multi_by_study(
+        self, db: Session, *, study_id: int, skip: int = 0, limit: int = 100
+    ) -> List[Answer]:
+        return (
+            db.query(self.model)
+            .filter(Answer.study_id == study_id)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
 study = CRUDStudy(Study)
 question = CRUDQuestion(Question)

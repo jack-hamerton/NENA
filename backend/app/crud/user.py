@@ -1,3 +1,4 @@
+
 from typing import Any, Dict, Optional, Union
 from sqlalchemy.orm import Session
 from app.core.security import get_password_hash, verify_password
@@ -56,5 +57,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     def is_superuser(self, user: User) -> bool:
         return user.is_superuser
+
+    def search(self, db: Session, *, query: str, limit: int = 10) -> List[User]:
+        return db.query(User).filter(
+            User.username.ilike(f"%{query}%") | User.first_name.ilike(f"%{query}%") | User.last_name.ilike(f"%{query}%")
+        ).limit(limit).all()
 
 user = CRUDUser(User)

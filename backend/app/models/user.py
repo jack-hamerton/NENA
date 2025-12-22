@@ -10,6 +10,8 @@ class User(Base):
     __tablename__ = "users"
     __table_args__ = {'extend_existing': True}
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=True)
     hashed_password = Column(String, nullable=False)
@@ -41,3 +43,4 @@ class User(Base):
     notifications = relationship("Notification", back_populates="user")
     profile = relationship("Profile", uselist=False, back_populates="user")
     rooms = relationship("Room", back_populates="owner")
+    feed_polls = relationship("FeedPoll", back_populates="user")

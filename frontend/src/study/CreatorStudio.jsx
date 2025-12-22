@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { FindingsPanel } from './FindingsPanel';
 import { MethodologyPanel } from './MethodologyPanel';
 import { BarChart } from './charts/BarChart';
@@ -19,8 +20,38 @@ import {
 
 const CreatorStudio = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [study, setStudy] = useState(null);
+  const [answers, setAnswers] = useState([]);
+  const { id } = useParams();
 
-  // Mock data for charts
+  useEffect(() => {
+    const fetchStudyData = async () => {
+      try {
+        const studyResponse = await fetch(`http://localhost:8000/api/v1/studies/${id}`);
+        if (studyResponse.ok) {
+          const studyData = await studyResponse.json();
+          setStudy(studyData);
+        } else {
+          console.error('Failed to fetch study data');
+        }
+
+        const answersResponse = await fetch(`http://localhost:8000/api/v1/studies/${id}/answers`);
+        if (answersResponse.ok) {
+          const answersData = await answersResponse.json();
+          setAnswers(answersData);
+        } else {
+          console.error('Failed to fetch answers data');
+        }
+      } catch (error) {
+        console.error('Error fetching study data:', error);
+      }
+    };
+
+    if (id) {
+      fetchStudyData();
+    }
+  }, [id]);
+
   const barChartData = [
     { name: 'A', value: 400 },
     { name: 'B', value: 300 },
@@ -36,22 +67,35 @@ const CreatorStudio = () => {
   ];
 
   const kpiData = [
-      { title: 'Responses', value: '1,234' },
-      { title: 'Completion Rate', value: '85%' },
-      { title: 'Avg. Time', value: '5.6 min' },
+      { title: 'Responses', value: answers.length },
+      { title: 'Completion Rate', value: '-' },
+      { title: 'Avg. Time', value: '-' },
   ];
 
   const qualTableData = {
-      headers: ['Theme', 'Supporting Quotes'],
-      rows: [
-          ['Ease of Use', '"I found it very easy to navigate." - P1'],
-          ['Feature Request', '"I wish there was a dark mode." - P2'],
-      ]
+      headers: ['Question', 'Answer'],
+      rows: answers.map(answer => [answer.question.text, answer.text]),
   };
 
-  const insights = ['Users prefer a simple interface', 'Mobile accessibility is a key concern'];
-  const quote = { text: 'This is the best thing I have ever used!', author: 'Participant 4' };
-  const recommendation = { title: 'Implement Dark Mode', description: 'A significant number of users requested a dark mode option to reduce eye strain.' };
+  const insights = ['No insights yet'];
+  const quote = { text: 'No quotes yet', author: '' };
+  const recommendation = { title: 'No recommendations yet', description: '' };
+
+  if (answers.length > 0) {
+      insights.pop();
+      insights.push('The first insight is that users want more features.');
+
+      quote.text = answers[0].text;
+      quote.author = `Participant ${answers[0].id}`;
+
+      recommendation.title = 'Add more features';
+      recommendation.description = 'Users are asking for more features, so we should add them.';
+
+  }
+
+  if (!study) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <StudioContainer>
@@ -80,7 +124,7 @@ const CreatorStudio = () => {
             </ChartGrid>
         )}
         {activeTab === 'findings' && <FindingsPanel />}
-        {activeTab === 'methodology' && <MethodologyPanel />}
+        {activeTab === 'methodology' && <MethodologyPanel study={study} />}
       </ContentContainer>
     </StudioContainer>
   );

@@ -1,40 +1,34 @@
 
-import axios from 'axios';
-import authHeader from './auth-header';
-
-const API_URL = '/api/v1/user';
+import { api } from './api';
 
 export const getCurrentUser = () => {
   return JSON.parse(localStorage.getItem('user'));
 };
 
 export const getUserPodcasts = (userId) => {
-  return axios.get(`${API_URL}/${userId}/podcasts`);
+  return api.get(`/users/${userId}/podcasts`);
 };
 
-/**
- * Fetches a user by their username.
- * @param {string} username - The username of the user to fetch.
- * @returns {Promise<axios.AxiosResponse<any>>}
- */
+export const getUserPosts = (userId) => {
+  return api.get(`/users/${userId}/posts`);
+};
+
 export const getUserByUsername = (username) => {
-  return axios.get(`${API_URL}/by-username/${username}`, { headers: authHeader() });
+  return api.get(`/user/by-username/${username}`);
 };
 
-/**
- * Follow a user.
- * @param {string} userId - The ID of the user to follow.
- * @returns {Promise<axios.AxiosResponse<any>>}
- */
-export const followUser = (userId) => {
-  return axios.post(`${API_URL}/${userId}/follow`, {}, { headers: authHeader() });
+export const followUser = (userId, intent) => {
+  return api.post(`/user/${userId}/follow`, { intent });
 };
 
-/**
- * Unfollow a user.
- * @param {string} userId - The ID of the user to unfollow.
- * @returns {Promise<axios.AxiosResponse<any>>}
- */
 export const unfollowUser = (userId) => {
-  return axios.delete(`${API_URL}/${userId}/follow`, { headers: authHeader() });
+  return api.delete(`/user/${userId}/follow`);
+};
+
+export const getUserById = (userId) => {
+  return api.get(`/users/${userId}`);
+};
+
+export const getFollowers = (userId) => {
+  return api.get(`/users/${userId}/followers`);
 };

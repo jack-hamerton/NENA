@@ -1,6 +1,6 @@
 
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class ShortcutBase(BaseModel):
     label: str
@@ -38,7 +38,7 @@ class Episode(EpisodeBase):
 class PodcastBase(BaseModel):
     title: str
     description: Optional[str] = None
-    cover_art_url: Optional[str] = None
+    imageUrl: Optional[str] = Field(None, alias='cover_art_url')
 
 class PodcastCreate(PodcastBase):
     pass
@@ -46,6 +46,7 @@ class PodcastCreate(PodcastBase):
 class Podcast(PodcastBase):
     id: int
     creator_id: int
+    creator: str
     episodes: List[Episode] = []
 
     class Config:
