@@ -1,19 +1,34 @@
+
 .spider-web-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
+  width: 100%;
+  height: 400px;
+}
+
+.node.center {
+  fill: #73beb0; /* From theme.palette.secondary */
+}
+
+.node.follower {
+  fill: #4a5969; /* From theme.palette.primary */
 }
 
 .link {
-    stroke: #999;
-    stroke-opacity: 0.6;
+  stroke: #5d838a; /* From theme.palette.tertiary */
 }
 
-.user {
-    fill: #007bff;
+.node-label {
+  fill: #ffffff; /* From theme.text.primary */
+  font-size: 0.8rem;
 }
 
-.connection {
-    fill: #ccc;
+.tooltip {
+  position: absolute;
+  text-align: center;
+  padding: 8px;
+  font: 12px sans-serif;
+  background: #427973; /* From theme.palette.accent */
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+  color: #ffffff; /* From theme.text.primary */
 }

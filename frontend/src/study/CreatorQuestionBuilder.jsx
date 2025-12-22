@@ -1,5 +1,15 @@
 
 import React, { useState } from 'react';
+import {
+  BuilderContainer,
+  Title,
+  Label,
+  Select,
+  Input,
+  Button,
+  QuestionList,
+  QuestionItem
+} from './CreatorQuestionBuilder.styled';
 
 interface Question {
   text: string;
@@ -28,77 +38,70 @@ const CreatorQuestionBuilder: React.FC<CreatorQuestionBuilderProps> = ({ onSave 
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h3 className="text-xl font-bold mb-4">Build Your Study</h3>
+    <BuilderContainer>
+      <Title>Build Your Study</Title>
       
-      {/* Methodology Selection */}
-      <div className="mb-4">
-        <label htmlFor="methodology" className="block text-gray-700 font-bold mb-2">Study Methodology</label>
-        <select
+      <div style={{ marginBottom: '1.5rem' }}>
+        <Label htmlFor="methodology">Study Methodology</Label>
+        <Select
           id="methodology"
           value={methodology}
           onChange={(e) => setMethodology(e.target.value as 'KII' | 'Survey')}
-          className="w-full p-2 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-royal-blue-500"
         >
           <option value="Survey">Survey</option>
           <option value="KII">Key Informant Interview (KII)</option>
-        </select>
+        </Select>
       </div>
 
-      {/* Question Input */}
-      <div className="mb-4">
-        <label htmlFor="question" className="block text-gray-700 font-bold mb-2">Question (up to 20)</label>
-        <div className="flex">
-          <input
+      <div style={{ marginBottom: '1.5rem' }}>
+        <Label htmlFor="question">Question (up to 20)</Label>
+        <div style={{ display: 'flex' }}>
+          <Input
             id="question"
             type="text"
             value={questionText}
             onChange={(e) => setQuestionText(e.target.value)}
             placeholder="Type your question here..."
-            className="flex-grow p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-royal-blue-500"
             disabled={questions.length >= 20}
           />
-          <select
+          <Select
             value={questionType}
             onChange={(e) => setQuestionType(e.target.value as 'qualitative' | 'quantitative')}
-            className="p-2 border-t border-b bg-gray-50 focus:outline-none focus:ring-2 focus:ring-royal-blue-500"
+            style={{ borderRadius: 0, width: 'auto' }}
           >
             <option value="quantitative">Quantitative</option>
             <option value="qualitative">Qualitative</option>
-          </select>
-          <button
+          </Select>
+          <Button
             onClick={handleAddQuestion}
-            className="bg-royal-blue-500 text-white p-2 rounded-r-lg hover:bg-royal-blue-600 disabled:bg-gray-400"
             disabled={questions.length >= 20 || !questionText.trim()}
           >
             Add
-          </button>
+          </Button>
         </div>
-        {questions.length >= 20 && <p className="text-sm text-red-500 mt-1">You have reached the maximum number of questions.</p>}
+        {questions.length >= 20 && <p style={{ color: 'red', marginTop: '0.5rem' }}>You have reached the maximum number of questions.</p>}
       </div>
       
-      {/* Question List */}
-      <div className="mb-4">
-        <h4 className="font-bold mb-2">Your Questions:</h4>
-        <ul className="list-decimal list-inside bg-gray-50 p-3 rounded-lg max-h-60 overflow-y-auto">
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h4 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Your Questions:</h4>
+        <QuestionList>
           {questions.map((q, i) => (
-            <li key={i} className={`mb-1 p-1 rounded ${q.type === 'quantitative' ? 'bg-blue-100' : 'bg-green-100'}`}>
-              <span className="font-semibold">{q.text}</span> ({q.type})
-            </li>
+            <QuestionItem key={i} type={q.type}>
+              <span style={{ fontWeight: 'bold' }}>{q.text}</span> ({q.type})
+            </QuestionItem>
           ))}
-          {questions.length === 0 && <p className="text-gray-500">No questions added yet.</p>}
-        </ul>
+          {questions.length === 0 && <p>No questions added yet.</p>}
+        </QuestionList>
       </div>
       
-      {/* Save Button */}
-      <button
+      <Button
         onClick={handleSave}
-        className="w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 disabled:bg-gray-400"
         disabled={questions.length === 0}
+        style={{ width: '100%', borderRadius: '8px' }}
       >
         Save Study
-      </button>
-    </div>
+      </Button>
+    </BuilderContainer>
   );
 };
 

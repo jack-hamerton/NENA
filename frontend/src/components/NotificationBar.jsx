@@ -1,12 +1,33 @@
 
 import { useNotifications } from '../contexts/NotificationContext';
-import { Badge, IconButton, Menu, MenuItem, Tooltip, Typography, Button } from '@mui/material';
+import { Menu, MenuItem, Typography, Button } from '@mui/material';
 import { useState } from 'react';
+import styled, { useTheme } from 'styled-components';
+
+const NotificationText = styled.div`
+  color: ${props => props.theme.text.primary};
+  cursor: pointer;
+  font-weight: 500;
+`;
+
+const StyledMenu = styled(Menu)`
+  .MuiPaper-root {
+    background-color: ${props => props.theme.palette.primary} !important;
+    color: ${props => props.theme.text.primary} !important;
+  }
+`;
+
+const StyledButton = styled(Button)`
+  background-color: ${props => props.theme.palette.secondary} !important;
+  color: ${props => props.theme.text.primary} !important;
+  margin: 16px !important;
+`;
 
 const NotificationBar = () => {
   const { notifications, clearReadNotifications, markAsRead } = useNotifications();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const theme = useTheme();
 
   const handleOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -23,14 +44,11 @@ const NotificationBar = () => {
 
   return (
     <>
-      <Tooltip title="Notifications">
-        <IconButton color="inherit" onClick={handleOpen}>
-          <Badge badgeContent={unreadNotifications.length} color="error">
-            <Typography>Notifications</Typography>
-          </Badge>
-        </IconButton>
-      </Tooltip>
-      <Menu
+      <NotificationText theme={theme} onClick={handleOpen}>
+        Notifications
+      </NotificationText>
+      <StyledMenu
+        theme={theme}
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
@@ -48,13 +66,13 @@ const NotificationBar = () => {
             {readNotifications.map(n => (
               <MenuItem key={n.id}>{n.payload.message}</MenuItem>
             ))}
-            <Button onClick={clearReadNotifications} sx={{ m: 2 }}>Clear Read</Button>
+            <StyledButton theme={theme} onClick={clearReadNotifications}>Clear Read</StyledButton>
           </>
         )}
         {notifications.length === 0 && (
           <MenuItem>No new notifications</MenuItem>
         )}
-      </Menu>
+      </StyledMenu>
     </>
   );
 };

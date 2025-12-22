@@ -1,7 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import { callService } from '../services/callService';
 import { RoomControls } from './RoomControls';
 import { RoomVideoGrid } from './RoomVideoGrid';
+
+const RoomContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: ${props => props.theme.palette.dark};
+`;
 
 export const Room = () => {
   const [participants, setParticipants] = useState([]);
@@ -24,9 +33,9 @@ export const Room = () => {
   };
 
   return (
-    <div>
+    <RoomContainer>
       <RoomVideoGrid participants={participants} />
       <RoomControls onLeave={onLeave} />
-    </div>
+    </RoomContainer>
   );
 };

@@ -7,8 +7,8 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  border-bottom: 1px solid #ddd;
-  background-color: #f7f7f7;
+  border-bottom: 1px solid ${props => props.theme.palette.highlight};
+  background-color: ${props => props.theme.palette.primary};
 `;
 
 const UserInfo = styled.div`
@@ -25,8 +25,8 @@ const Avatar = styled.img`
 
 const CallButton = styled.button`
   padding: 0.5rem 1rem;
-  background-color: #4caf50;
-  color: white;
+  background-color: ${props => props.theme.palette.secondary};
+  color: ${props => props.theme.text.primary};
   border: none;
   border-radius: 5px;
   cursor: pointer;

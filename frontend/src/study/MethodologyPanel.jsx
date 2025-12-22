@@ -1,25 +1,26 @@
+
 import React from 'react';
 import styled from 'styled-components';
 
 const PanelContainer = styled.div`
   padding: 2rem;
-  background-color: #fff;
-  border: 1px solid #ddd;
+  background-color: ${({ theme }) => theme.palette.primary};
+  border: 1px solid ${({ theme }) => theme.palette.highlight};
   border-radius: 8px;
 `;
 
 const Title = styled.h2`
   margin-bottom: 1rem;
+  color: ${({ theme }) => theme.text.primary};
 `;
 
-const MethodologyPanel = () => {
+const MethodologyPanel = ({ kiiCount, surveyCount }) => {
   return (
     <PanelContainer>
       <Title>Methodology</Title>
-      <p>This is where the methodology of the study will be detailed.</p>
-      {/* You can add more detailed methodology components here */}
+      <p>This study is based on {kiiCount} Key Informant Interviews and {surveyCount} surveys.</p>
     </PanelContainer>
   );
 };
 
-export { MethodologyPanel };
+export default MethodologyPanel;

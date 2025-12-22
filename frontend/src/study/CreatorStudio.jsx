@@ -1,5 +1,5 @@
+
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { FindingsPanel } from './FindingsPanel';
 import { MethodologyPanel } from './MethodologyPanel';
 import { BarChart } from './charts/BarChart';
@@ -9,33 +9,13 @@ import { QualTable } from './charts/QualTable';
 import { InsightList } from './charts/InsightList';
 import { QuoteCard } from './charts/QuoteCard';
 import { RecommendationCard } from './charts/RecommendationCard';
-
-const StudioContainer = styled.div`
-  padding: 2rem;
-  background-color: #f9f9f9;
-`;
-
-const TabContainer = styled.div`
-  display: flex;
-  margin-bottom: 2rem;
-`;
-
-const TabButton = styled.button`
-  padding: 10px 20px;
-  border: none;
-  background-color: ${props => props.active ? '#fff' : 'transparent'};
-  border-bottom: ${props => props.active ? '2px solid #007bff' : '2px solid transparent'};
-  cursor: pointer;
-  font-size: 16px;
-`;
-
-const ContentContainer = styled.div``;
-
-const ChartGrid = styled.div`
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-`;
+import {
+  StudioContainer,
+  TabContainer,
+  TabButton,
+  ContentContainer,
+  ChartGrid
+} from './CreatorStudio.styled';
 
 const CreatorStudio = () => {
   const [activeTab, setActiveTab] = useState('dashboard');

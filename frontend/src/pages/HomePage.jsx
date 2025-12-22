@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import styled from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import ActivityFeed from '../feed/ActivityFeed';
 import * as postService from '../services/post.service';
+import { theme } from '../theme/theme';
 
 const FeedContainer = styled.div`
   max-width: 600px;
@@ -12,7 +13,7 @@ const FeedContainer = styled.div`
 
 const Tabs = styled.div`
   display: flex;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid ${props => props.theme.palette.dark};
   margin-bottom: 1rem;
 `;
 
@@ -21,23 +22,23 @@ const Tab = styled.button`
   padding: 1rem;
   background: none;
   border: none;
-  color: ${props => (props.active ? '#fff' : '#888')};
+  color: ${props => (props.active ? props.theme.text.primary : props.theme.text.secondary)};
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  border-bottom: 2px solid ${props => (props.active ? '#1DA1F2' : 'transparent')};
+  border-bottom: 2px solid ${props => (props.active ? props.theme.palette.accent : 'transparent')};
 
   &:hover {
-    background-color: #111;
+    background-color: ${props => props.theme.palette.dark};
   }
 `;
 
 const RestartButton = styled.button`
   padding: 0.5rem 1rem;
-  background-color: #1DA1F2;
+  background-color: ${props => props.theme.palette.secondary};
   border: none;
   border-radius: 9999px;
-  color: white;
+  color: ${props => props.theme.text.primary};
   font-weight: bold;
   cursor: pointer;
   margin-left: auto;
@@ -45,8 +46,8 @@ const RestartButton = styled.button`
 `;
 
 const CreatePostButton = styled.button`
-    background-color: #1DA1F2;
-    color: white;
+    background-color: ${props => props.theme.palette.secondary};
+    color: ${props => props.theme.text.primary};
     border: none;
     padding: 1rem;
     border-radius: 8px;
@@ -99,19 +100,21 @@ const HomePage = () => {
   };
 
   return (
-    <FeedContainer>
-      <CreatePostButton onClick={handleCreatePost}>Create Post</CreatePostButton>
-      <Tabs>
-        <Tab active={feedType === 'for-you'} onClick={() => setFeedType('for-you')}>
-          For You
-        </Tab>
-        <Tab active={feedType === 'following'} onClick={() => setFeedType('following')}>
-          Following
-        </Tab>
-        <RestartButton onClick={handleRestart}>Restart</RestartButton>
-      </Tabs>
-      <ActivityFeed posts={posts} onReportPost={handleReportPost} />
-    </FeedContainer>
+    <ThemeProvider theme={theme}>
+      <FeedContainer>
+        <CreatePostButton onClick={handleCreatePost}>Create Post</CreatePostButton>
+        <Tabs>
+          <Tab active={feedType === 'for-you'} onClick={() => setFeedType('for-you')}>
+            For You
+          </Tab>
+          <Tab active={feedType === 'following'} onClick={() => setFeedType('following')}>
+            Following
+          </Tab>
+          <RestartButton onClick={handleRestart}>Restart</RestartButton>
+        </Tabs>
+        <ActivityFeed posts={posts} onReportPost={handleReportPost} />
+      </FeedContainer>
+    </ThemeProvider>
   );
 };
 

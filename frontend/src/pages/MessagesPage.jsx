@@ -1,17 +1,18 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import styled from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import ConversationList from '../messages/ConversationList';
 import ChatWindow from '../messages/ChatWindow';
 import CallWindow from '../messages/CallWindow';
 import useCall from '../hooks/useCall';
 import { KeyStore } from '../messages/e2ee/keystore';
 import { E2EEManager } from '../messages/e2ee/e2eeManager';
+import { theme } from '../theme/theme';
 
 const MessagesContainer = styled.div`
   display: flex;
   height: calc(100vh - 60px); // Adjust based on your header height
-  background-color: #f0f2f5;
+  background-color: ${props => props.theme.palette.primary};
 `;
 
 // Omitted IncomingCall component for brevity
@@ -81,20 +82,22 @@ const MessagesPage = () => {
   }, [selectedConversation, sessionMap]);
 
   return (
-    <MessagesContainer>
-      <ConversationList
-        conversations={mockConversations}
-        selectedConversation={selectedConversation}
-        onConversationSelect={setSelectedConversation}
-      />
-      <ChatWindow 
-        conversation={selectedConversation} 
-        onStartCall={handleStartCall}
-        e2eeManager={e2eeManager}
-        sessionId={activeSessionId}
-      />
-      {/* Omitted CallWindow and IncomingCall for brevity */}
-    </MessagesContainer>
+    <ThemeProvider theme={theme}>
+      <MessagesContainer>
+        <ConversationList
+          conversations={mockConversations}
+          selectedConversation={selectedConversation}
+          onConversationSelect={setSelectedConversation}
+        />
+        <ChatWindow 
+          conversation={selectedConversation} 
+          onStartCall={handleStartCall}
+          e2eeManager={e2eeManager}
+          sessionId={activeSessionId}
+        />
+        {/* Omitted CallWindow and IncomingCall for brevity */}
+      </MessagesContainer>
+    </ThemeProvider>
   );
 };
 

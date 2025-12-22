@@ -1,25 +1,23 @@
+
 import React from 'react';
 import styled from 'styled-components';
 
 const PanelContainer = styled.div`
   padding: 2rem;
-  background-color: #fff;
-  border: 1px solid #ddd;
+  background-color: ${({ theme }) => theme.palette.primary};
+  border: 1px solid ${({ theme }) => theme.palette.highlight};
   border-radius: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
 `;
 
-const Title = styled.h2`
-  margin-bottom: 1rem;
-`;
-
-const FindingsPanel = () => {
+const FindingsPanel = ({ children }) => {
   return (
     <PanelContainer>
-      <Title>Findings</Title>
-      <p>This is where the key findings of the study will be presented.</p>
-      {/* You can add more detailed findings components here */}
+      {children}
     </PanelContainer>
   );
 };
 
-export { FindingsPanel };
+export default FindingsPanel;

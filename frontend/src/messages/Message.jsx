@@ -4,7 +4,8 @@ import styled from 'styled-components';
 
 const MessageContainer = styled.div`
   align-self: ${props => props.isMe ? 'flex-end' : 'flex-start'};
-  background-color: ${props => props.isMe ? '#dcf8c6' : '#fff'};
+  background-color: ${props => props.isMe ? props.theme.palette.secondary : props.theme.palette.primary };
+  color: ${props => props.theme.text.primary};
   padding: 0.5rem 1rem;
   border-radius: 1rem;
   margin-bottom: 0.5rem;

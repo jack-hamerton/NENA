@@ -17,6 +17,15 @@ import MethodologyPanel from './MethodologyPanel';
 // Existing components
 import CreatorQuestionBuilder from './CreatorQuestionBuilder';
 
+import {
+  DashboardContainer,
+  Header,
+  Title,
+  Subtitle,
+  Section,
+  SectionTitle,
+} from './CreatorDashboard.styled';
+
 const CreatorDashboard: React.FC = () => {
   const [questions, setQuestions] = useState([]);
 
@@ -60,32 +69,27 @@ const CreatorDashboard: React.FC = () => {
 
 
   return (
-    <div className="p-4 bg-gray-100 min-h-screen">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold text-royal-blue-800">Creator Dashboard</h1>
-        <p className="text-gray-600">Analyze your study results and gather insights.</p>
-      </header>
+    <DashboardContainer>
+      <Header>
+        <Title>Creator Dashboard</Title>
+        <Subtitle>Analyze your study results and gather insights.</Subtitle>
+      </Header>
       
-      {/* Methodology Section */}
-      <section className="mb-6">
+      <Section>
         <MethodologyPanel kiiCount={15} surveyCount={1234} />
-      </section>
+      </Section>
 
-      {/* KPI Strip */}
-      <section className="mb-6">
+      <Section>
         <KPIStatStrip stats={kpiStats} />
-      </section>
+      </Section>
 
-      {/* Main Findings Section */}
       <FindingsPanel>
-        {/* Quantitative Side */}
         <div className="space-y-6">
           <h3 className="text-xl font-bold text-gray-800">Quantitative Analysis</h3>
           <PercentGrid items={percentGridItems} />
           <BarCompare data={barCompareData} maxValue={500} />
         </div>
         
-        {/* Qualitative Side */}
         <div className="space-y-6">
           <h3 className="text-xl font-bold text-gray-800">Qualitative Insights</h3>
           <QuoteCard {...quote} />
@@ -94,12 +98,11 @@ const CreatorDashboard: React.FC = () => {
         </div>
       </FindingsPanel>
 
-      {/* Question Builder Section */}
-      <section className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Study Question Builder</h2>
+      <Section>
+        <SectionTitle>Study Question Builder</SectionTitle>
         <CreatorQuestionBuilder onSave={handleSaveQuestions} />
-      </section>
-    </div>
+      </Section>
+    </DashboardContainer>
   );
 };
 

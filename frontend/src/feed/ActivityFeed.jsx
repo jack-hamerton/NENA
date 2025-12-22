@@ -7,7 +7,7 @@ const ActivityFeedContainer = styled.div`
   /* Add some spacing between posts */
   & > div {
     margin-bottom: 1rem;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid ${({ theme }) => theme.palette.dark};
     padding-bottom: 1rem;
   }
 `;

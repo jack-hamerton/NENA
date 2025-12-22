@@ -1,103 +1,21 @@
 
 import React from 'react';
-import styled from 'styled-components';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
-
-// --- Styled Components ---
-
-const PostContainer = styled.div`
-  background-color: #1A1A1A;
-  border: 1px solid #2F2F2F;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  color: #E0E0E0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-`;
-
-const PostHeader = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
-`;
-
-const AuthorLink = styled.a`
-  font-weight: bold;
-  color: #FFFFFF;
-  text-decoration: none;
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const Timestamp = styled.span`
-  color: #888;
-  margin-left: 0.5rem;
-  font-size: 0.9rem;
-`;
-
-const MoreOptionsButton = styled.button`
-  background: none;
-  border: none;
-  color: #888;
-  cursor: pointer;
-  margin-left: auto;
-`;
-
-const Content = styled.div`
-  padding: 0 1rem 1rem;
-  white-space: pre-wrap; /* Preserves line breaks and spacing */
-  line-height: 1.5;
-`;
-
-const HashtagLink = styled.a`
-  color: #1DA1F2;
-  text-decoration: none;
-  cursor: pointer;
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const MediaWrapper = styled.div`
-  max-height: 600px;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #000;
-`;
-
-const StyledMedia = styled.img` /* Using img for both video/image for simplicity */
-  max-width: 100%;
-  max-height: 600px;
-  object-fit: contain;
-`;
-
-const ActionsBar = styled.div`
-  display: flex;
-  justify-content: space-around;
-  padding: 0.5rem 1rem;
-  border-top: 1px solid #2F2F2F;
-`;
-
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  color: #888;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  padding: 0.5rem;
-  border-radius: 4px;
-
-  &:hover {
-    color: #1DA1F2;
-    background-color: rgba(29, 161, 242, 0.1);
-  }
-`;
+import { Poll } from './poll/Poll'; // Import the Poll component
+import {
+    PostContainer,
+    PostHeader,
+    AuthorLink,
+    Timestamp,
+    MoreOptionsButton,
+    Content,
+    HashtagLink,
+    MediaWrapper,
+    StyledMedia,
+    ActionsBar,
+    ActionButton
+} from './Post.styled';
 
 // --- Helper Functions ---
 
@@ -131,7 +49,7 @@ const isVideo = (url) => {
 const Post = ({ post, onReport }) => {
   if (!post) return null;
 
-  const { id, author, content, media_url, created_at, isReported } = post;
+  const { id, author, content, media_url, created_at, isReported, poll } = post;
   
   // Placeholder for author until backend is updated
   const authorName = author?.username || `user_${post.user_id?.substring(0, 4)}` || 'Anonymous';
@@ -163,6 +81,8 @@ const Post = ({ post, onReport }) => {
           )}
         </MediaWrapper>
       )}
+
+      {poll && <Poll poll={poll} postId={id} />}
 
       <ActionsBar>
         <ActionButton><Heart size={20} /> Like</ActionButton>

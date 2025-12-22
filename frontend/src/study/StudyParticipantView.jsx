@@ -1,7 +1,24 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { TextField, Button, Typography, Container, Box, Paper, List, ListItem, ListItemText, RadioGroup, FormControlLabel, Radio, CircularProgress } from '@mui/material';
 import { api } from '../services/api'; // Assuming you have a central api service
+import {
+    ParticipantContainer,
+    Title,
+    Subtitle,
+    BodyText,
+    InputContainer,
+    TextInput,
+    SubmitButton,
+    ErrorText,
+    QuestionList,
+    QuestionListItem,
+    QuestionText,
+    RadioGroupContainer,
+    RadioLabel,
+    RadioInput,
+    Loader
+} from './StudyParticipantView.styled';
 
 const StudyParticipantView = () => {
     const { uniqueCode } = useParams();
@@ -14,7 +31,6 @@ const StudyParticipantView = () => {
     const fetchStudyByCode = async (code) => {
         if (!code) return;
         try {
-            // Use a relative path for the API request
             const response = await api.get(`/api/v1/studies/code/${code}`);
             if (response.status === 200) {
                 const data = response.data;
@@ -59,7 +75,6 @@ const StudyParticipantView = () => {
             const response = await api.post(`/api/v1/studies/${study.id}/submit`, { answers });
             if (response.status === 200) {
                 alert('Study submitted successfully!');
-                // Optionally, redirect or clear the form
             } else {
                 setError('Failed to submit the study.');
             }
@@ -70,52 +85,52 @@ const StudyParticipantView = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4 }}>
-            <Paper elevation={3} sx={{ p: 4 }}>
-                <Typography variant="h4" gutterBottom>
-                    Participate in a Study
-                </Typography>
-                {!study ? (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <TextField
-                            label="Enter Study Access Code"
-                            variant="outlined"
-                            value={accessCode}
-                            onChange={(e) => setAccessCode(e.target.value)}
-                            fullWidth
-                        />
-                        <Button variant="contained" onClick={handleFetchStudy}>
-                            Load Study
-                        </Button>
-                        {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
-                    </Box>
-                ) : (
-                    <Box>
-                        <Typography variant="h5">{study.title}</Typography>
-                        <Typography variant="body1" sx={{ mb: 3 }}>{study.description}</Typography>
-                        <List>
-                            {study.questions.map((q, index) => (
-                                <ListItem key={q.id} sx={{ mb: 2, flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <ListItemText primary={`${index + 1}. ${q.text}`} />
-                                    <RadioGroup
-                                        value={answers[index] || ''}
-                                        onChange={(e) => handleAnswerChange(index, e.target.value)}
-                                    >
-                                        {q.options.map((option, optionIndex) => (
-                                            <FormControlLabel key={optionIndex} value={option} control={<Radio />} label={option} />
-                                        ))}
-                                    </RadioGroup>
-                                </ListItem>
-                            ))}
-                        </List>
-                        <Button variant="contained" color="primary" onClick={handleSubmit} disabled={submitting}>
-                            {submitting ? <CircularProgress size={24} /> : 'Submit Answers'}
-                        </Button>
-                        {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
-                    </Box>
-                )}
-            </Paper>
-        </Container>
+        <ParticipantContainer>
+            <Title>Participate in a Study</Title>
+            {!study ? (
+                <InputContainer>
+                    <TextInput
+                        placeholder="Enter Study Access Code"
+                        value={accessCode}
+                        onChange={(e) => setAccessCode(e.target.value)}
+                    />
+                    <SubmitButton onClick={handleFetchStudy}>
+                        Load Study
+                    </SubmitButton>
+                    {error && <ErrorText>{error}</ErrorText>}
+                </InputContainer>
+            ) : (
+                <div>
+                    <Subtitle>{study.title}</Subtitle>
+                    <BodyText>{study.description}</BodyText>
+                    <QuestionList>
+                        {study.questions.map((q, index) => (
+                            <QuestionListItem key={q.id}>
+                                <QuestionText>{`${index + 1}. ${q.text}`}</QuestionText>
+                                <RadioGroupContainer>
+                                    {q.options.map((option, optionIndex) => (
+                                        <RadioLabel key={optionIndex}>
+                                            <RadioInput
+                                                type="radio"
+                                                name={`question-${index}`}
+                                                value={option}
+                                                checked={answers[index] === option}
+                                                onChange={(e) => handleAnswerChange(index, e.target.value)}
+                                            />
+                                            {option}
+                                        </RadioLabel>
+                                    ))}
+                                </RadioGroupContainer>
+                            </QuestionListItem>
+                        ))}
+                    </QuestionList>
+                    <SubmitButton onClick={handleSubmit} disabled={submitting}>
+                        {submitting ? <Loader /> : 'Submit Answers'}
+                    </SubmitButton>
+                    {error && <ErrorText>{error}</ErrorText>}
+                </div>
+            )}
+        </ParticipantContainer>
     );
 };
 

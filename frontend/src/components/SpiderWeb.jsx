@@ -1,80 +1,37 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import './SpiderWeb.css';
-import { api } from '../utils/api';
 
-interface GraphNode extends d3.SimulationNodeDatum {
-  id: string;
-  group: string;
-  impact?: number;
-}
+// Mock data representing intentional follows
+const mockGraphData = {
+  nodes: [
+    { id: 'user-1', name: 'Elena Rodriguez', role: '🎤 Storyteller', group: 'center' },
+    { id: 'user-2', name: 'John Doe', role: '👀 Learner', group: 'follower' },
+    { id: 'user-3', name: 'Jane Smith', role: '👑 Advocate', group: 'follower' },
+    { id: 'user-4', name: 'Sam Wilson', role: '🎤 Storyteller', group: 'follower' },
+    { id: 'user-5', name: 'Maria Garcia', role: 'supporter', group: 'follower' },
 
-interface GraphLink extends d3.SimulationLinkDatum<GraphNode> {
-  source: string;
-  target: string;
-}
+  ],
+  links: [
+    { source: 'user-1', target: 'user-2', intent: 'Learner', note: 'Learning from your stories!' },
+    { source: 'user-1', target: 'user-3', intent: 'Amplifier', note: 'Amplifying your advocacy.' },
+    { source: 'user-1', target: 'user-4', intent: 'Supporter', note: 'Supporting your projects.' },
+    { source: 'user-5', target: 'user-1', intent: 'Learner', note: 'Inspired by your work.' },
+  ]
+};
 
-const SpiderWeb = ({ collaborationId }: { collaborationId: string }) => {
-  const ref = useRef<SVGSVGElement>(null);
-  const [graphData, setGraphData] = useState<{ nodes: GraphNode[]; links: GraphLink[] }>({ nodes: [], links: [] });
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!collaborationId) return;
-
-      const challengesRes = await api.get(`/collaborations/${collaborationId}/challenges`, {});
-      const challenges = challengesRes.data;
-
-      const userIds = new Set<string>();
-      challenges.forEach(c => userIds.add(c.creator_id));
-
-      const mitigationsPromises = challenges.map(c => api.get(`/challenges/${c.id}/mitigations`, {}));
-      const mitigationsRes = await Promise.all(mitigationsPromises);
-      const mitigations = mitigationsRes.flatMap(res => res.data);
-
-      mitigations.forEach(m => userIds.add(m.creator_id));
-
-      const usersPromises = Array.from(userIds).map(id => api.get(`/users/${id}`, {}));
-      const usersRes = await Promise.all(usersPromises);
-      const users = usersRes.map(res => res.data);
-
-      const impactScoresPromises = users.map(u => api.get(`/users/${u.id}/impact-score`, {}));
-      const impactScoresRes = await Promise.all(impactScoresPromises);
-      const impactScores = impactScoresRes.map(res => res.data);
-
-      const userImpactMapping = users.reduce((acc, user, index) => {
-        acc[user.id] = impactScores[index];
-        return acc;
-      }, {} as { [key: string]: number });
-
-      const nodes: GraphNode[] = [
-        ...users.map(u => ({ id: u.email, group: 'user', impact: userImpactMapping[u.id] })),
-        ...challenges.map(c => ({ id: c.id, group: 'challenge' })),
-        ...mitigations.map(m => ({ id: m.id, group: 'mitigation' }))
-      ];
-
-      const links: GraphLink[] = [
-        ...challenges.map(c => ({ source: users.find(u => u.id === c.creator_id)?.email || '', target: c.id })),
-        ...mitigations.map(m => ({ source: users.find(u => u.id === m.creator_id)?.email || '', target: m.id }))
-      ];
-
-      setGraphData({ nodes, links });
-    };
-
-    fetchData();
-  }, [collaborationId]);
+const SpiderWeb = () => {
+  const ref = useRef();
 
   useEffect(() => {
-    if (!ref.current || !graphData.nodes.length) return;
-
-    const { nodes, links } = graphData;
+    const { nodes, links } = mockGraphData;
     const width = 600;
     const height = 400;
 
     const simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id(d => (d as GraphNode).id))
-      .force('charge', d3.forceManyBody())
+      .force('link', d3.forceLink(links).id(d => d.id).distance(150))
+      .force('charge', d3.forceManyBody().strength(-200))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     const svg = d3.select(ref.current)
@@ -88,57 +45,80 @@ const SpiderWeb = ({ collaborationId }: { collaborationId: string }) => {
       .selectAll('line')
       .data(links)
       .join('line')
-      .attr('class', 'link');
+      .attr('class', d => `link ${d.intent.toLowerCase()}`)
+      .style('stroke-width', 2);
 
     const node = svg.append('g')
       .selectAll('circle')
       .data(nodes)
       .join('circle')
-      .attr('r', 5)
-      .attr('class', d => d.group);
+      .attr('r', 10)
+      .attr('class', d => `node ${d.group}`)
+      .call(drag(simulation));
 
     const label = svg.append('g')
       .selectAll('text')
       .data(nodes)
       .join('text')
-      .text(d => d.id)
-      .attr('x', 8)
-      .attr('y', 3);
-
+      .text(d => `${d.role.split(' ')[0]} ${d.name}`)
+      .attr('x', 15)
+      .attr('y', 4)
+      .attr('class', 'node-label');
+      
     const tooltip = d3.select('body').append('div')
       .attr('class', 'tooltip')
       .style('opacity', 0);
 
-    node.on('mouseover', (event, d) => {
-      tooltip.transition()
-        .duration(200)
-        .style('opacity', .9);
-      tooltip.html(`User: ${d.id}<br/>Impact: ${d.impact ? (d.impact * 100).toFixed(0) + '%' : 'N/A'}`)
+    link.on('mouseover', (event, d) => {
+      tooltip.transition().duration(200).style('opacity', .9);
+      tooltip.html(`Intent: ${d.intent}<br/>Note: "${d.note}"`) 
         .style('left', (event.pageX) + 'px')
         .style('top', (event.pageY - 28) + 'px');
     })
     .on('mouseout', () => {
-      tooltip.transition()
-        .duration(500)
-        .style('opacity', 0);
+      tooltip.transition().duration(500).style('opacity', 0);
     });
 
     simulation.on('tick', () => {
       link
-        .attr('x1', d => (d.source as GraphNode).x || 0)
-        .attr('y1', d => (d.source as GraphNode).y || 0)
-        .attr('x2', d => (d.target as GraphNode).x || 0)
-        .attr('y2', d => (d.target as GraphNode).y || 0);
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
 
       node
-        .attr('cx', d => d.x || 0)
-        .attr('cy', d => d.y || 0);
+        .attr('cx', d => d.x)
+        .attr('cy', d => d.y);
 
       label
-        .attr('transform', d => `translate(${d.x || 0},${d.y || 0})`);
+        .attr('transform', d => `translate(${d.x},${d.y})`);
     });
 
-  }, [graphData]);
+  }, []);
+
+  const drag = (simulation) => {
+    function dragstarted(event) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      event.subject.fx = event.subject.x;
+      event.subject.fy = event.subject.y;
+    }
+    
+    function dragged(event) {
+      event.subject.fx = event.x;
+      event.subject.fy = event.y;
+    }
+    
+    function dragended(event) {
+      if (!event.active) simulation.alphaTarget(0);
+      event.subject.fx = null;
+      event.subject.fy = null;
+    }
+    
+    return d3.drag()
+      .on('start', dragstarted)
+      .on('drag', dragged)
+      .on('end', dragended);
+  }
 
   return (
     <div className="spider-web-container">

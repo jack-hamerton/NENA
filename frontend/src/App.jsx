@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, useParams } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import FloatingNav from './layout/FloatingNav';
 import SplashScreen from './layout/SplashScreen/SplashScreen';
 import HomePage from './pages/HomePage';
 import UserProfile from './pages/UserProfile'; 
+import ProfilePage from './pages/ProfilePage';
 import FollowList from './components/FollowList'; 
 import * as userService from './services/user.service';
 import DiscoverPage from './discover/DiscoverPage';
@@ -14,6 +15,7 @@ import RoomsPage from './rooms/RoomsPage';
 import { Room } from './rooms/Room';
 import Podcasts from './pages/Podcasts';
 import PodcastPlayer from './components/podcast/PodcastPlayer';
+import { theme } from './theme/theme';
 
 
 // --- Placeholder Pages ---
@@ -24,8 +26,8 @@ const PrivacySettingsPage = () => <div>Privacy Settings Page</div>;
 
 const AppContainer = styled.div`
   display: flex;
-  background-color: #121212;
-  color: #ffffff;
+  background-color: ${props => props.theme.palette.dark};
+  color: ${props => props.theme.text.primary};
   min-height: 100vh;
 `;
 
@@ -93,29 +95,32 @@ const App = () => {
   }
 
   return (
-    <Router>
-      <AppContainer>
-        <FloatingNav />
-        <MainContent>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/discover" element={<DiscoverPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/room" element={<RoomsPage />} />
-            <Route path="/room/:id" element={<Room />} />
-            <Route path="/podcasts" element={<Podcasts />} />
-            <Route path="/player" element={<PodcastPlayer />} />
-            <Route path="/study" element={<StudyPage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/user/:username" element={<UserProfile />} />
-            <Route path="/user/:username/followers" element={<FollowerList />} />
-            <Route path="/user/:username/following" element={<FollowingList />} />
-            <Route path="/podcast/create" element={<CreatePodcastPage />} />
-            <Route path="/settings/privacy" element={<PrivacySettingsPage />} />
-          </Routes>
-        </MainContent>
-      </AppContainer>
-    </Router>
+    <ThemeProvider theme={theme}>
+      <Router>
+        <AppContainer>
+          <FloatingNav />
+          <MainContent>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/room" element={<RoomsPage />} />
+              <Route path="/room/:id" element={<Room />} />
+              <Route path="/podcasts" element={<Podcasts />} />
+              <Route path="/player" element={<PodcastPlayer />} />
+              <Route path="/study" element={<StudyPage />} />
+              <Route path="/calendar" element={<CalendarPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/user/:username" element={<UserProfile />} />
+              <Route path="/user/:username/followers" element={<FollowerList />} />
+              <Route path="/user/:username/following" element={<FollowingList />} />
+              <Route path="/podcast/create" element={<CreatePodcastPage />} />
+              <Route path="/settings/privacy" element={<PrivacySettingsPage />} />
+            </Routes>
+          </MainContent>
+        </AppContainer>
+      </Router>
+    </ThemeProvider>
   );
 };
 
