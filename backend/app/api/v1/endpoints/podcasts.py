@@ -1,6 +1,6 @@
 
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 import uuid
 
@@ -21,6 +21,17 @@ def read_podcasts(
     return podcasts
 
 
+@router.get("/top", response_model=List[schemas.Podcast])
+def read_top_podcasts(
+    db: Session = Depends(deps.get_db),
+    type: str = Query(..., regex="^(listened|viewed)$"),
+    region: Optional[str] = None,
+) -> List[schemas.Podcast]:
+    """Retrieve top 10 podcasts by view or listen count."""
+    podcasts = crud.podcast.get_top_podcasts(db, type=type, region=region)
+    return podcasts
+
+
 @router.post("/", response_model=schemas.Podcast)
 def create_podcast(
     *, 
@@ -30,6 +41,7 @@ def create_podcast(
     cover_art: UploadFile = File(...),
     podcast_file: UploadFile = File(...),
     current_user: models.User = Depends(deps.get_current_active_user),
+    region: Optional[str] = None,
 ) -> schemas.Podcast:
     """Create a new podcast."""
     # In a real application, you would upload the files to a cloud storage
@@ -37,7 +49,13 @@ def create_podcast(
     cover_art_url = f"covers/{cover_art.filename}"
     podcast_url = f"podcasts/{podcast_file.filename}"
 
-    podcast_in = schemas.PodcastCreate(title=title, description=description, cover_art_url=cover_art_url, audio_url=podcast_url)
+    podcast_in = schemas.PodcastCreate(
+        title=title, 
+        description=description, 
+        cover_art_url=cover_art_url, 
+        audio_url=podcast_url,
+        region=region
+    )
     podcast = crud.podcast.create_podcast(db=db, podcast=podcast_in, creator_id=current_user.id)
     return podcast
 

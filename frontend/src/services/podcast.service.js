@@ -7,8 +7,16 @@ const getPodcasts = () => {
   return axios.get(API_URL);
 };
 
-const createPodcast = (podcastData) => {
-  return axios.post(API_URL, podcastData);
+const createPodcast = (formData) => {
+  return axios.post(API_URL, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 };
 
-export { getPodcasts, createPodcast };
+const getTopPodcasts = (type, region) => {
+  return axios.get(`${API_URL}/top?type=${type}&region=${region}`);
+};
+
+export { getPodcasts, createPodcast, getTopPodcasts };

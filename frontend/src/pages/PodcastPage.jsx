@@ -31,48 +31,63 @@ const PodcastListContainer = styled.div`
 `;
 
 const SocialFeaturesContainer = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
 `;
 
 const AdditionalFeaturesContainer = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1rem;
   margin-top: 2rem;
 `;
 
 const PodcastPage = () => {
   const [podcasts, setPodcasts] = useState([]);
+  const [selectedPodcast, setSelectedPodcast] = useState(null);
 
   useEffect(() => {
     getPodcasts().then((response) => {
       setPodcasts(response.data);
+      // Set a default podcast to play
+      if (response.data.length > 0) {
+        setSelectedPodcast(response.data[0]);
+      }
     });
   }, []);
 
+  const handlePodcastSelect = (podcast) => {
+    setSelectedPodcast(podcast);
+  };
+
   return (
     <PodcastPageContainer>
-      <h1 style={{ color: theme.palette.secondary }}>Podcasts</h1>
-      <Discovery />
+      <h1 style={{ color: theme.palette.secondary, textAlign: 'center', marginBottom: '2rem' }}>Podcasts</h1>
+      <Discovery podcasts={podcasts} onPodcastSelect={handlePodcastSelect} />
+      <BestPlaceToStart podcasts={podcasts} onPodcastSelect={handlePodcastSelect} />
       <PodcastListContainer>
         {podcasts.map(podcast => (
-          <PodcastCard key={podcast.id} podcast={podcast} />
+          <PodcastCard key={podcast.id} podcast={podcast} onPodcastSelect={handlePodcastSelect} />
         ))}
       </PodcastListContainer>
-      <SocialFeaturesContainer>
-        <CommentsAndPolls />
-        <SocialSharing />
-        <FollowButtonAndNotifications />
-      </SocialFeaturesContainer>
-      <BestPlaceToStart />
-      <HostRecommendations />
-      <PodcastPlayer />
-      <AdditionalFeaturesContainer>
-        <EpisodeFeatures />
-        <VideoPodcasts />
-        <Transcription />
-      </AdditionalFeaturesContainer>
+      {selectedPodcast && (
+        <>
+          <SocialFeaturesContainer>
+            <CommentsAndPolls />
+            <SocialSharing />
+            <FollowButtonAndNotifications podcast={selectedPodcast} />
+          </SocialFeaturesContainer>
+          <HostRecommendations recommendations={selectedPodcast.recommendations} />
+          <PodcastPlayer podcast={selectedPodcast} />
+          <AdditionalFeaturesContainer>
+            <EpisodeFeatures notes={selectedPodcast.notes} />
+            <VideoPodcasts podcast={selectedPodcast} />
+            <Transcription transcription={selectedPodcast.transcription} />
+          </AdditionalFeaturesContainer>
+        </>
+      )}
     </PodcastPageContainer>
   );
 };

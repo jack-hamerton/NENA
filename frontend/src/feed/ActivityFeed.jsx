@@ -1,14 +1,12 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Post from '../components/Post'; // Correctly import the Post component
+import PostCard from './PostCard';
 
 const ActivityFeedContainer = styled.div`
   /* Add some spacing between posts */
   & > div {
     margin-bottom: 1rem;
-    border-bottom: 1px solid ${({ theme }) => theme.palette.highlight};
-    padding-bottom: 1rem;
   }
 `;
 
@@ -20,10 +18,10 @@ const ActivityFeed = ({ posts, onReportPost }) => {
   return (
     <ActivityFeedContainer>
       {posts.map(post => (
-        <Post 
+        <PostCard 
           key={post.id} 
           post={post} 
-          onReport={onReportPost} // Pass the reporting handler to the Post component
+          onReportPost={onReportPost}
         />
       ))}
     </ActivityFeedContainer>

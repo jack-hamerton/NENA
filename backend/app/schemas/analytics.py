@@ -1,3 +1,4 @@
+
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -60,6 +61,15 @@ class AudienceInterest(BaseModel):
 
 class Influencer(UserEngagement):
     engagement_with_you: int
+
+class FollowerIntentMetrics(BaseModel):
+    supporters: int
+    amplifiers: int
+    learners: int
+
+class HashtagMetrics(BaseModel):
+    tag: str
+    count: int
 
 class AnalyticsDashboard(BaseModel):
     engagement_metrics: EngagementMetrics

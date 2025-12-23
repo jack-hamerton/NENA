@@ -1,9 +1,12 @@
 
 from typing import Any, Dict, Optional, Union, List
 from sqlalchemy.orm import Session
+from sqlalchemy import func
+
 from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
 from app.models.user import User
+from app.models.follower import Follower
 from app.schemas.user import UserCreate, UserUpdate
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
@@ -60,5 +63,30 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return db.query(User).filter(
             User.username.ilike(f"%{query}%") | User.first_name.ilike(f"%{query}%") | User.last_name.ilike(f"%{query}%")
         ).limit(limit).all()
+
+    def get_follower_intent_metrics(self, db: Session, *, user_id: int) -> Dict[str, int]:
+        results = db.query(Follower.intent, func.count(Follower.intent)).filter(Follower.followed_id == user_id).group_by(Follower.intent).all()
+        metrics = {
+            "supporters": 0,
+            "amplifiers": 0,
+            "learners": 0,
+            "mentors": 0
+        }
+        for intent, count in results:
+            if intent == 'supporter':
+                metrics['supporters'] = count
+            elif intent == 'amplifier':
+                metrics['amplifiers'] = count
+            elif intent == 'learner':
+                metrics['learners'] = count
+            elif intent == 'mentor':
+                metrics['mentors'] = count
+        return metrics
+
+    def get_followers_of_followers(self, db: Session, *, user: User) -> List[List[User]]:
+        followers_of_followers = []
+        for follower in user.followers:
+            followers_of_followers.append(follower.followers)
+        return followers_of_followers
 
 user = CRUDUser(User)

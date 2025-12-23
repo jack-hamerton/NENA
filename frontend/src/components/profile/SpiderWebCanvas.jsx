@@ -8,7 +8,21 @@ const CanvasContainer = styled.div`
   height: 100%;
 `;
 
-const SpiderWebCanvas = ({ currentUser, follows }) => {
+const SpiderWebCanvas = ({ currentUser, follows, followersOfFollowers, followerIntentMetrics }) => {
+  const onElementClick = (event, element) => {
+    if (element.id === 'user') {
+      alert(
+        `Username: ${currentUser.username}\n` +
+        `Followers by Intent:\n` +
+        `  Supporters: ${followerIntentMetrics.supporters}\n` +
+        `  Amplifiers: ${followerIntentMetrics.amplifiers}\n` +
+        `  Learners: ${followerIntentMetrics.learners}`
+      );
+    } else {
+      alert(`Username: ${element.data.label}`);
+    }
+  };
+
   const elements = useMemo(() => {
     const initialElements = [
       {
@@ -35,12 +49,30 @@ const SpiderWebCanvas = ({ currentUser, follows }) => {
       });
     }
 
+    if (followersOfFollowers) {
+      followersOfFollowers.forEach((followers, index) => {
+        followers.forEach((follower, subIndex) => {
+          initialElements.push({
+            id: `follow-${index}-${subIndex}`,
+            data: { label: follower.username },
+            position: { x: 250 + (index % 2 === 0 ? -1 : 1) * (200 + (subIndex * 20)), y: 250 + (index % 3 === 0 ? -1 : 1) * (200 + (subIndex * 20)) },
+          });
+          initialElements.push({
+            id: `edge-${index}-${subIndex}`,
+            source: `follow-${index}`,
+            target: `follow-${index}-${subIndex}`,
+            label: follower.intent,
+          });
+        });
+      });
+    }
+
     return initialElements;
-  }, [currentUser, follows]);
+  }, [currentUser, follows, followersOfFollowers]);
 
   return (
     <CanvasContainer>
-      <ReactFlow elements={elements} >
+      <ReactFlow elements={elements} onElementClick={onElementClick}>
         <Background />
         <Controls />
       </ReactFlow>

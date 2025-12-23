@@ -37,6 +37,7 @@ class User(Base):
     following = relationship("Follower", foreign_keys=['Follower.follower_id'], back_populates="follower")
     poll_votes = relationship("PollVote", back_populates="user")
     podcasts = relationship("Podcast", back_populates="creator")
+    podcast_following = relationship("PodcastFollower", back_populates="user")
     likes = relationship("Like", back_populates="owner")
     events = relationship("Event", back_populates="owner")
     event_participations = relationship("EventParticipant", back_populates="user")
@@ -44,3 +45,5 @@ class User(Base):
     profile = relationship("Profile", uselist=False, back_populates="user")
     rooms = relationship("Room", back_populates="owner")
     feed_polls = relationship("FeedPoll", back_populates="user")
+    user_badges = relationship("UserBadge", back_populates="user")
+    messages = relationship("RoomMessage", back_populates="user")

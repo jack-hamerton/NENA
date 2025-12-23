@@ -1,7 +1,6 @@
+
+from typing import List, Optional
 from pydantic import BaseModel
-import uuid
-from typing import List
-import datetime
 
 class PollOptionBase(BaseModel):
     text: str
@@ -11,24 +10,21 @@ class PollOptionCreate(PollOptionBase):
 
 class PollOption(PollOptionBase):
     id: int
-    votes: int
+    poll_id: int
 
     class Config:
         orm_mode = True
 
 class PollBase(BaseModel):
     question: str
-    options: List[PollOptionCreate]
-    duration: int
-    anonymous: bool
 
 class PollCreate(PollBase):
-    room_id: int
+    options: List[PollOptionCreate]
 
 class Poll(PollBase):
     id: int
-    room_id: int
-    created_at: datetime.datetime
+    episode_id: int
+    options: List[PollOption] = []
 
     class Config:
         orm_mode = True
@@ -37,13 +33,12 @@ class PollVoteBase(BaseModel):
     option_id: int
 
 class PollVoteCreate(PollVoteBase):
-    poll_id: int
-    # user_id: int
+    pass
 
 class PollVote(PollVoteBase):
     id: int
     poll_id: int
-    # user_id: int
+    user_id: int
 
     class Config:
         orm_mode = True

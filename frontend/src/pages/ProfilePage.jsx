@@ -8,7 +8,17 @@ import ProfileHeader from '../components/profile/ProfileHeader';
 import IntentModal from '../components/profile/IntentModal';
 import CreatePodcast from '../components/profile/CreatePodcast';
 import { theme } from '../theme/theme';
-import { getUserById, getFollowers, followUser, getUserPosts, getUserPodcasts } from '../services/user.service';
+import {
+  getUserById,
+  getFollowers,
+  followUser,
+  getUserPosts,
+  getUserPodcasts,
+  getFollowerIntentMetrics,
+  getUserHashtagMetrics,
+  getUserBadges,
+  getFollowersOfFollowers
+} from '../services/user.service';
 import {
     ProfilePageContainer,
     SpiderWebCanvasSection,
@@ -23,6 +33,7 @@ const ProfilePage = () => {
   const { id } = useParams();
   const [user, setUser] = useState(null);
   const [followers, setFollowers] = useState([]);
+  const [followersOfFollowers, setFollowersOfFollowers] = useState([]);
   const [posts, setPosts] = useState([]);
   const [podcasts, setPodcasts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,20 +41,31 @@ const ProfilePage = () => {
   const [showMorePodcasts, setShowMorePodcasts] = useState(false);
   const [intentModalOpen, setIntentModalOpen] = useState(false);
   const [createPodcastModalOpen, setCreatePodcastModalOpen] = useState(false);
+  const [followerIntentMetrics, setFollowerIntentMetrics] = useState(null);
+  const [hashtagMetrics, setHashtagMetrics] = useState([]);
+  const [badges, setBadges] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const [userResponse, followersResponse, postsResponse, podcastsResponse] = await Promise.all([
+        const [userResponse, followersResponse, followersOfFollowersResponse, postsResponse, podcastsResponse, followerIntentMetricsResponse, hashtagMetricsResponse, badgesResponse] = await Promise.all([
           getUserById(id),
           getFollowers(id),
+          getFollowersOfFollowers(id),
           getUserPosts(id),
           getUserPodcasts(id),
+          getFollowerIntentMetrics(id),
+          getUserHashtagMetrics(id),
+          getUserBadges(id),
         ]);
         setUser(userResponse.data);
         setFollowers(followersResponse.data);
+        setFollowersOfFollowers(followersOfFollowersResponse);
         setPosts(postsResponse.data);
         setPodcasts(podcastsResponse.data);
+        setFollowerIntentMetrics(followerIntentMetricsResponse.data);
+        setHashtagMetrics(hashtagMetricsResponse.data);
+        setBadges(badgesResponse.data);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -81,7 +103,7 @@ const ProfilePage = () => {
         <IntentModal open={intentModalOpen} onClose={() => setIntentModalOpen(false)} onFollow={handleFollow} />
 
         <SpiderWebCanvasSection>
-          <SpiderWebCanvas currentUser={user} follows={followers} />
+          <SpiderWebCanvas currentUser={user} follows={followers} followersOfFollowers={followersOfFollowers} followerIntentMetrics={followerIntentMetrics} />
         </SpiderWebCanvasSection>
 
         <ContentSection>
@@ -111,9 +133,21 @@ const ProfilePage = () => {
 
         <MetricsSection>
           <h3>Metrics & Impact</h3>
-          <p>Followers by Intent (Supporters: 120, Amplifiers: 45, Learners: 200)</p>
-          <p>Topics Engaged (#YouthVoices, #ClimateJustice)</p>
-          <p>Community Impact Badge (Challenge Contributor)</p>
+          {followerIntentMetrics && (
+            <p>
+              Followers by Intent (Supporters: {followerIntentMetrics.supporters}, Amplifiers: {followerIntentMetrics.amplifiers}, Learners: {followerIntentMetrics.learners})
+            </p>
+          )}
+          {hashtagMetrics.length > 0 && (
+            <p>
+              Topics Engaged ({hashtagMetrics.map(metric => `${metric.tag} (${metric.count})`).join(', ')})
+            </p>
+          )}
+          {badges.length > 0 && (
+            <p>
+              Community Impact Badge ({badges.map(badge => badge.name).join(', ')})
+            </p>
+          )}
         </MetricsSection>
 
         <ProfileFooter>

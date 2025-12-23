@@ -1,34 +1,38 @@
 
-import { api } from './api';
+import api from './api';
 
-export const getCurrentUser = () => {
-  return JSON.parse(localStorage.getItem('user'));
+export const getUserById = (id) => {
+    return api.get(`/users/${id}`);
 };
 
-export const getUserPodcasts = (userId) => {
-  return api.get(`/users/${userId}/podcasts`);
+export const getFollowers = (id) => {
+    return api.get(`/users/${id}/followers`);
 };
 
-export const getUserPosts = (userId) => {
-  return api.get(`/users/${userId}/posts`);
+export const getFollowersOfFollowers = (id) => {
+    return api.get(`/users/${id}/followers-of-followers`);
 };
 
-export const getUserByUsername = (username) => {
-  return api.get(`/user/by-username/${username}`);
+export const followUser = (id, intent) => {
+    return api.post(`/users/${id}/follow`, { intent });
 };
 
-export const followUser = (userId, intent) => {
-  return api.post(`/user/${userId}/follow`, { intent });
+export const getUserPosts = (id) => {
+    return api.get(`/users/${id}/posts`);
 };
 
-export const unfollowUser = (userId) => {
-  return api.delete(`/user/${userId}/follow`);
+export const getUserPodcasts = (id) => {
+    return api.get(`/users/${id}/podcasts`);
 };
 
-export const getUserById = (userId) => {
-  return api.get(`/users/${userId}`);
+export const getFollowerIntentMetrics = (id) => {
+    return api.get(`/users/${id}/follower-intent-metrics`);
 };
 
-export const getFollowers = (userId) => {
-  return api.get(`/users/${userId}/followers`);
+export const getUserHashtagMetrics = (id) => {
+    return api.get(`/users/${id}/hashtag-metrics`);
+};
+
+export const getUserBadges = (id) => {
+    return api.get(`/users/${id}/badges`);
 };
