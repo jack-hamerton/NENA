@@ -2,6 +2,24 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
+import styled from 'styled-components';
+
+const PasswordReqs = styled.div`
+    color: ${props => props.theme.text.primary};
+    h4 {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+`;
+
+const Criteria = styled.li`
+    color: ${props => (props.met ? props.theme.palette.accent : props.theme.palette.danger)};
+`;
 
 export const RegisterForm = ({ onSubmit }) => {
   const [username, setUsername] = useState('');
@@ -31,10 +49,6 @@ export const RegisterForm = ({ onSubmit }) => {
     onSubmit(username, password, email);
   };
 
-  const getCriteriaStyle = (met) => ({
-    color: met ? 'green' : 'red',
-  });
-
   return (
     <form onSubmit={handleSubmit}>
       <Input
@@ -57,26 +71,26 @@ export const RegisterForm = ({ onSubmit }) => {
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      <div>
+      <PasswordReqs>
         <h4>Password Requirements:</h4>
         <ul>
-          <li style={getCriteriaStyle(passwordCriteria.length)}>
+          <Criteria met={passwordCriteria.length}>
             At least 8 characters long
-          </li>
-          <li style={getCriteriaStyle(passwordCriteria.uppercase)}>
+          </Criteria>
+          <Criteria met={passwordCriteria.uppercase}>
             Contains an uppercase letter
-          </li>
-          <li style={getCriteriaStyle(passwordCriteria.lowercase)}>
+          </Criteria>
+          <Criteria met={passwordCriteria.lowercase}>
             Contains a lowercase letter
-          </li>
-          <li style={getCriteriaStyle(passwordCriteria.number)}>
+          </Criteria>
+          <Criteria met={passwordCriteria.number}>
             Contains a number
-          </li>
-          <li style={getCriteriaStyle(passwordCriteria.specialChar)}>
+          </Criteria>
+          <Criteria met={passwordCriteria.specialChar}>
             Contains a special character (!@#$%^&*(),.?\":{}|<>)
-          </li>
+          </Criteria>
         </ul>
-      </div>
+      </PasswordReqs>
       <Button type="submit">Register</Button>
     </form>
   );
