@@ -48,6 +48,7 @@ class StudyBase(BaseModel):
 
 class StudyCreate(StudyBase):
     questions: List[QuestionCreate] = []
+    unique_code: Optional[str] = None
 
 class StudyUpdate(StudyBase):
     pass

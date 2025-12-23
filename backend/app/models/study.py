@@ -4,13 +4,16 @@ from app.db.base_class import Base
 import datetime
 import uuid
 
+def generate_unique_code():
+    return str(uuid.uuid4())[:8]
+
 class Study(Base):
     __tablename__ = 'studies'
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     description = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    unique_code = Column(String, unique=True, index=True, default=lambda: str(uuid.uuid4()))
+    unique_code = Column(String, unique=True, index=True, default=generate_unique_code, nullable=False)
 
     questions = relationship("Question", back_populates="study")
     answers = relationship("Answer", back_populates="study")

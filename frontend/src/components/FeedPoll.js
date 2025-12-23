@@ -1,30 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { getFeedPollsForYou } from '../services/poll.service';
 
-const FeedPoll = () => {
-  const [polls, setPolls] = useState([]);
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { voteOnPoll } from '../services/poll.service';
 
-  useEffect(() => {
-    getFeedPollsForYou().then((response) => {
-      setPolls(response.data);
-    });
-  }, []);
+const PollContainer = styled.div`
+  margin-top: 1rem;
+`;
+
+const PollOption = styled.div`
+  background-color: ${props => props.theme.palette.background.default};
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  border: 1px solid ${props => (props.isSelected ? props.theme.palette.accent : 'transparent')};
+
+  &:hover {
+    border-color: ${props => props.theme.palette.accent};
+  }
+`;
+
+const FeedPoll = ({ poll, postId }) => {
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [totalVotes, setTotalVotes] = useState(poll.options.reduce((acc, option) => acc + option.votes, 0));
+
+  const handleVote = async (optionId) => {
+    try {
+      await voteOnPoll(postId, poll.id, optionId);
+      setSelectedOption(optionId);
+      setTotalVotes(totalVotes + 1);
+    } catch (error) {
+      console.error('Failed to vote on poll:', error);
+    }
+  };
 
   return (
-    <div>
-      {polls.map((poll) => (
-        <div key={poll.id}>
-          <h3>{poll.question}</h3>
-          <ul>
-            {poll.options.map((option) => (
-              <li key={option.id}>
-                {option.text} - {option.votes} votes
-              </li>
-            ))}
-          </ul>
-        </div>
+    <PollContainer>
+      {poll.options.map(option => (
+        <PollOption 
+          key={option.id} 
+          onClick={() => handleVote(option.id)}
+          isSelected={selectedOption === option.id}
+        >
+          {option.text}
+          {selectedOption && 
+            <span> - {Math.round((option.votes / totalVotes) * 100)}%</span>
+          }
+        </PollOption>
       ))}
-    </div>
+    </PollContainer>
   );
 };
 

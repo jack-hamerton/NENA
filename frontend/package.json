@@ -20,6 +20,7 @@
     "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
     "emoji-picker-react": "^4.16.1",
+    "events": "^3.3.0",
     "framer-motion": "^12.23.26",
     "jspdf": "^3.0.4",
     "notistack": "^3.0.2",

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useParams, useLocation } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
 import FloatingNav from './FloatingNav';
 import SplashScreen from './SplashScreen/SplashScreen';
@@ -11,31 +11,25 @@ import * as userService from '../services/user.service';
 import DiscoverPage from '../discover/DiscoverPage';
 import MessagesPage from '../messages/MessagesPage';
 import RoomsPage from '../rooms/RoomsPage';
-import { Room } from '../rooms/Room';
 import Podcasts from '../pages/Podcasts';
 import PodcastPlayer from '../components/podcast/PodcastPlayer';
 import { theme } from '../theme/theme';
 import '../styles/screenshot-blocker.css';
+import '../styles/global.css';
 import ScreenshotBlocker from './ScreenshotBlocker';
 import Footer from './Footer';
 import GlobalPinLock from '../components/GlobalPinLock'; 
 import SettingsPage from '../settings/SettingsPage'; 
-import { useBiometricAuth } from '../hooks/useBiometricAuth'; // Import the new hook
-import StudyPage from '../study/StudyPage';
-import StudyBuilder from '../study/StudyBuilder';
-import CreatorStudio from '../study/CreatorStudio';
-import ParticipantGate from '../study/ParticipantGate';
-import StudyParticipantView from '../study/StudyParticipantView';
+import { useBiometricAuth } from '../hooks/useBiometricAuth';
+import StudyPage from '../pages/StudyPage';
 import LoginPage from '../pages/LoginPage';
 import SignUpPage from '../pages/SignUpPage';
+import { useAuth } from '../contexts/AuthContext';
 
-
-// --- Placeholder Pages ---
 const CalendarPage = () => <div>Calendar Page</div>;
 const CreatePodcastPage = () => <div>Create Podcast Page</div>;
 const PrivacySettingsPage = () => <div>Privacy Settings Page</div>;
 
-// ... (styled components and other components remain the same)
 const AppContainer = styled.div`
   display: flex;
   background-color: ${props => props.theme.palette.dark};
@@ -47,7 +41,7 @@ const AppContainer = styled.div`
 
 const MainContent = styled.main`
   flex-grow: 1;
-  padding-left: 100px; /* Space for the floating nav */
+  padding-left: 100px; 
   padding-right: 2rem;
   width: 100%;
 `;
@@ -92,7 +86,9 @@ const FollowingList = () => {
   return <FollowList title="Following" users={users} />;
 };
 
-const MainLayout = () => {
+const AppLayout = () => {
+  const { user } = useAuth();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
   const { isBiometricAvailable, authenticate } = useBiometricAuth();
@@ -103,7 +99,7 @@ const MainLayout = () => {
 
   useEffect(() => {
     const initialize = async () => {
-      await new Promise(resolve => setTimeout(resolve, 4000)); // Splash screen timer
+      await new Promise(resolve => setTimeout(resolve, 4000));
       setIsLoading(false);
 
       const storedPin = localStorage.getItem('app_pin');
@@ -112,18 +108,15 @@ const MainLayout = () => {
           try {
             const success = await authenticate();
             if (success) {
-              handleUnlock(); // Unlock if biometric succeeds
+              handleUnlock();
             } else {
-              // If user cancels or it fails, fall back to PIN
               setIsLocked(true); 
             }
           } catch (error) {
-            // If an error occurs during authentication, show PIN lock
             console.error("Biometric auth failed", error);
             setIsLocked(true);
           }
         } else {
-          // If no biometrics, just show PIN lock
           setIsLocked(true);
         }
       } 
@@ -136,17 +129,19 @@ const MainLayout = () => {
     return <SplashScreen />;
   }
 
-  // Pass a specific key to GlobalPinLock to force re-mount if it needs to appear again
   if (isLocked) {
     return <GlobalPinLock key={Date.now()} onUnlock={handleUnlock} />;
   }
 
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  const blurClass = !user && !isAuthPage ? 'blur-effect' : '';
+
   return (
     <ThemeProvider theme={theme}>
-      <Router>
-        <ScreenshotBlocker />
+      <ScreenshotBlocker />
+      <div className={blurClass}>
         <AppContainer>
-          <FloatingNav />
+          {user && <FloatingNav />}
           <MainContent>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
@@ -155,14 +150,11 @@ const MainLayout = () => {
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/room" element={<RoomsPage />} />
-              <Route path="/room/:id" element={<Room />} />
+              <Route path="/room/:id" element={<RoomsPage />} />
               <Route path="/podcasts" element={<Podcasts />} />
               <Route path="/player" element={<PodcastPlayer />} />
               <Route path="/study" element={<StudyPage />} />
-              <Route path="/study/new" element={<StudyBuilder />} />
-              <Route path="/study/access" element={<ParticipantGate />} />
-              <Route path="/study/participant/:id" element={<StudyParticipantView />} />
-              <Route path="/study/:id" element={<CreatorStudio />} />
+              <Route path="/study/:id" element={<StudyPage />} />
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/profile/:id" element={<ProfilePage />} />
               <Route path="/user/:id/followers" element={<FollowerList />} />
@@ -172,11 +164,22 @@ const MainLayout = () => {
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </MainContent>
-          <Footer />
+          {user && <Footer />}
         </AppContainer>
-      </Router>
+      </div>
+      {!user && !isAuthPage && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <LoginPage />
+        </div>
+      )}
     </ThemeProvider>
   );
-};
+}
+
+const MainLayout = () => (
+  <Router>
+    <AppLayout />
+  </Router>
+);
 
 export default MainLayout;

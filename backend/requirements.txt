@@ -1,10 +1,5 @@
-
 fastapi
 uvicorn
 sqlalchemy
 psycopg2-binary
-passlib
-python-jose[cryptography]
-alembic
-python-multipart
-fastapi-utils
+cryptography

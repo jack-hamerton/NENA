@@ -21,6 +21,13 @@ export const NotificationProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
+      const fetchNotifications = async () => {
+        const { data } = await api.get("/notifications");
+        setNotifications(data);
+      };
+
+      fetchNotifications();
+
       const ws = new WebSocket(`ws://localhost:8000/notifications/ws/${user.id}`);
 
       ws.onmessage = (event) => {
@@ -39,13 +46,15 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [user]);
 
-  const markAsRead = useCallback((notificationId) => {
+  const markAsRead = useCallback(async (notificationId) => {
+    await api.post(`/notifications/${notificationId}/read`);
     setNotifications(prev =>
       prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
     );
   }, []);
 
-  const clearReadNotifications = useCallback(() => {
+  const clearReadNotifications = useCallback(async () => {
+    await api.delete("/notifications/read");
     setNotifications(prev => prev.filter(n => !n.read));
   }, []);
 

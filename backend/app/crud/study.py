@@ -11,6 +11,7 @@ class CRUDStudy(CRUDBase[Study, StudyCreate, StudyUpdate]):
         db_obj = Study(
             title=obj_in.title,
             description=obj_in.description,
+            unique_code=obj_in.unique_code
         )
         db.add(db_obj)
         db.commit()
@@ -21,8 +22,11 @@ class CRUDStudy(CRUDBase[Study, StudyCreate, StudyUpdate]):
 
         return db_obj
 
-    def get_by_unique_code(self, db: Session, *, unique_code: str) -> Optional[Study]:
-        return db.query(Study).filter(Study.unique_code == unique_code).first()
+    def get_by_unique_code(self, db: Session, *, study_id: int, code: str) -> Optional[Study]:
+        return db.query(Study).filter(Study.id == study_id, Study.unique_code == code).first()
+
+    def search_studies(self, db: Session, *, query: str) -> List[Study]:
+        return db.query(Study).filter(Study.title.ilike(f"%{query}%")).all()
 
     def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100

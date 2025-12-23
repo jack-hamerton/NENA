@@ -9,6 +9,7 @@ from app.crud.base import CRUDBase
 from app.models.post import Post
 from app.models.hashtag import Hashtag
 from app.schemas.post import PostCreate, PostUpdate
+from app import crud
 
 
 class CRUDPost(CRUDBase[Post, PostCreate, PostUpdate]):
@@ -32,6 +33,15 @@ class CRUDPost(CRUDBase[Post, PostCreate, PostUpdate]):
             .limit(limit)
             .all()
         )
+
+    def get_posts_with_follow_status(
+        self, db: Session, *, user_id: uuid.UUID, posts: List[Post]
+    ) -> List[Post]:
+        for post in posts:
+            post.is_following = crud.user.is_following(
+                db, follower_id=user_id, followed_id=post.user_id
+            )
+        return posts
 
     def get_multi_by_owner_and_hashtags(
         self, db: Session, *, user_id: uuid.UUID, hashtags: List[str], skip: int = 0, limit: int = 100

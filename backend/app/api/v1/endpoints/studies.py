@@ -1,89 +1,70 @@
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import Any, List
+from typing import List
+import random
+import string
 
 from app import crud, models, schemas
-from app.core.deps import get_db
+from app.db.session import SessionLocal
 
 router = APIRouter()
 
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+def generate_unique_code():
+    return ''.join(random.choices(string.digits, k=8))
 
 @router.post("/", response_model=schemas.Study)
-def create_study(
-    *, 
-    db: Session = Depends(get_db),
-    study_in: schemas.StudyCreate,
-) -> Any:
-    """
-    Create new study.
-    """
-    study = crud.study.create(db=db, obj_in=study_in)
-    return study
+def create_study(study: schemas.StudyCreate, db: Session = Depends(get_db)):
+    study.unique_code = generate_unique_code()
+    return crud.create_study(db=db, study=study)
 
 @router.get("/", response_model=List[schemas.Study])
-def read_studies(
-    db: Session = Depends(get_db),
-    skip: int = 0,
-    limit: int = 100,
-) -> Any:
-    """
-    Retrieve studies.
-    """
-    studies = crud.study.get_multi(db, skip=skip, limit=limit)
-    return studies
+def get_studies(db: Session = Depends(get_db)):
+    return crud.get_studies(db=db)
 
-@router.get("/{id}", response_model=schemas.Study)
-def read_study(
-    *, 
-    db: Session = Depends(get_db),
-    id: int,
-) -> Any:
-    """
-    Get study by ID.
-    """
-    study = crud.study.get(db=db, id=id)
+@router.get("/search", response_model=List[schemas.Study])
+def search_studies(q: str, db: Session = Depends(get_db)):
+    return crud.search_studies(db=db, query=q)
+
+@router.post("/{study_id}/verify")
+def verify_study_access(study_id: int, code: str, db: Session = Depends(get_db)):
+    study = crud.get_study_by_code(db, study_id, code)
+    if not study:
+        raise HTTPException(status_code=403, detail="Invalid access code")
+    return {"message": "Access granted"}
+
+@router.get("/{study_id}", response_model=schemas.Study)
+def get_study(study_id: int, db: Session = Depends(get_db)):
+    study = crud.get_study(db, study_id)
     if not study:
         raise HTTPException(status_code=404, detail="Study not found")
     return study
 
-@router.get("/code/{unique_code}", response_model=schemas.Study)
-def read_study_by_code(
-    *, 
-    db: Session = Depends(get_db),
-    unique_code: str,
-) -> Any:
-    """
-    Get study by unique code.
-    """
-    study = crud.study.get_by_unique_code(db=db, unique_code=unique_code)
-    if not study:
-        raise HTTPException(status_code=404, detail="Study not found")
-    return study
+@router.post("/{study_id}/answers")
+def submit_answers(study_id: int, answers: schemas.AnswerCreate, db: Session = Depends(get_db)):
+    # In a real application, you would save the answers to the database
+    # and perform analysis.
+    print(f"Received answers for study {study_id}: {answers}")
+    return {"message": "Answers submitted successfully"}
 
-@router.post("/{study_id}/answers", response_model=List[schemas.Answer])
-def create_answers(
-    *, 
-    db: Session = Depends(get_db),
-    study_id: int,
-    answers_in: schemas.AnswersCreate,
-) -> Any:
-    """
-    Create new answers for a study.
-    """
-    answers = []
-    for answer_in in answers_in.answers:
-        answer = crud.answer.create(db=db, obj_in=schemas.AnswerCreate(text=answer_in, question_id=1, study_id=study_id))
-        answers.append(answer)
-    return answers
+@router.get("/{study_id}/results")
+def get_study_results(study_id: int, db: Session = Depends(get_db)):
+    # In a real application, you would fetch and analyze the results
+    # from the database. This is a placeholder.
+    donut_chart_data = [{ "name": "Positive", "value": 60 }, { "name": "Negative", "value": 20 }, { "name": "Neutral", "value": 20 }]
+    answer_data = { "question": "What do you think of the new feature?", "answer": "I think it is great! It is very useful." }
+    recommendation_data = { "recommendation": "Consider adding a tutorial to help users understand the new feature." }
 
-@router.get("/{study_id}/answers", response_model=List[schemas.Answer])
-def read_answers(
-    *, 
-    db: Session = Depends(get_db),
-    study_id: int,
-) -> Any:
-    """
-    Retrieve answers for a study.
-    """
-    answers = crud.answer.get_multi_by_study(db, study_id=study_id)
-    return answers
+    return {
+        "donutChartData": donut_chart_data,
+        "answerData": answer_data,
+        "recommendationData": recommendation_data
+    }

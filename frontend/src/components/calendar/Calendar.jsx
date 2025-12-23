@@ -17,7 +17,7 @@ export const Calendar = () => {
       description: '',
       start_time: '',
       end_time: '',
-      collaborator_id: ''
+      collaborator_ids: ''
   });
   const { notifications } = useNotifications();
 
@@ -45,7 +45,7 @@ export const Calendar = () => {
   const handleClose = () => {
     setOpen(false);
     setConflict(null);
-    setFormData({ title: '', description: '', start_time: '', end_time: '', collaborator_id: '' });
+    setFormData({ title: '', description: '', start_time: '', end_time: '', collaborator_ids: '' });
   };
 
   const handleChange = (e) => {
@@ -54,11 +54,13 @@ export const Calendar = () => {
 
   const handleSubmit = async () => {
     try {
+        const collaborator_ids = formData.collaborator_ids.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
         await api.post('/calendar/', {
             ...formData,
+            collaborator_ids,
             start_time: new Date(formData.start_time).toISOString(),
             end_time: new Date(formData.end_time).toISOString()
-        }, { params: { collaborator_id: formData.collaborator_id } });
+        });
         fetchEvents();
         handleClose();
     } catch (error) {
@@ -84,22 +86,27 @@ export const Calendar = () => {
         <DialogTitle>Create a New Event</DialogTitle>
         <DialogContent>
             {conflict && (
-                <Typography color="error" sx={{ mb: 2 }}>
-                    {conflict.message}
-                    {conflict.available_slots && (
-                        <ul>
-                            {conflict.available_slots.map(slot => (
-                                <li key={slot.start}>{moment(slot.start).format('LT')} - {moment(slot.end).format('LT')}</li>
-                            ))}
-                        </ul>
+                <div>
+                    <Typography color="error" sx={{ mb: 1 }}>
+                        {conflict.message}
+                    </Typography>
+                    {conflict.available_slots && conflict.available_slots.length > 0 && (
+                        <div>
+                            <Typography variant="subtitle2">Available slots:</Typography>
+                            <ul>
+                                {conflict.available_slots.map((slot, index) => (
+                                    <li key={index}>{moment(slot.start).format('LT')} - {moment(slot.end).format('LT')}</li>
+                                ))}
+                            </ul>
+                        </div>
                     )}
-                </Typography>
+                </div>
             )}
             <TextField name="title" label="Title" fullWidth sx={{ mb: 2 }} onChange={handleChange} />
             <TextField name="description" label="Description" fullWidth sx={{ mb: 2 }} onChange={handleChange} />
             <TextField name="start_time" label="Start Time" type="datetime-local" fullWidth sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} onChange={handleChange} />
             <TextField name="end_time" label="End Time" type="datetime-local" fullWidth sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} onChange={handleChange} />
-            <TextField name="collaborator_id" label="Collaborator User ID" fullWidth onChange={handleChange} />
+            <TextField name="collaborator_ids" label="Collaborator User IDs (comma-separated)" fullWidth onChange={handleChange} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>

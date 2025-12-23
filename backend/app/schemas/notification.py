@@ -1,20 +1,15 @@
-from pydantic import BaseModel, UUID4
-from datetime import datetime
-
+from pydantic import BaseModel
 
 class NotificationBase(BaseModel):
     type: str
-    content: str
-
+    payload: dict
 
 class NotificationCreate(NotificationBase):
-    user_id: UUID4
-
+    pass
 
 class Notification(NotificationBase):
-    id: UUID4
-    is_read: bool
-    created_at: datetime
+    id: int
+    read: bool
 
     class Config:
         orm_mode = True

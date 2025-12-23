@@ -3,11 +3,33 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.services.moderation import ModerationService
+from app.websockets import manager
+from typing import List
 
 router = APIRouter()
 
+@router.get("/{conversation_id}", response_model=List[schemas.Message])
+def read_messages(
+    conversation_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user)
+) -> List[models.Message]:
+    """
+    Retrieve messages for a conversation.
+    """
+    conversation = crud.conversation.get(db=db, id=conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    if current_user.id not in [p.id for p in conversation.participants]:
+        raise HTTPException(status_code=403, detail="Not authorized to view this conversation")
+
+    messages = crud.message.get_multi_by_conversation(
+        db=db, conversation_id=conversation_id, skip=0, limit=100
+    )
+    return messages
+
 @router.post("/", response_model=schemas.Message)
-def create_message(
+async def create_message(
     *, 
     db: Session = Depends(deps.get_db),
     message_in: schemas.MessageCreate,
@@ -37,4 +59,8 @@ def create_message(
             conversation_id=conversation.id
         )
     )
+
+    # Send message to recipient in real-time
+    await manager.send_personal_message(message.dict(), recipient.id)
+
     return message

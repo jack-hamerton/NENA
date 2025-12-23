@@ -3,6 +3,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "@types/three": "^0.182.0",
+    "axios": "^1.7.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "d3": "^7.9.0",

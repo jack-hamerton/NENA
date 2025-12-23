@@ -4,9 +4,9 @@ import styled from 'styled-components';
 import UserAvatar from '../components/UserAvatar';
 import CommentSection from '../comments/CommentSection';
 import { likePost, resharePost } from '../services/post.service';
-import { useAuth } from '../hooks/useAuth';
 import { IconButton, Typography } from '@mui/material';
 import { FavoriteBorder, Favorite, Repeat, Comment as CommentIcon } from '@mui/icons-material';
+import FeedPoll from './FeedPoll';
 
 const Card = styled.div`
   background-color: ${props => props.theme.palette.background.paper};
@@ -46,12 +46,11 @@ const Action = styled.div`
 `;
 
 const PostCard = ({ post, onReportPost }) => {
-  const { user: currentUser, following } = useAuth();
   const [likes, setLikes] = useState(post.likes || 0);
   const [hasLiked, setHasLiked] = useState(post.hasLiked || false);
   const [showComments, setShowComments] = useState(false);
 
-  const canReshare = following.some(followedUser => followedUser.id === post.author.id);
+  const canReshare = post.is_following;
 
   const handleLike = async () => {
     if (hasLiked) return;
@@ -79,7 +78,8 @@ const PostCard = ({ post, onReportPost }) => {
   return (
     <Card>
       <UserAvatar user={post.author} />
-      <PostText>{post.text}</PostText>
+      <PostText>{post.content}</PostText>
+      {post.poll && <FeedPoll poll={post.poll} postId={post.id} />}
       
       <ActionsContainer>
         <Action onClick={handleLike} className={hasLiked ? 'liked' : ''}>

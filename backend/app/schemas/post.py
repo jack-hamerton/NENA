@@ -1,3 +1,4 @@
+
 from pydantic import BaseModel, HttpUrl
 import uuid
 from datetime import datetime
@@ -16,6 +17,7 @@ class Post(PostBase):
     user_id: uuid.UUID
     created_at: datetime
     parent_post_id: Optional[uuid.UUID] = None
+    is_following: bool = False
 
     class Config:
         orm_mode = True

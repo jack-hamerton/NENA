@@ -11,6 +11,7 @@ from app.crud.poll import poll
 from app.crud.poll_vote import poll_vote
 from app.schemas.poll_vote import PollVoteCreate
 from app.services.e2ee.sframe import SFrame
+from typing import List
 
 router = APIRouter()
 
@@ -24,6 +25,10 @@ def create_room(room_in: RoomCreate, db: Session = Depends(get_db), current_user
     # Generate a new key for the room
     room_keys[new_room.id] = os.urandom(32)
     return new_room
+
+@router.get("/", response_model=List[Room])
+def read_rooms(db: Session = Depends(get_db)):
+    return room.get_multi(db=db)
 
 @router.get("/{room_id}", response_model=Room)
 def read_room(room_id: int, db: Session = Depends(get_db)):

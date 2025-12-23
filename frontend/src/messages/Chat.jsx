@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Box, TextField, Button, List, ListItem, ListItemText, Typography, IconButton } from '@mui/material';
-import { chatService, Message } from '../services/chatService';
+import { chatService } from '../services/chatService';
 import { useSnackbar } from '../context/SnackbarContext';
 import { PinLock } from '../components/PinLock';
 import CallPopup from '../components/call/CallPopup';
+import { realtimeService } from '../services/realtimeService';
 
-const Chat = () => {
+const Chat = ({ conversationId, currentUserId, recipientId }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [locked, setLocked] = useState(false);
@@ -14,14 +15,9 @@ const Chat = () => {
   const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
-    // Establish E2EE session when the component mounts
     const establishE2EESession = async () => {
       try {
-        // In a real application, you would get the recipient's identity and pre-keys from a server
-        const recipientId = 'some-recipient-id';
-        const recipientIdentityKey = null; // Fetch from server
-        const recipientPreKey = null; // Fetch from server
-        await chatService.establishSession(recipientId, recipientIdentityKey, recipientPreKey);
+        await chatService.establishSession(recipientId, null, null);
         showSnackbar('E2EE session established', 'success');
       } catch (error) {
         showSnackbar('Failed to establish E2EE session', 'error');
@@ -31,10 +27,10 @@ const Chat = () => {
 
     establishE2EESession();
 
-    // Get initial messages
-    chatService.getMessages('some-room').then(setMessages);
+    realtimeService.connect(currentUserId);
 
-    // Subscribe to new messages
+    chatService.getMessages(conversationId).then(setMessages);
+
     const handleNewMessage = (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
       showSnackbar(`New message from ${message.sender.name}`, 'success');
@@ -42,17 +38,19 @@ const Chat = () => {
 
     chatService.onNewMessage(handleNewMessage);
 
-    // Cleanup subscription
     return () => {
       chatService.offNewMessage();
+      realtimeService.disconnect();
     };
-  }, [showSnackbar]);
+  }, [conversationId, currentUserId, recipientId, showSnackbar]);
 
   const handleSendMessage = () => {
     if (newMessage.trim() !== '') {
       chatService.sendMessage({ 
-        text: newMessage, 
-        sender: { id: 'me', name: 'Me' },
+        content: newMessage, 
+        sender_id: currentUserId,
+        recipient_id: recipientId,
+        conversation_id: conversationId
        }).then(sentMessage => {
         setMessages(prevMessages => [...prevMessages, sentMessage]);
        });
@@ -94,7 +92,7 @@ const Chat = () => {
       <List>
         {messages.map((message) => (
           <ListItem key={message.id}>
-            <ListItemText primary={message.text} secondary={message.sender.name} />
+            <ListItemText primary={message.content} secondary={message.sender.name} />
           </ListItem>
         ))}
       </List>

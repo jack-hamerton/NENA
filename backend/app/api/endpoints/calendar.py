@@ -1,21 +1,22 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from typing import List, Any
+from typing import List, Any, Optional
+from datetime import datetime
 
 from app import crud, schemas, models
 from app.core.dependencies import get_db, get_current_user
 
 router = APIRouter()
 
-@router.get("/", response_model=List[schemas.Event])
+@router.get("/events", response_model=List[schemas.Event])
 def read_events(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ) -> Any:
     """
-    Retrieve user's events.
+    Retrieve user's events, including those they own and those they are a collaborator on.
     """
-    events = crud.calendar.get_multi_by_owner(db, owner_id=current_user.id)
+    events = crud.calendar.get_events_for_user(db, user_id=current_user.id)
     return events
 
 @router.post("/", response_model=schemas.Event)
@@ -26,44 +27,23 @@ def create_event(
     current_user: models.User = Depends(get_current_user),
 ) -> Any:
     """
-    Create new event.
+    Create new event, checking for conflicts with the owner and any collaborator.
     """
-    event = crud.calendar.create_with_owner(db, obj_in=event_in, owner_id=current_user.id)
-    return event
+    user_ids_to_check = [current_user.id] + event_in.collaborator_ids
+    conflicting_user = None
 
-@router.put("/{id}", response_model=schemas.Event)
-def update_event(
-    *, 
-    db: Session = Depends(get_db),
-    id: int,
-    event_in: schemas.EventUpdate,
-    current_user: models.User = Depends(get_current_user),
-) -> Any:
-    """
-    Update an event.
-    """
-    event = crud.calendar.get(db, id=id)
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
-    if event.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    event = crud.calendar.update(db, db_obj=event, obj_in=event_in)
-    return event
+    for user_id in user_ids_to_check:
+        conflict = crud.calendar.find_conflicting_event(db, user_id=user_id, start_time=event_in.start_time, end_time=event_in.end_time)
+        if conflict:
+            conflicting_user = crud.user.get(db, id=user_id)
+            break
 
-@router.delete("/{id}", response_model=schemas.Event)
-def delete_event(
-    *, 
-    db: Session = Depends(get_db),
-    id: int,
-    current_user: models.User = Depends(get_current_user),
-) -> Any:
-    """
-    Delete an event.
-    """
-    event = crud.calendar.get(db, id=id)
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
-    if event.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    event = crud.calendar.remove(db, id=id)
+    if conflicting_user:
+        available_slots = crud.calendar.get_available_slots(db, user_ids=user_ids_to_check, start_time=event_in.start_time)
+        raise HTTPException(status_code=409, detail={
+            "message": f"{conflicting_user.username} is committed at that time of the day. Kindly try these available slots",
+            "available_slots": available_slots
+        })
+
+    event = crud.calendar.create_with_participants(db, obj_in=event_in, owner_id=current_user.id, participant_ids=event_in.collaborator_ids)
     return event
