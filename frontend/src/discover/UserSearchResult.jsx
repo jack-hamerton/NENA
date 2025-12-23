@@ -6,6 +6,7 @@ const UserCard = styled.div`
   align-items: center;
   padding: 1rem;
   border-bottom: 1px solid #ddd;
+  background-color: ${(props) => props.theme.palette.primary};
 `;
 
 const Avatar = styled.img`
@@ -22,11 +23,12 @@ const UserInfo = styled.div`
 
 const UserName = styled.h4`
   margin: 0;
+  color: ${(props) => props.theme.text.primary};
 `;
 
 const UserHandle = styled.p`
   margin: 0;
-  color: #888;
+  color: ${(props) => props.theme.text.secondary};
 `;
 
 const UserSearchResult = ({ user }) => {

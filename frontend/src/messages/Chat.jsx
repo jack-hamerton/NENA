@@ -1,10 +1,60 @@
+
 import { useState, useEffect } from 'react';
 import { Box, TextField, Button, List, ListItem, ListItemText, Typography, IconButton } from '@mui/material';
+import styled from 'styled-components';
 import { chatService } from '../services/chatService';
 import { useSnackbar } from '../context/SnackbarContext';
 import { PinLock } from '../components/PinLock';
 import CallPopup from '../components/call/CallPopup';
 import { realtimeService } from '../services/realtimeService';
+
+const StyledChat = styled(Box)`
+  background-color: ${(props) => props.theme.palette.dark};
+  color: ${(props) => props.theme.text.primary};
+  height: 100%;
+  padding: 1rem;
+`;
+
+const StyledMessages = styled(List)`
+  color: ${(props) => props.theme.text.primary};
+  background-color: ${(props) => props.theme.palette.primary};
+  margin-bottom: 1rem;
+  border-radius: 5px;
+`;
+
+const StyledMessageInputContainer = styled(Box)`
+  display: flex;
+  align-items: center;
+`;
+
+const StyledTextField = styled(TextField)`
+  .MuiInputBase-root {
+    color: ${(props) => props.theme.text.primary};
+  }
+  .MuiInputLabel-root {
+    color: ${(props) => props.theme.text.secondary};
+  }
+  .MuiOutlinedInput-root {
+    fieldset {
+      border-color: ${(props) => props.theme.palette.secondary};
+    }
+    &:hover fieldset {
+      border-color: ${(props) => props.theme.palette.accent};
+    }
+    &.Mui-focused fieldset {
+      border-color: ${(props) => props.theme.palette.accent};
+    }
+  }
+`;
+
+const StyledButton = styled(Button)`
+  background-color: ${(props) => props.theme.palette.primary};
+  color: ${(props) => props.theme.text.primary};
+
+  &:hover {
+    background-color: ${(props) => props.theme.palette.accent};
+  }
+`;
 
 const Chat = ({ conversationId, currentUserId, recipientId }) => {
   const [messages, setMessages] = useState([]);
@@ -77,7 +127,7 @@ const Chat = ({ conversationId, currentUserId, recipientId }) => {
   }
 
   return (
-    <Box>
+    <StyledChat>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h5">Chat</Typography>
 		    <Box>
@@ -89,27 +139,27 @@ const Chat = ({ conversationId, currentUserId, recipientId }) => {
           </IconButton>
 		</Box>
       </Box>
-      <List>
+      <StyledMessages>
         {messages.map((message) => (
           <ListItem key={message.id}>
             <ListItemText primary={message.content} secondary={message.sender.name} />
           </ListItem>
         ))}
-      </List>
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <TextField
+      </StyledMessages>
+      <StyledMessageInputContainer>
+        <StyledTextField
           label="Type a message"
           variant="outlined"
           fullWidth
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
         />
-        <Button variant="contained" color="primary" onClick={handleSendMessage} sx={{ ml: 1 }}>
+        <StyledButton variant="contained" onClick={handleSendMessage} sx={{ ml: 1 }}>
           Send
-        </Button>
-      </Box>
+        </StyledButton>
+      </StyledMessageInputContainer>
       {showCallPopup && <CallPopup user={callUser} onStartCall={handleStartCall} onClose={() => setShowCallPopup(false)} />}
-    </Box>
+    </StyledChat>
   );
 };
 

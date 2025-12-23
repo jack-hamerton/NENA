@@ -4,18 +4,18 @@ import styled, { ThemeProvider } from 'styled-components';
 import GlobalSearchBox from './GlobalSearchBox';
 import ResultsGrid from './ResultsGrid';
 import { searchService } from '../services/searchService';
-import { DiscoverResult } from '../types/discover';
 import { theme } from '../theme/theme';
 
 const DiscoverContainer = styled.div`
   padding: 2rem;
-  background-color: ${props => props.theme.palette.primary};
+  background-color: ${props => props.theme.palette.dark};
+  min-height: 100vh;
 `;
 
 const DiscoverPage = () => {
-  const [results, setResults] = useState<DiscoverResult[]>([]);
+  const [results, setResults] = useState([]);
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = async (query) => {
     const searchResults = await searchService.search(query);
     setResults(searchResults);
   };

@@ -4,6 +4,7 @@ import styled from 'styled-components';
 const PostCard = styled.div`
   padding: 1rem;
   border-bottom: 1px solid #ddd;
+  background-color: ${(props) => props.theme.palette.primary};
 `;
 
 const PostHeader = styled.div`
@@ -21,10 +22,12 @@ const Avatar = styled.img`
 
 const AuthorName = styled.h5`
   margin: 0;
+  color: ${(props) => props.theme.text.primary};
 `;
 
 const PostContent = styled.p`
   margin: 0;
+  color: ${(props) => props.theme.text.secondary};
 `;
 
 const PostSearchResult = ({ post }) => {
