@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
@@ -12,6 +12,7 @@ from app.api.endpoints import (
 )
 from app.ai.services import ai_service
 from app.reminders import start_scheduler
+from app.websocket_manager import websocket_manager
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -37,3 +38,14 @@ app.include_router(notifications_router.router, prefix="/notifications", tags=["
 app.include_router(podcasts_router.router, prefix="/api/podcasts", tags=["podcasts"])
 app.include_router(webrtc_router.router, prefix="/api/webrtc", tags=["webrtc"])
 app.include_router(room_router.router, prefix="/api/rooms", tags=["rooms"])
+
+
+@app.websocket("/ws/study/{study_id}")
+async def websocket_endpoint(websocket: WebSocket, study_id: int):
+    await websocket_manager.connect(websocket, study_id)
+    try:
+        while True:
+            # The backend will listen for messages, but for now, we just keep the connection open
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        websocket_manager.disconnect(websocket, study_id)

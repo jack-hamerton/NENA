@@ -1,157 +1,167 @@
-import json
 import random
+from sqlalchemy.orm import Session
+from app.crud.user import user as crud_user
+from app.crud.room import room as crud_room
+from app.ai.services.transcription import transcribe_voice
+from app.ai.services.chat_memory import get_chat_history, add_to_chat_history
+from app.ai.prompts import REWRITE_PROMPTS
 
-# In-memory "knowledge base" for the AI
-knowledge_base = {
-    "coding_challenges": {
-        "reverse_string": {"success_rate": 0.7, "attempts": 10},
-        "palindrome_check": {"success_rate": 0.8, "attempts": 15},
-        "find_max": {"success_rate": 0.6, "attempts": 8},
-    }
-}
-
-# --- User Assistant AI ---
-def assist_user(prompt: str):
+def assist_user(db: Session, prompt: str, user_id: int, context: dict = None):
     """
-    Processes a user's prompt and returns an action or a response.
+    Processes a user's prompt, contextualizes it, and returns an action or a response.
     """
     prompt = prompt.lower().strip()
-    if "send message" in prompt:
-        message = prompt.split("send message", 1)[1].strip()
-        return {"action": "send_message", "payload": {"message": message}}
-    elif "call" in prompt:
-        user = prompt.split("call", 1)[1].strip()
-        return {"action": "call", "payload": {"user": user}}
-    elif "comment on post" in prompt:
-        comment = prompt.split("comment on post", 1)[1].strip()
-        return {"action": "comment", "payload": {"comment": comment}}
-    elif "help" in prompt:
+    user_profile = crud_user.get(db, id=user_id)
+
+    if context and context.get("type") == "room":
+        room_id = context.get("id")
+        return assist_in_room(db, prompt, user_profile, room_id)
+    
+    if context and context.get("type") == "rewrite":
+        return rewrite_text(db, prompt, user_id, context)
+
+    if context and context.get("type") == "summarize":
+        return summarize(db, prompt, user_id, context)
+
+    if context and context.get("type") == "suggest_next_steps":
+        return suggest_next_steps(db, prompt, user_id, context)
+
+    # This is a fallback for generic queries
+    if "help" in prompt:
         return {
-            "response": "I can help you with the following tasks: \n"
-                        "- send message [your message]\n"
-                        "- call [user]\n"
-                        "- comment on post [your comment]"
+            "response": "I can help you with tasks like summarizing rooms, suggesting next steps, connecting with collaborators, and rewriting messages for a different tone."
         }
     else:
-        # If no specific action is found, return a generic response.
-        # This can be expanded to use a more sophisticated NLU/NLG model.
-        return {"response": f"I'm not sure how to help with that. You said: '{prompt}'"}
+        return chat_with_ai(db, prompt, user_id)
 
+def chat_with_ai(db: Session, prompt: str, user_id: int):
+    """Handles direct chat with the AI in the user's personal space."""
+    add_to_chat_history(user_id, f"User: {prompt}")
+    history = get_chat_history(user_id)
 
-# --- Self-Improving Programmer AI ---
-
-def self_generate_challenges(domain="coding"):
-    """
-    Generates a new coding challenge for the AI to solve.
-    """
-    challenges = list(knowledge_base["coding_challenges"].keys())
-    if not challenges:
-        return None
-    task = random.choice(challenges)
-    print(f"Generated challenge: {task}")
-    # In a real scenario, this would be more complex, maybe using an LLM.
-    return {"domain": domain, "task": task, "test_cases": [
-        {"input": "hello", "output": "olleh"} # Example for reverse_string
-    ]}
-
-def attempt_solution(challenge: dict) -> str:
-    '''
-    Attempts to solve a given coding challenge. This acts as the "student" agent.
-    The AI's success is influenced by its historical performance (knowledge_base).
-    '''
-    task = challenge.get("task")
-    print(f"Attempting to solve challenge: {task}")
-    
-    success_rate = knowledge_base["coding_challenges"].get(task, {}).get("success_rate", 0.5)
-    
-    # --- Simulated Solution Library ---
-    correct_solutions = {
-        "reverse_string": "def reverse_string(s):\n    return s[::-1]",
-        "palindrome_check": "def is_palindrome(s):\n    return s == s[::-1]",
-        "find_max": "def find_max(numbers):\n    if not numbers:\n        return None\n    return max(numbers)",
-    }
-    
-    buggy_solutions = {
-        "reverse_string": "def reverse_string(s):\n    return s[::2]", # Bug: skips chars
-        "palindrome_check": "def is_palindrome(s):\n    return s == s.reverse()", # Bug: reverse is not a string method
-        "find_max": "def find_max(numbers):\n    return min(numbers)", # Bug: returns min instead of max
-    }
-    
-    if random.random() < success_rate:
-        print("Generating a correct solution.")
-        return correct_solutions.get(task, "pass # No solution found")
+    # In a real application, you would use a language model to generate a response
+    # based on the chat history. For now, we will provide a more dynamic response.
+    if len(history) > 2:
+        response = f"I see you mentioned '{history[-3]}'. Can you tell me more about that?"
     else:
-        print("Generating a buggy solution.")
-        return buggy_solutions.get(task, "pass # No solution found")
+        response = f"You said: '{prompt}'. I'm still a simple AI, but I'm learning. What else is on your mind?"
 
-def evaluate_code(code: str, challenge: dict) -> dict:
-    """
-    Evaluates the generated code against test cases. This acts as the "judge" agent.
-    """
-    print("Evaluating code...")
-    # For simplicity, we'll just check if the generated code is the correct one.
-    # A real implementation would execute the code in a sandbox.
-    task = challenge.get("task")
-    correct_solutions = {
-        "reverse_string": "def reverse_string(s):\n    return s[::-1]",
-        "palindrome_check": "def is_palindrome(s):\n    return s == s[::-1]",
-        "find_max": "def find_max(numbers):\n    if not numbers:\n        return None\n    return max(numbers)",
-    }
-    if code == correct_solutions.get(task):
-        print("Evaluation: Success!")
-        return {"success": True, "challenge": task}
-    else:
-        print("Evaluation: Failure.")
-        return {"success": False, "challenge": task, "reason": "Generated code did not match expected output."}
+    add_to_chat_history(user_id, f"AI: {response}")
+    return {"response": response}
 
-def update_internal_parameters(feedback_data: dict):
-    '''
-    Adjusts internal model parameters (our simulated knowledge_base) based on feedback.
-    '''
-    task = feedback_data["challenge"]
-    success = feedback_data["success"]
+def summarize(db: Session, text: str, user_id: int, context: dict = None):
+    """
+    Summarizes a given text, with context if available.
+    """
+    prompt = f"Please summarize the following text in a way that is clear and concise for a busy community organizer. Highlight the key decisions and action items. The text to summarize is: {text}"
+    # In a real application, you would send this prompt to a language model.
+    # For now, we will extract key sentences.
+    sentences = text.split('.')
+    key_sentences = [s for s in sentences if "decision" in s.lower() or "action" in s.lower() or "proposal" in s.lower()]
+    if not key_sentences:
+        # If no keywords are found, we'll try to find sentences with numbers, which might indicate data or stats.
+        key_sentences = [s for s in sentences if any(char.isdigit() for char in s)]
+    if not key_sentences:
+        key_sentences = sentences[:2] # return first two sentences if no keywords are found.
+    summary = ". ".join(key_sentences)
+    return {"response": summary}
+
+
+def suggest_next_steps(db: Session, text: str, user_id: int, context: dict = None):
+    """
+    Suggests next steps based on a given text, with context if available.
+    This is a more advanced version that simulates NLP to extract entities and actions.
+    """
     
-    # Update knowledge base
-    task_stats = knowledge_base["coding_challenges"].get(task)
-    if task_stats:
-        old_rate = task_stats["success_rate"]
-        attempts = task_stats["attempts"]
-        # Update success rate using a simple moving average
-        new_rate = ((old_rate * attempts) + (1 if success else 0)) / (attempts + 1)
-        task_stats["success_rate"] = new_rate
-        task_stats["attempts"] += 1
+    # Simulate entity extraction (get all nouns)
+    words = text.lower().replace('.', '').replace(',', '').split()
+    # A simple way to identify nouns for simulation. In a real app, use a library like NLTK or spaCy.
+    nouns = [word for word in words if word.endswith('tion') or word.endswith('ment') or word.endswith('or') or word.endswith('er')]
+    # A simple way to identify verbs (actions)
+    verbs = [word for word in words if word.endswith('ing') or word.endswith('ize') or word.endswith('ate')]
+    
+    entities = list(set(nouns))
+    actions = list(set(verbs))
+    
+    # Identify questions
+    questions = [sentence for sentence in text.split('.') if '?' in sentence]
+
+    suggestions = []
+
+    # Suggestion based on entities and actions
+    if entities and actions:
+        suggestions.append(f"Consider creating a project around '{entities[0]}' to further explore the '{actions[0]}' aspect.")
+    elif entities:
+        suggestions.append(f"You mentioned '{entities[0]}'. Perhaps you could start a discussion about it?")
+    elif actions:
+        suggestions.append(f"You seem to be focused on '{actions[0]}'. Have you thought about creating a task list for it?")
+
+    # Suggestion based on questions
+    if questions:
+        suggestions.append("It looks like there are some open questions. You could try to answer them in a new post or a Q&A session.")
+
+    # Generic suggestions
+    if not suggestions:
+        suggestions.append("Draft a proposal for a new initiative based on the discussion.")
         
-        print(f"Updating knowledge base for '{task}': Success rate changed from {old_rate:.2f} to {new_rate:.2f}")
+    # Find other users with similar interests based on extracted entities
+    if entities:
+        similar_users = crud_user.search(db, query=" ".join(entities))
+        if similar_users:
+            suggestions.append(f"Collaborate with {similar_users[0].username} on a project related to {', '.join(entities)}.")
+
+    # Add a suggestion to connect with others who have similar interests.
+    if len(entities) > 1:
+        suggestions.append(f"Connect with other users who are passionate about {entities[0]} and {entities[1]}.")
+
+
+    return {"response": "Here are some suggested next steps:", "suggestions": suggestions}
+
+
+def assist_in_room(db: Session, prompt: str, user_profile, room_id: int):
+    """
+    Handles AI assistance within a room context.
+    """
+    room_details = crud_room.get(db, id=room_id)
+    if not room_details:
+        return {"response": "I'm sorry, I couldn't find the details for this room."}
+
+    if "summarize" in prompt:
+        # In a real app, you'd get the room's voice data.
+        # For now, we'll use a mock voice data string.
+        voice_data = "mock_voice_data"
+        transcript = transcribe_voice(voice_data)
+        return summarize(db, transcript, user_profile.id, context={"type": "room", "id": room_id})
+
+    elif "suggest next steps" in prompt:
+        voice_data = "mock_voice_data"
+        transcript = transcribe_voice(voice_data)
+        return suggest_next_steps(db, transcript, user_profile.id, context={"type": "room", "id": room_id})
+
     else:
-        print("No prior knowledge for this task. Could initialize here.")
-        knowledge_base["coding_challenges"][task] = {
-            "success_rate": 1.0 if success else 0.0,
-            "attempts": 1,
-        }
+        # If the user's prompt is not a specific command, treat it as a chat message.
+        add_to_chat_history(user_profile.id, f"User: {prompt}")
+        history = get_chat_history(user_profile.id)
+        response = f"I'm listening. You said: '{prompt}'. How can I help you in this room? You can ask me to 'summarize' or 'suggest next steps'."
+        add_to_chat_history(user_profile.id, f"AI: {response}")
+        return {"response": response}
 
-    if success:
-        print("Reinforcing successful patterns.")
-    else:
-        print(f"Adjusting weights to correct for failure. Reason: {feedback_data.get('reason')}")
-    
-    print("\n--- Current AI Knowledge Base ---")
-    print(json.dumps(knowledge_base, indent=2))
-    print("---------------------------------")
-    
-    return "AI model parameters updated."
+def rewrite_text(db: Session, text: str, user_id: int, context: dict = None):
+    """
+    Rewrites a given text based on a specified tone.
+    """
+    tone = context.get("tone", "respectful")
+    prompt = REWRITE_PROMPTS.get(tone, REWRITE_PROMPTS["respectful"]) + f' "{text}'
 
-def run_self_improvement_cycle(domain="coding"):
-    '''
-    Orchestrates a full self-learning loop: generate, solve, evaluate, and learn.
-    '''
-    print("--- Starting new self-improvement cycle ---")
-    challenge = self_generate_challenges(domain)
-    if not challenge:
-        print("Could not generate a challenge.")
-        return
+    # In a real application, you would send this prompt to a language model.
+    # For now, we'll simulate the rewriting process.
+    if tone == "formal":
+        rewritten_text = text.capitalize().replace(" i ", " I ") # A very basic formalizer
+    elif tone == "friendly":
+        rewritten_text = text.lower() + " :) "
+    elif tone == "concise":
+        rewritten_text = " ".join(text.split()[:5]) + "..." # A very basic shortener
+    else: # respectful
+        rewritten_text = f"I understand your perspective, and I'd like to add that {text}"
 
-    solution_code = attempt_solution(challenge)
-    feedback = evaluate_code(solution_code, challenge)
-    update_internal_parameters(feedback)
-    
-    print("--- Self-improvement cycle finished ---")
+    return {"response": rewritten_text, "rewritten_text": rewritten_text}

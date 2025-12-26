@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, useParams, useLocation } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
@@ -25,6 +24,8 @@ import StudyPage from '../pages/StudyPage';
 import LoginPage from '../pages/LoginPage';
 import SignUpPage from '../pages/SignUpPage';
 import { useAuth } from '../contexts/AuthContext';
+import { AIProvider } from '../hooks/useAI';
+import AIAssistant from '../components/AIAssistant';
 
 const CalendarPage = () => <div>Calendar Page</div>;
 const CreatePodcastPage = () => <div>Create Podcast Page</div>;
@@ -164,6 +165,7 @@ const AppLayout = () => {
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </MainContent>
+          {user && <AIAssistant />}
           {user && <Footer />}
         </AppContainer>
       </div>
@@ -178,7 +180,9 @@ const AppLayout = () => {
 
 const MainLayout = () => (
   <Router>
-    <AppLayout />
+    <AIProvider>
+      <AppLayout />
+    </AIProvider>
   </Router>
 );
 

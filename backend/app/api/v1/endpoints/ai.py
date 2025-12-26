@@ -1,28 +1,31 @@
-from fastapi import APIRouter, BackgroundTasks
-from pydantic import BaseModel
-from app.ai.main import process_user_prompt, run_background_tasks
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.ai.schemas import AIPrompt, AIResponse
+from .ai_handlers import (
+    handle_prompt,
+    handle_chat,
+    handle_summarize,
+    handle_suggest_next_steps,
+)
+from app.core.dependencies import get_current_user
+from app.db.session import get_db
 
 router = APIRouter()
 
+@router.post("/prompt", response_model=AIResponse)
+def prompt_handler(prompt: AIPrompt, user_id: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    return handle_prompt(db, prompt, user_id)
 
-class AIRequest(BaseModel):
-    prompt: str
+@router.post("/chat", response_model=AIResponse)
+def chat_handler(prompt: AIPrompt, user_id: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    return handle_chat(db, prompt, user_id)
 
+@router.post("/summarize", response_model=AIResponse)
+def summarize_handler(text: str, user_id: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    return handle_summarize(db, text, user_id)
 
-@router.post("/conversation")
-def conversation(request: AIRequest):
-    """
-    Handles a user's conversation with the AI assistant.
-    """
-    # Process the prompt using the new AI service entry point
-    return process_user_prompt(request.prompt)
-
-
-@router.post("/background-task")
-def trigger_background_task(background_tasks: BackgroundTasks):
-    """
-    Triggers the AI's self-improvement cycle as a background task.
-    """
-    # Add the self-improvement cycle to the background tasks
-    background_tasks.add_task(run_background_tasks)
-    return {"message": "AI self-improvement cycle started in the background."}
+@router.post("/suggest_next_steps", response_model=AIResponse)
+def suggest_next_steps_handler(
+    text: str, user_id: str = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    return handle_suggest_next_steps(db, text, user_id)

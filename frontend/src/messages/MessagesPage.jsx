@@ -1,30 +1,54 @@
-
-import { Box, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Box, Grid, useMediaQuery, ThemeProvider } from '@mui/material';
+import { theme } from '../theme/theme';
+import ConversationList from './ConversationList';
 import Chat from './Chat';
-import styled from 'styled-components';
-
-const StyledMessagesPage = styled(Box)`
-  background-color: ${(props) => props.theme.palette.dark};
-  color: ${(props) => props.theme.text.primary};
-  height: 100vh;
-  padding: 20px;
-`;
+import AIChat from '../components/AIChat';
 
 const MessagesPage = () => {
-  // In a real application, these values would be dynamic
-  const conversationId = 1;
-  const currentUserId = 1;
-  const recipientId = 2;
+  const [selectedConversation, setSelectedConversation] = useState('ai');
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const handleSelectConversation = (conversationId) => {
+    setSelectedConversation(conversationId);
+  };
+
+  const currentUserId = 1; // This would come from auth context
+
+  const renderChat = () => {
+    if (selectedConversation === 'ai') {
+      return <AIChat />;
+    }
+    // For other conversations, you would fetch the recipient ID etc.
+    return <Chat conversationId={selectedConversation} currentUserId={currentUserId} recipientId={2} />;
+  };
+
+  if (isMobile) {
+    return (
+      <ThemeProvider theme={theme}>
+        <Box sx={{ height: 'calc(100vh - 120px)', p: 1 }}>
+          {selectedConversation === null ? (
+            <ConversationList onSelectConversation={handleSelectConversation} />
+          ) : (
+            renderChat()
+          )}
+          {/* You would add a back button here to set selectedConversation(null) */}
+        </Box>
+      </ThemeProvider>
+    );
+  }
 
   return (
-    <StyledMessagesPage>
-      <Typography variant="h4">Messages</Typography>
-      <Chat 
-        conversationId={conversationId} 
-        currentUserId={currentUserId} 
-        recipientId={recipientId} 
-      />
-    </StyledMessagesPage>
+    <ThemeProvider theme={theme}>
+      <Grid container sx={{ height: 'calc(100vh - 120px)' }}>
+        <Grid item xs={4} sx={{ borderRight: '1px solid #333' }}>
+          <ConversationList onSelectConversation={handleSelectConversation} />
+        </Grid>
+        <Grid item xs={8}>
+          {renderChat()}
+        </Grid>
+      </Grid>
+    </ThemeProvider>
   );
 };
 

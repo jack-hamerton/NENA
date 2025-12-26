@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme/theme';
+import { Menu, MenuItem, Button } from '@mui/material';
+import { rewriteText } from '../../services/aiService';
 
 const CommentsAndPollsContainer = styled.div`
   background: ${theme.palette.dark};
@@ -88,6 +90,9 @@ const CommentsAndPolls = () => {
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isReply, setIsReply] = useState(false);
+
 
   const findCommentAndAddReply = (comments, parentId, newReply) => {
     return comments.map(comment => {
@@ -133,6 +138,26 @@ const CommentsAndPolls = () => {
     }
   };
 
+  const handleAiAssistClick = (event, isReply) => {
+    setAnchorEl(event.currentTarget);
+    setIsReply(isReply);
+  };
+
+  const handleAiAssistClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleRewrite = async (tone) => {
+    const textToRewrite = isReply ? replyText : newComment;
+    const rewrittenText = await rewriteText(textToRewrite, tone);
+    if (isReply) {
+      setReplyText(rewrittenText);
+    } else {
+      setNewComment(rewrittenText);
+    }
+    handleAiAssistClose();
+  };
+
 
   const renderComments = (commentList, level = 0) => {
     return commentList.map(comment => (
@@ -147,6 +172,15 @@ const CommentsAndPolls = () => {
               placeholder="Write a reply..."
             />
             <CommentButton onClick={() => handleReplySubmit(comment.id)}>Submit Reply</CommentButton>
+            <Button
+              aria-controls="ai-assist-menu"
+              aria-haspopup="true"
+              onClick={(e) => handleAiAssistClick(e, true)}
+              variant="outlined"
+              sx={{ mt: 1, ml: 1 }}
+            >
+              AI Assist
+            </Button>
           </div>
         )}
         {comment.replies.length > 0 && (
@@ -180,7 +214,28 @@ const CommentsAndPolls = () => {
           placeholder="Leave a comment..."
         />
         <CommentButton onClick={handleCommentSubmit}>Comment</CommentButton>
+        <Button
+          aria-controls="ai-assist-menu"
+          aria-haspopup="true"
+          onClick={(e) => handleAiAssistClick(e, false)}
+          variant="outlined"
+          sx={{ mt: 1, ml: 1 }}
+        >
+          AI Assist
+        </Button>
       </div>
+      <Menu
+        id="ai-assist-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={handleAiAssistClose}
+      >
+        <MenuItem onClick={() => handleRewrite('formal')}>Formal</MenuItem>
+        <MenuItem onClick={() => handleRewrite('friendly')}>Friendly</MenuItem>
+        <MenuItem onClick={() => handleRewrite('respectful')}>Respectful</MenuItem>
+        <MenuItem onClick={() => handleRewrite('concise')}>Concise</MenuItem>
+      </Menu>
       <CommentThread>{renderComments(comments)}</CommentThread>
       <PollContainer>
         <PollQuestion>{poll.question}</PollQuestion>

@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { callService } from '../services/callService';
 import { RoomControls } from './RoomControls';
@@ -14,6 +13,7 @@ const RoomContainer = styled.div`
 
 export const Room = () => {
   const [participants, setParticipants] = useState([]);
+  const [roomTranscript, setRoomTranscript] = useState('');
 
   useEffect(() => {
     const updateParticipants = () => {
@@ -22,6 +22,9 @@ export const Room = () => {
 
     callService.on('participantsChanged', updateParticipants);
     updateParticipants();
+
+    // In a real application, this would be updated in real time
+    setRoomTranscript('This is a placeholder for the room transcript.');
 
     return () => {
       callService.off('participantsChanged', updateParticipants);
@@ -35,7 +38,7 @@ export const Room = () => {
   return (
     <RoomContainer>
       <RoomVideoGrid participants={participants} />
-      <RoomControls onLeave={onLeave} />
+      <RoomControls onLeave={onLeave} roomTranscript={roomTranscript} />
     </RoomContainer>
   );
 };

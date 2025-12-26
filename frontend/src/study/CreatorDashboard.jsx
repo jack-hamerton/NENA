@@ -1,21 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 
-// New chart components
-import CircularPercentCard from './charts/CircularPercentCard';
-import PercentGrid from './charts/PercentGrid';
+// Import existing chart components
 import KPIStatStrip from './charts/KPIStatStrip';
-import BarCompare from './charts/BarCompare';
 import QuoteCard from './charts/QuoteCard';
 import InsightList from './charts/InsightList';
-import ChallengeBox from './charts/ChallengeBox';
+import DonutChart from '../components/DonutChart'; // Assuming DonutChart is in components
 
-// New panel components
+// Import existing panel components
 import FindingsPanel from './FindingsPanel';
 import MethodologyPanel from './MethodologyPanel';
-
-// Existing components
-import CreatorQuestionBuilder from './CreatorQuestionBuilder';
 
 import {
   DashboardContainer,
@@ -23,56 +18,68 @@ import {
   Title,
   Subtitle,
   Section,
-  SectionTitle,
 } from './CreatorDashboard.styled';
 
-const CreatorDashboard: React.FC = () => {
-  const [questions, setQuestions] = useState([]);
+const CreatorDashboard = () => {
+  // Assuming the study ID is in the URL, e.g., /study/1/dashboard
+  const { studyId } = useParams();
+  const [analysisData, setAnalysisData] = useState(null);
 
-  const handleSaveQuestions = (newQuestions: any) => {
-    setQuestions(newQuestions);
-  };
+  useEffect(() => {
+    // Default to studyId 1 if not available in URL for simulation
+    const id = studyId || 1; 
+    
+    // Establish WebSocket connection
+    const ws = new WebSocket(`ws://localhost:8000/ws/study/${id}`);
 
-  // Mock data for the new components
+    ws.onopen = () => {
+      console.log('WebSocket connection established');
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Received analysis data:', data);
+      setAnalysisData(data);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    // Cleanup on component unmount
+    return () => {
+      ws.close();
+    };
+  }, [studyId]);
+
+  // Mock data for components not yet connected to the real-time feed
   const kpiStats = [
     { label: 'Total Responses', value: '1,234' },
     { label: 'Completion Rate', value: '85%' },
     { label: 'Surveys Sent', value: '1,450' },
   ];
 
-  const percentGridItems = [
-    { label: 'Tax Compliant', percentage: 36, color: '#36A2EB' },
-    { label: 'Youth Owned', percentage: 62, color: '#FFCE56' },
-    { label: 'Female Led', percentage: 48, color: '#FF6384' },
-  ];
+  const sentimentData = analysisData?.sentiment 
+    ? [
+        { name: 'Positive', value: analysisData.sentiment.positive },
+        { name: 'Negative', value: analysisData.sentiment.negative },
+        { name: 'Neutral', value: analysisData.sentiment.neutral },
+      ]
+    : [];
 
-  const barCompareData = [
-    { category: 'Kisumu Central', value: 450 },
-    { category: 'Muhoroni', value: 320 },
-    { category: 'Nyakach', value: 210 },
-    { category: 'Seme', value: 150 },
-  ];
-
-  const insights = [
-    'Youth-owned businesses struggle with access to capital.',
-    'Regulatory hurdles are a major concern for new entrepreneurs.',
-    'Digital marketing is the most effective channel for reaching customers.',
-  ];
-
-  const quote = {
-    quote: "The biggest challenge is just getting started. The paperwork is overwhelming.",
-    role: "Business Owner",
-    location: "Kisumu",
-  };
-
-  const challenge = "High initial setup costs and complex regulatory procedures are significant barriers to entry for young entrepreneurs.";
+  const themes = analysisData?.themes ? analysisData.themes.map(theme => theme[0]) : [];
+  const keyQuotes = analysisData?.key_quotes ? Object.entries(analysisData.key_quotes) : [];
 
 
   return (
     <DashboardContainer>
       <Header>
         <Title>Creator Dashboard</Title>
-        <Subtitle>Analyze your study results and gather insights.</Subtitle>
+        <Subtitle>Live analysis of your study results.</Subtitle>
       </Header>
       
       <Section>
@@ -85,23 +92,27 @@ const CreatorDashboard: React.FC = () => {
 
       <FindingsPanel>
         <div className="space-y-6">
-          <h3 className="text-xl font-bold text-gray-800">Quantitative Analysis</h3>
-          <PercentGrid items={percentGridItems} />
-          <BarCompare data={barCompareData} maxValue={500} />
+          <h3 className="text-xl font-bold text-gray-800">Real-time Sentiment</h3>
+          {analysisData ? <DonutChart data={sentimentData} /> : <p>Waiting for data...</p>}
         </div>
         
         <div className="space-y-6">
-          <h3 className="text-xl font-bold text-gray-800">Qualitative Insights</h3>
-          <QuoteCard {...quote} />
-          <InsightList insights={insights} />
-          <ChallengeBox challenge={challenge} />
+          <h3 className="text-xl font-bold text-gray-800">Key Themes</h3>
+          {analysisData ? <InsightList insights={themes} /> : <p>Waiting for data...</p>}
+        </div>
+
+        <div className="space-y-6">
+          <h3 className="text-xl font-bold text-gray-800">Key Quotes</h3>
+          {analysisData ? (
+            keyQuotes.map(([theme, quote]) => (
+              <QuoteCard key={theme} quote={quote} role={theme} location="Participant Response" />
+            ))
+          ) : (
+            <p>Waiting for data...</p>
+          )}
         </div>
       </FindingsPanel>
 
-      <Section>
-        <SectionTitle>Study Question Builder</SectionTitle>
-        <CreatorQuestionBuilder onSave={handleSaveQuestions} />
-      </Section>
     </DashboardContainer>
   );
 };

@@ -1,48 +1,22 @@
 import { createContext, useContext } from 'react';
-import axios from 'axios';
-import { chatService } from './services/chatService';
-import { callService } from './services/callService';
-import { postService } from './services/postService';
+import { handlePrompt, chatWithAI } from '../services/aiService';
 
 const AIContext = createContext(null);
 
 export const AIProvider = ({ children }) => {
-
-  const conversation = async (prompt) => {
-    const response = await axios.post('/api/v1/ai/conversation', { prompt });
-    const { action, payload } = response.data;
-
-    switch (action) {
-        case 'send_message':
-            await sendMessage(payload.message);
-            break;
-        case 'call':
-            await makeCall(payload.user);
-            break;
-        case 'comment':
-            await addComment(payload.comment);
-            break;
-        default:
-            break;
-    }
-
+  const processPrompt = async (prompt) => {
+    const response = await handlePrompt(prompt);
+    // Potentially handle actions here in the future
     return response;
   };
 
-  const sendMessage = async (message) => {
-    await chatService.sendMessage({ text: message, sender: { id: 'ai', name: 'Nena AI' } });
-  };
-
-  const makeCall = async (user) => {
-    await callService.startCall(user);
-  };
-
-  const addComment = async (comment) => {
-    await postService.addComment(comment);
+  const conversation = async (prompt) => {
+    const response = await chatWithAI(prompt);
+    return response;
   };
 
   return (
-    <AIContext.Provider value={{ conversation, sendMessage, makeCall, addComment }}>
+    <AIContext.Provider value={{ processPrompt, conversation }}>
       {children}
     </AIContext.Provider>
   );

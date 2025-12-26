@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.db.session import SessionLocal
 from app.websockets import manager
+from app.tasks.proactive_nudges import proactive_nudges_task
 
 
 async def send_event_reminders():
@@ -27,4 +28,5 @@ async def send_event_reminders():
 def start_scheduler():
     scheduler = BackgroundScheduler()
     scheduler.add_job(lambda: asyncio.run(send_event_reminders()), 'interval', minutes=1)
+    scheduler.add_job(proactive_nudges_task, 'interval', hours=24)
     scheduler.start()
