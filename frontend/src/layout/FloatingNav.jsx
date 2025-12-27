@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import UserAvatar from '../components/UserAvatar';
 import NotificationBar from '../components/NotificationBar';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
 
 const NavContainer = styled.div`
   position: fixed;
@@ -81,6 +82,10 @@ const FloatingNav = () => {
       <NavLinks>
         <IconLink to={`/user/${user.id}/settings`} theme={theme}>
           <MoreHorizIcon />
+        </IconLink>
+
+        <IconLink to="/analytics" theme={theme}>
+          <ShowChartIcon />
         </IconLink>
 
         <NavLink to="/" theme={theme} exact>

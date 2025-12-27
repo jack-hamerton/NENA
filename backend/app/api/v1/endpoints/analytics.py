@@ -1,17 +1,21 @@
-from fastapi import APIRouter
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app import crud, schemas, models
+from app.api import deps
 
 router = APIRouter()
 
-@router.get("/dashboard")
-def get_dashboard_data():
+@router.get("/post-engagement", response_model=schemas.PostEngagement)
+def get_post_engagement(db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_user)):
     """
-    Returns a summary of analytics data for the dashboard.
+    Get post engagement analytics.
     """
-    # In a real application, you would fetch this data from a database or a real analytics service.
-    # For now, we will return some mock data.
-    return {
-        "users": {"total": 120, "new": 5},
-        "posts": {"total": 560, "today": 12},
-        "rooms": {"total": 34, "active": 15},
-        "active_users": 78,
-    }
+    return crud.analytics.get_post_engagement(db=db, user_id=current_user.id)
+
+@router.get("/user-engagement", response_model=schemas.UserEngagement)
+def get_user_engagement(db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_user)):
+    """
+    Get user engagement analytics.
+    """
+    return crud.analytics.get_user_engagement(db=db, user_id=current_user.id)
