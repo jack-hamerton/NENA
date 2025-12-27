@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Modal, Box, Typography, TextField, Button } from '@mui/material';
+import { Modal, Box, Typography, Button, FormControl, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 
 const style = {
   position: 'absolute',
@@ -14,12 +14,21 @@ const style = {
   p: 4,
 };
 
+const INTENT_CATEGORIES = [
+  'Collaborator', // For peers you want to work with
+  'Mentor',       // For users you look up to for guidance
+  'Peer'          // For users who share similar interests or roles
+];
+
 const IntentModal = ({ open, onClose, onFollow }) => {
   const [intent, setIntent] = useState('');
 
   const handleFollow = () => {
-    onFollow(intent);
-    onClose();
+    if (intent) {
+      onFollow(intent);
+      onClose();
+    }
+    // Optional: Add user feedback if no intent is selected
   };
 
   return (
@@ -28,20 +37,26 @@ const IntentModal = ({ open, onClose, onFollow }) => {
       onClose={onClose}
     >
       <Box sx={style}>
-        <Typography variant="h6" component="h2">
-          Why are you following this user?
+        <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+          How do you see this user?
         </Typography>
-        <TextField
-          id="intent"
-          label="Intent"
-          multiline
-          rows={4}
-          value={intent}
-          onChange={(e) => setIntent(e.target.value)}
-          variant="filled"
-          fullWidth
-        />
-        <Button onClick={handleFollow}>Follow</Button>
+        <FormControl component="fieldset">
+          <RadioGroup
+            aria-label="follow-intent"
+            name="follow-intent-group"
+            value={intent}
+            onChange={(e) => setIntent(e.target.value)}
+          >
+            {INTENT_CATEGORIES.map((category) => (
+              <FormControlLabel key={category} value={category} control={<Radio />} label={category} />
+            ))}
+          </RadioGroup>
+        </FormControl>
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button onClick={handleFollow} disabled={!intent}>
+            Follow
+          </Button>
+        </Box>
       </Box>
     </Modal>
   );

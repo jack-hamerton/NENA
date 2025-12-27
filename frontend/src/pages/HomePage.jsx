@@ -3,7 +3,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import ActivityFeed from '../feed/ActivityFeed';
 import * as postService from '../services/post.service';
+import { followUser } from '../services/user.service';
 import CreatePostModal from '../components/modals/CreatePostModal';
+import IntentModal from '../components/profile/IntentModal';
+import { useAuth } from '../hooks/useAuth';
 
 const FeedContainer = styled.div`
   max-width: 600px;
@@ -59,9 +62,12 @@ const CreatePostButton = styled.button`
 `;
 
 const HomePage = () => {
+  const { user: currentUser } = useAuth();
   const [posts, setPosts] = useState([]);
   const [feedType, setFeedType] = useState('for-you');
   const [isCreatePostModalOpen, setCreatePostModalOpen] = useState(false);
+  const [intentModalOpen, setIntentModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -107,6 +113,27 @@ const HomePage = () => {
     }
   };
 
+  const handleOpenIntentModal = (userId) => {
+    setSelectedUserId(userId);
+    setIntentModalOpen(true);
+  };
+
+  const handleCloseIntentModal = () => {
+    setIntentModalOpen(false);
+    setSelectedUserId(null);
+  };
+
+  const handleFollow = async (intent) => {
+    if (!selectedUserId) return;
+    try {
+      await followUser(currentUser.id, selectedUserId, intent);
+      handleCloseIntentModal();
+    } catch (error) {
+      console.error("Error following user:", error);
+    }
+  };
+
+
   return (
       <FeedContainer>
         <CreatePostButton onClick={() => setCreatePostModalOpen(true)}>Create Post</CreatePostButton>
@@ -124,7 +151,8 @@ const HomePage = () => {
           </Tab>
           <RestartButton onClick={handleRestart}>Restart</RestartButton>
         </Tabs>
-        <ActivityFeed posts={posts} onReportPost={handleReportPost} />
+        <ActivityFeed posts={posts} onReportPost={handleReportPost} onUsernameLongPress={handleOpenIntentModal} />
+        <IntentModal open={intentModalOpen} onClose={handleCloseIntentModal} onFollow={handleFollow} />
       </FeedContainer>
   );
 };

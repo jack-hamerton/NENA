@@ -5,6 +5,7 @@ import { NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import UserAvatar from '../components/UserAvatar';
 import NotificationBar from '../components/NotificationBar';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 const NavContainer = styled.div`
   position: fixed;
@@ -37,6 +38,17 @@ const NavLink = styled(RouterNavLink)`
   }
 `;
 
+const IconLink = styled(RouterNavLink)`
+  color: ${props => props.theme.text.primary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.active {
+    color: ${props => props.theme.palette.accent};
+  }
+`;
+
 const AvatarContainer = styled(RouterNavLink)`
   display: block;
   width: 40px;
@@ -60,9 +72,17 @@ const FloatingNav = () => {
   const { user } = useAuth();
   const theme = useTheme();
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <NavContainer theme={theme}>
       <NavLinks>
+        <IconLink to={`/user/${user.id}/settings`} theme={theme}>
+          <MoreHorizIcon />
+        </IconLink>
+
         <NavLink to="/" theme={theme} exact>
           Home
         </NavLink>
@@ -85,18 +105,10 @@ const FloatingNav = () => {
         <NavLink to="/calendar" theme={theme}>
           Calendar
         </NavLink>
-        <NavLink to="/settings" theme={theme}> {/* Add settings link */}
-          Settings
-        </NavLink>
-        {user ? (
-          <AvatarContainer to="/profile" theme={theme}>
-            <UserAvatar user={user} />
-          </AvatarContainer>
-        ) : (
-          <NavLink to="/profile" theme={theme}>
-            Profile
-          </NavLink>
-        )}
+        
+        <AvatarContainer to={`/profile/${user.id}`} theme={theme}>
+          <UserAvatar user={user} />
+        </AvatarContainer>
       </NavLinks>
     </NavContainer>
   );

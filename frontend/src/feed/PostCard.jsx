@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import UserAvatar from '../components/UserAvatar';
 import CommentSection from '../comments/CommentSection';
@@ -45,10 +45,11 @@ const Action = styled.div`
   }
 `;
 
-const PostCard = ({ post, onReportPost }) => {
+const PostCard = ({ post, onReportPost, onUsernameLongPress }) => {
   const [likes, setLikes] = useState(post.likes || 0);
   const [hasLiked, setHasLiked] = useState(post.hasLiked || false);
   const [showComments, setShowComments] = useState(false);
+  const pressTimer = useRef();
 
   const canReshare = post.is_following;
 
@@ -67,17 +68,33 @@ const PostCard = ({ post, onReportPost }) => {
     if (!canReshare) return;
     try {
       await resharePost(post.id);
-      // A real implementation would trigger a notification here.
-      // For now, we can just log it.
       console.log(`Post ${post.id} reshared! A notification would be sent.`);
     } catch (error) {
       console.error("Failed to reshare post:", error);
     }
   };
 
+  const handlePressStart = useCallback(() => {
+    pressTimer.current = setTimeout(() => {
+      onUsernameLongPress(post.author.id);
+    }, 1000); // 1-second long press
+  }, [onUsernameLongPress, post.author.id]);
+
+  const handlePressEnd = useCallback(() => {
+    clearTimeout(pressTimer.current);
+  }, []);
+
   return (
     <Card>
-      <UserAvatar user={post.author} />
+        <div 
+            onMouseDown={handlePressStart} 
+            onMouseUp={handlePressEnd} 
+            onMouseLeave={handlePressEnd}
+            onTouchStart={handlePressStart}
+            onTouchEnd={handlePressEnd}
+        >
+            <UserAvatar user={post.author} />
+        </div>
       <PostText>{post.content}</PostText>
       {post.poll && <FeedPoll poll={post.poll} postId={post.id} />}
       

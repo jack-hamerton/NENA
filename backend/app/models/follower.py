@@ -12,7 +12,8 @@ class Follower(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     follower_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     followed_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    intent = Column(String, nullable=True) # Can be 'supporter', 'amplifier', 'learner', or 'mentor'
+    # The intent MUST be one of 'Collaborator', 'Mentor', or 'Peer' to align with the frontend.
+    intent = Column(String, nullable=False) 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     follower = relationship("User", foreign_keys=[follower_id], back_populates="following")

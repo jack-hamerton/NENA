@@ -40,7 +40,7 @@ def follow_user(
     if existing_follow:
         raise HTTPException(status_code=400, detail="You are already following this user")
 
-    follow = Follower(follower_id=follower_user.id, followed_id=followed_user.id)
+    follow = Follower(follower_id=follower_user.id, followed_id=followed_user.id, intent=follower_data.intent)
     db.add(follow)
     db.commit()
 
@@ -48,7 +48,7 @@ def follow_user(
     notification_in = NotificationCreate(
         user_id=followed_user.id,
         type="new_follower",
-        content=f"{follower_user.username} started following you.",
+        content=f"{follower_user.username} started following you as a {follower_data.intent}.",
     )
     notification_service.create_notification(db=db, notification_in=notification_in)
 

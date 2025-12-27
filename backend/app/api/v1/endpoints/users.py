@@ -38,6 +38,22 @@ def read_user_by_id(
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+@router.put("/{user_id}", response_model=schemas.User)
+def update_user(
+    user_id: int,
+    user_in: schemas.UserUpdate,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+):
+    """
+    Update a user.
+    """
+    user = crud.user.get(db, id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user = crud.user.update(db, db_obj=user, obj_in=user_in)
+    return user
+
 @router.get("/{user_id}/follower-intent-metrics", response_model=schemas.FollowerIntentMetrics)
 def get_follower_intent_metrics(
     user_id: int,

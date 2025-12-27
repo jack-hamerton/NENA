@@ -18,7 +18,7 @@ import '../styles/global.css';
 import ScreenshotBlocker from './ScreenshotBlocker';
 import Footer from './Footer';
 import GlobalPinLock from '../components/GlobalPinLock'; 
-import SettingsPage from '../settings/SettingsPage'; 
+import SettingsPage from '../pages/SettingsPage'; 
 import { useBiometricAuth } from '../hooks/useBiometricAuth';
 import StudyPage from '../pages/StudyPage';
 import LoginPage from '../pages/LoginPage';
@@ -160,6 +160,7 @@ const AppLayout = () => {
               <Route path="/profile/:id" element={<ProfilePage />} />
               <Route path="/user/:id/followers" element={<FollowerList />} />
               <Route path="/user/:id/following" element={<FollowingList />} />
+              <Route path="/user/:id/settings" element={<SettingsPage />} />
               <Route path="/podcast/create" element={<CreatePodcastPage />} />
               <Route path="/settings/privacy" element={<PrivacySettingsPage />} />
               <Route path="/settings" element={<SettingsPage />} />

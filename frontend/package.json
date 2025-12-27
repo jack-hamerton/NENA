@@ -12,12 +12,18 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^5.15.20",
     "@mui/material": "^7.3.6",
     "@mui/x-date-pickers": "^8.22.1",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
+    "@tiptap/extension-collaboration": "^2.4.0",
+    "@tiptap/extension-collaboration-cursor": "^2.4.0",
+    "@tiptap/react": "^2.4.0",
+    "@tiptap/starter-kit": "^2.4.0",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
+    "d3-force-3d": "^3.0.4",
     "date-fns": "^4.1.0",
     "emoji-picker-react": "^4.16.1",
     "events": "^3.3.0",
@@ -31,19 +37,12 @@
     "react-router-dom": "^7.11.0",
     "socket.io-client": "^4.8.1",
     "three": "^0.182.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "y-webrtc": "^10.3.0",
+    "yjs": "^13.6.14"
   },
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
-    "@types/d3": "^7.4.3",
-    "@types/moment": "^2.13.0",
-    "@types/react": "^19.2.7",
-    "@types/react-big-calendar": "^1.16.3",
-    "@types/react-dom": "^19.2.3",
-    "@types/styled-components": "^5.1.36",
-    "@types/three": "^0.182.0",
-    "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^6.4.1",
-    "vitest": "^4.0.16"
+    "@types/d3": "^7.4.3"
   }
 }

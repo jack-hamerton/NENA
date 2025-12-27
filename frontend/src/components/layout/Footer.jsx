@@ -10,7 +10,7 @@ const FooterContainer = styled.footer`
 export const Footer = () => {
   return (
     <FooterContainer>
-      <p>&copy; 2024 Nena. All rights reserved.</p>
+      <p>&copy; 2026 Nena. All rights reserved.</p>
     </FooterContainer>
   );
 };

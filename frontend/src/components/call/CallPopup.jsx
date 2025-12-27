@@ -1,15 +1,15 @@
-
 import React from 'react';
 import styled from 'styled-components';
-import { IconButton } from '@mui/material';
 import { Phone, Videocam } from '@mui/icons-material';
+import { IconButton } from '../common/IconButton';
+import { Button } from '../common/Button';
 
 const PopupContainer = styled.div`
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: ${props => props.theme.background};
+  background-color: ${props => props.theme.background.secondary};
   padding: 24px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -26,15 +26,15 @@ const ButtonContainer = styled.div`
 `;
 
 const CallButton = styled(IconButton)`
-  background-color: ${props => props.theme.primary};
+  background-color: ${props => props.theme.palette.primary};
   color: white;
 
   &:hover {
-    background-color: ${props => props.theme.primaryDark};
+    background-color: ${props => props.theme.palette.primaryDark};
   }
 `;
 
-const CallPopup = ({ user, on-start-call, on-close }) => {
+const CallPopup = ({ user, onStartCall, onClose }) => {
   if (!user) {
     return null;
   }
@@ -43,14 +43,14 @@ const CallPopup = ({ user, on-start-call, on-close }) => {
     <PopupContainer>
       <h3>Call {user.name}</h3>
       <ButtonContainer>
-        <CallButton onClick={() => on-start-call('voice')}>
+        <CallButton onClick={() => onStartCall('voice')}>
           <Phone />
         </CallButton>
-        <CallButton onClick={() => on-start-call('video')}>
+        <CallButton onClick={() => onStartCall('video')}>
           <Videocam />
         </CallButton>
       </ButtonContainer>
-      <button onClick={onClose}>Close</button>
+      <Button onClick={onClose} variant="outlined">Close</Button>
     </PopupContainer>
   );
 };

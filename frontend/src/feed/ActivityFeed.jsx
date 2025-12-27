@@ -10,7 +10,7 @@ const ActivityFeedContainer = styled.div`
   }
 `;
 
-const ActivityFeed = ({ posts, onReportPost }) => {
+const ActivityFeed = ({ posts, onReportPost, onUsernameLongPress }) => {
   if (!posts || posts.length === 0) {
     return <div>No posts to display.</div>;
   }
@@ -22,6 +22,7 @@ const ActivityFeed = ({ posts, onReportPost }) => {
           key={post.id} 
           post={post} 
           onReportPost={onReportPost}
+          onUsernameLongPress={onUsernameLongPress}
         />
       ))}
     </ActivityFeedContainer>

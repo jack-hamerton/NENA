@@ -36,3 +36,7 @@ export const getUserHashtagMetrics = (id) => {
 export const getUserBadges = (id) => {
     return api.get(`/users/${id}/badges`);
 };
+
+export const updateProfile = (id, profileData) => {
+    return api.put(`/profile/${id}`, profileData);
+};
