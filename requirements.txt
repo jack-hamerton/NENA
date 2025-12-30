@@ -7,3 +7,4 @@ aioredis
 psycopg2-binary
 transformers
 torch
+alembic

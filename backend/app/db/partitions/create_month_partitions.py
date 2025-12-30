@@ -10,10 +10,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from app.core.config import settings
 
 def create_monthly_partitions():
-    """Creates monthly partitions for the messages and comments tables."""
+    """Creates monthly partitions for all partitionable tables.""" 
     engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
     with engine.connect() as connection:
-        for table_name in ["messages", "comments"]:
+        for table_name in ["posts", "likes", "comments", "notifications", "messages"]:
             # Ensure a partition for the current month exists
             current_month = datetime.utcnow().replace(day=1)
             partition_name = f"{table_name}_{current_month.strftime('%Y%m')}"

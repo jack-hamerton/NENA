@@ -1,3 +1,4 @@
+
 from sqlalchemy.orm import Session
 from app.models.notification import Notification
 from app.schemas.notification import NotificationCreate
@@ -37,7 +38,7 @@ class NotificationService:
         """
         return db.query(Notification).filter(Notification.user_id == user_id).all()
 
-    def mark_notification_as_read(self, db: Session, notification_id: uuid.UUID) -> Optional[Notification]:
+    def mark_notification_as_read(self, db: Session, notification_id: int) -> Optional[Notification]:
         """
         Marks a notification as read.
 
@@ -50,7 +51,7 @@ class NotificationService:
         """
         notification = db.query(Notification).filter(Notification.id == notification_id).first()
         if notification:
-            notification.is_read = True
+            notification.read = True
             db.commit()
             db.refresh(notification)
         return notification
