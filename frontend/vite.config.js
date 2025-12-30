@@ -7,9 +7,19 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
-  plugins: [react()],
+  plugins: [react({
+    babel: {
+      presets: ['@babel/preset-typescript'],
+    }
+  })],
   server: {
     port: 5173,
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      }
+    }
   }
 })

@@ -1,6 +1,10 @@
 
 import api from './api';
 
+export const getMe = () => {
+    return api.get('/users/me');
+};
+
 export const getUserById = (id) => {
     return api.get(`/users/${id}`);
 };
