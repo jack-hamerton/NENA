@@ -1,64 +1,20 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 import ActivityFeed from '../feed/ActivityFeed';
 import * as postService from '../services/post.service';
 import { followUser } from '../services/user.service';
 import CreatePostModal from '../components/modals/CreatePostModal';
 import IntentModal from '../components/profile/IntentModal';
+import FloatingNav from '../layout/FloatingNav';
 import { useAuth } from '../hooks/useAuth';
 
-const FeedContainer = styled.div`
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1rem;
-`;
-
-const Tabs = styled.div`
-  display: flex;
-  border-bottom: 1px solid ${props => props.theme.palette.dark};
-  margin-bottom: 1rem;
-`;
-
-const Tab = styled.button`
-  flex: 1;
-  padding: 1rem;
-  background: none;
-  border: none;
-  color: ${props => (props.active ? props.theme.text.primary : props.theme.text.secondary)};
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  border-bottom: 2px solid ${props => (props.active ? props.theme.palette.accent : 'transparent')};
-
-  &:hover {
-    background-color: ${props => props.theme.palette.dark};
-  }
-`;
-
-const RestartButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: ${props => props.theme.palette.secondary};
-  border: none;
-  border-radius: 9999px;
-  color: ${props => props.theme.text.primary};
-  font-weight: bold;
-  cursor: pointer;
-  margin-left: auto;
-  align-self: center;
-`;
-
-const CreatePostButton = styled.button`
-    background-color: ${props => props.theme.palette.secondary};
-    color: ${props => props.theme.text.primary};
-    border: none;
-    padding: 1rem;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    margin-bottom: 1rem;
+const FullScreenFeedContainer = styled.div`
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+  background-color: ${props => props.theme.palette.background.default};
 `;
 
 const HomePage = () => {
@@ -68,6 +24,36 @@ const HomePage = () => {
   const [isCreatePostModalOpen, setCreatePostModalOpen] = useState(false);
   const [intentModalOpen, setIntentModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [isNavOpen, setNavOpen] = useState(false);
+  
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+    touchEndX.current = e.targetTouches[0].clientX; // Reset on new touch
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    // Swipe right from left edge to open
+    if (touchStartX.current < 50 && isRightSwipe) {
+      setNavOpen(true);
+    }
+
+    // Swipe left to close
+    if (isNavOpen && isLeftSwipe) {
+      setNavOpen(false);
+    }
+  };
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -89,6 +75,7 @@ const HomePage = () => {
 
   const handleRestart = () => {
     fetchPosts();
+    setNavOpen(false);
   };
 
   const handleReportPost = async (postId) => {
@@ -108,6 +95,7 @@ const HomePage = () => {
     try {
       const response = await postService.createPost({ content });
       setPosts(prevPosts => [response.data, ...prevPosts]);
+      setCreatePostModalOpen(false); // Close modal on success
     } catch (error) {
       console.error("Failed to create post:", error);
     }
@@ -132,28 +120,29 @@ const HomePage = () => {
       console.error("Error following user:", error);
     }
   };
-
+  
+  const handleSetFeedType = (type) => {
+    setFeedType(type);
+    setNavOpen(false);
+  }
 
   return (
-      <FeedContainer>
-        <CreatePostButton onClick={() => setCreatePostModalOpen(true)}>Create Post</CreatePostButton>
+      <FullScreenFeedContainer onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+        <FloatingNav 
+          isOpen={isNavOpen}
+          feedType={feedType}
+          setFeedType={handleSetFeedType}
+          handleRestart={handleRestart}
+          setCreatePostModalOpen={setCreatePostModalOpen}
+        />
         <CreatePostModal
           open={isCreatePostModalOpen}
           onClose={() => setCreatePostModalOpen(false)}
           onCreatePost={handleCreatePost}
         />
-        <Tabs>
-          <Tab active={feedType === 'for-you'} onClick={() => setFeedType('for-you')}>
-            For You
-          </Tab>
-          <Tab active={feedType === 'following'} onClick={() => setFeedType('following')}>
-            Following
-          </Tab>
-          <RestartButton onClick={handleRestart}>Restart</RestartButton>
-        </Tabs>
         <ActivityFeed posts={posts} onReportPost={handleReportPost} onUsernameLongPress={handleOpenIntentModal} />
         <IntentModal open={intentModalOpen} onClose={handleCloseIntentModal} onFollow={handleFollow} />
-      </FeedContainer>
+      </FullScreenFeedContainer>
   );
 };
 

@@ -1,120 +1,44 @@
 
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
-import { NavLink as RouterNavLink } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import UserAvatar from '../components/UserAvatar';
-import NotificationBar from '../components/NotificationBar';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
+import styled from 'styled-components';
 
 const NavContainer = styled.div`
   position: fixed;
-  top: 50%;
-  left: 20px;
-  transform: translateY(-50%);
-  background-color: transparent;
-  padding: 20px 10px;
-  border-radius: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  top: 0;
+  left: ${props => (props.isOpen ? '0' : '-100%')};
+  width: 70%;
+  height: 100%;
+  background-color: ${props => props.theme.palette.background.paper};
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+  transition: left 0.3s ease-in-out;
   z-index: 1000;
+  padding: 2rem;
 `;
 
-const NavLinks = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-`;
-
-const NavLink = styled(RouterNavLink)`
-  text-decoration: none;
-  color: ${props => props.theme.text.primary};
-  font-weight: 500;
-  padding: 5px 10px;
-  border-radius: 10px;
-
-  &.active {
-    background-color: ${props => props.theme.palette.accent};
-  }
-`;
-
-const IconLink = styled(RouterNavLink)`
-  color: ${props => props.theme.text.primary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &.active {
-    color: ${props => props.theme.palette.accent};
-  }
-`;
-
-const AvatarContainer = styled(RouterNavLink)`
+const NavItem = styled.button`
   display: block;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid ${props => props.theme.palette.secondary};
-  padding: 2px; // To create the ring effect
-  img {
-    border-radius: 50%;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+  width: 100%;
+  padding: 1rem;
+  background: none;
+  border: none;
+  color: ${props => props.theme.text.primary};
+  font-size: 1.2rem;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid ${props => props.theme.palette.dark};
 
-  &.active {
-    border-color: ${props => props.theme.palette.accent};
+  &:hover {
+    background-color: ${props => props.theme.palette.dark};
   }
 `;
 
-const FloatingNav = () => {
-  const { user } = useAuth();
-  const theme = useTheme();
-
-  if (!user) {
-    return null;
-  }
-
+const FloatingNav = ({ isOpen, feedType, setFeedType, handleRestart, setCreatePostModalOpen }) => {
   return (
-    <NavContainer theme={theme}>
-      <NavLinks>
-        <IconLink to={`/user/${user.id}/settings`} theme={theme}>
-          <MoreHorizIcon />
-        </IconLink>
-
-        <IconLink to="/analytics" theme={theme}>
-          <ShowChartIcon />
-        </IconLink>
-
-        <NavLink to="/" theme={theme} exact>
-          Home
-        </NavLink>
-        <NotificationBar />
-        <NavLink to="/discover" theme={theme}>
-          Discover
-        </NavLink>
-        <NavLink to="/messages" theme={theme}>
-          Messages
-        </NavLink>
-        <NavLink to="/room" theme={theme}>
-          Room
-        </NavLink>
-        <NavLink to="/podcasts" theme={theme}>
-          Podcasts
-        </NavLink>
-        <NavLink to="/study" theme={theme}>
-          Study
-        </NavLink>
-        <NavLink to="/calendar" theme={theme}>
-          Calendar
-        </NavLink>
-        
-        <AvatarContainer to={`/profile/${user.id}`} theme={theme}>
-          <UserAvatar user={user} />
-        </AvatarContainer>
-      </NavLinks>
+    <NavContainer isOpen={isOpen}>
+      <NavItem onClick={() => { setFeedType('for-you'); }}>For You</NavItem>
+      <NavItem onClick={() => { setFeedType('following'); }}>Following</NavItem>
+      <NavItem onClick={handleRestart}>Restart</NavItem>
+      <NavItem onClick={() => setCreatePostModalOpen(true)}>Create Post</NavItem>
     </NavContainer>
   );
 };

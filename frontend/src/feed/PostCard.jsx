@@ -8,39 +8,52 @@ import { IconButton, Typography } from '@mui/material';
 import { FavoriteBorder, Favorite, Repeat, Comment as CommentIcon } from '@mui/icons-material';
 import FeedPoll from './FeedPoll';
 
-const Card = styled.div`
-  background-color: ${props => props.theme.palette.background.paper};
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+const FullScreenCard = styled.div`
+  height: 100vh;
+  width: 100vw;
+  scroll-snap-align: start;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1rem;
+  color: #fff;
+  background-color: #000; /* Assuming a dark theme for the post background */
+`;
+
+const PostContent = styled.div`
+  position: absolute;
+  bottom: 80px; /* Above the actions */
+  left: 20px;
+  right: 80px; /* Space for the vertical actions */
 `;
 
 const PostText = styled.p`
-  color: ${props => props.theme.text.primary};
-  margin: 1rem 0;
+  color: #fff;
+  margin-bottom: 1rem;
 `;
 
-const ActionsContainer = styled.div`
+const VerticalActions = styled.div`
+  position: absolute;
+  right: 20px;
+  bottom: 80px;
   display: flex;
-  justify-content: space-around;
-  border-top: 1px solid ${props => props.theme.palette.dark};
-  border-bottom: 1px solid ${props => props.theme.palette.dark};
-  padding: 0.25rem 0;
-  margin-top: 1rem;
+  flex-direction: column;
+  align-items: center;
 `;
 
 const Action = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
-  color: ${props => props.theme.text.secondary};
+  margin-bottom: 1rem;
   cursor: pointer;
 
-  &:hover {
-    color: ${props => (props.disabled ? props.theme.text.disabled : props.theme.palette.accent)};
+  .MuiIconButton-root {
+    color: #fff;
   }
 
-  &.liked {
+  &.liked .MuiIconButton-root {
     color: ${props => props.theme.palette.accent};
   }
 `;
@@ -85,20 +98,23 @@ const PostCard = ({ post, onReportPost, onUsernameLongPress }) => {
   }, []);
 
   return (
-    <Card>
-        <div 
-            onMouseDown={handlePressStart} 
-            onMouseUp={handlePressEnd} 
-            onMouseLeave={handlePressEnd}
-            onTouchStart={handlePressStart}
-            onTouchEnd={handlePressEnd}
-        >
-            <UserAvatar user={post.author} />
-        </div>
-      <PostText>{post.content}</PostText>
-      {post.poll && <FeedPoll poll={post.poll} postId={post.id} />}
+    <FullScreenCard>
+      <div 
+        onMouseDown={handlePressStart} 
+        onMouseUp={handlePressEnd} 
+        onMouseLeave={handlePressEnd}
+        onTouchStart={handlePressStart}
+        onTouchEnd={handlePressEnd}
+        style={{ position: 'absolute', top: '20px', left: '20px' }}
+      >
+        <UserAvatar user={post.author} />
+      </div>
+      <PostContent>
+        <PostText>{post.content}</PostText>
+        {post.poll && <FeedPoll poll={post.poll} postId={post.id} />}
+      </PostContent>
       
-      <ActionsContainer>
+      <VerticalActions>
         <Action onClick={handleLike} className={hasLiked ? 'liked' : ''}>
           <IconButton disabled={hasLiked}>
             {hasLiked ? <Favorite /> : <FavoriteBorder />}
@@ -117,11 +133,15 @@ const PostCard = ({ post, onReportPost, onUsernameLongPress }) => {
             <Repeat />
           </IconButton>
         </Action>
-      </ActionsContainer>
+      </VerticalActions>
 
-      {showComments && <CommentSection post={post} />}
+      {showComments && (
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'white', zIndex: 100 }}>
+             <CommentSection post={post} />
+        </div>
+      )}
 
-    </Card>
+    </FullScreenCard>
   );
 };
 
