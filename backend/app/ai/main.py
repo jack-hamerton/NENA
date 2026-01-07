@@ -1,30 +1,32 @@
 
-from fastapi import Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
-from app.ai.services.ai_service import (
-    chat_with_ai as service_chat_with_ai,
-    summarize as service_summarize,
-    suggest_next_steps as service_suggest_next_steps,
-)
+from app import get_db
+from app.ai.services.ai_service import assist_user
+from app.models.user import User
+from app.auth.dependencies import get_current_user
+from app.schemas.ai import AIRequest, AIResponse
 from app.ai.services.ai_knowledge_base import run_self_improvement_cycle
 
-def chat_with_ai(db: Session, prompt: str, user_id: int):
-    """
-    This function handles direct chat with the AI.
-    """
-    return service_chat_with_ai(db, prompt, user_id)
+router = APIRouter()
 
-def summarize(db: Session, text: str, user_id: int, context: dict = None):
+@router.post("/assist", response_model=AIResponse)
+def post_assistance(request: AIRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    This function summarizes a given text.
+    Endpoint for receiving user prompts and returning AI assistance.
     """
-    return service_summarize(db, text, user_id, context)
+    response = assist_user(db, request.prompt, current_user.id, request.context)
+    return AIResponse(response=response)
 
-def suggest_next_steps(db: Session, text: str, user_id: int, context: dict = None):
+@router.on_event("startup")
+def startup_event():
     """
-    This function suggests next steps based on a given text.
+    On startup, we can trigger any initial AI model loading or background tasks.
+    Here, we start the AI's self-improvement cycles.
     """
-    return service_suggest_next_steps(db, text, user_id, context)
+    # In a real-world application, you would run this in a separate process
+    # so as not to block the main application startup.
+    run_background_tasks()
 
 def run_background_tasks():
     """
@@ -34,5 +36,5 @@ def run_background_tasks():
     # Run a self-improvement cycle for the AI on advocacy tasks
     run_self_improvement_cycle(domain="advocacy_tasks")
     
-    # Run a self-improvement cycle for the AI on study analysis tasks
-    run_self_improvement_cycle(domain="study_tasks")
+    # Run a self-improvement cycle for the AI on data analysis tasks
+    run_self_improvement_cycle(domain="data_analysis_tasks")

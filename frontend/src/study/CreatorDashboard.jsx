@@ -2,14 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-// Import existing chart components
+// Import chart components
 import KPIStatStrip from './charts/KPIStatStrip';
 import QuoteCard from './charts/QuoteCard';
 import InsightList from './charts/InsightList';
-import DonutChart from '../components/DonutChart'; // Assuming DonutChart is in components
+import DonutChart from '../components/DonutChart';
+import BarChart from './charts/BarChart';
+import WordCloud from './charts/WordCloud';
+import { RecommendationCard } from './charts/RecommendationCard';
+import { QualTable } from './charts/QualTable';
 
-// Import existing panel components
-import FindingsPanel from './FindingsPanel';
+// Import panel components
 import MethodologyPanel from './MethodologyPanel';
 
 import {
@@ -18,36 +21,21 @@ import {
   Title,
   Subtitle,
   Section,
+  ChartGrid,
+  ChartCard,
 } from './CreatorDashboard.styled';
 
 const CreatorDashboard = () => {
-  // Assuming the study ID is in the URL, e.g., /study/1/dashboard
   const { studyId } = useParams();
   const [analysisData, setAnalysisData] = useState(null);
 
   useEffect(() => {
-    // Default to studyId 1 if not available in URL for simulation
-    const id = studyId || 1; 
-    
-    // Establish WebSocket connection
+    const id = studyId || 1;
     const ws = new WebSocket(`ws://localhost:8000/ws/study/${id}`);
-
-    ws.onopen = () => {
-      console.log('WebSocket connection established');
-    };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log('Received analysis data:', data);
       setAnalysisData(data);
-    };
-
-    ws.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
     };
 
     // Cleanup on component unmount
@@ -56,7 +44,7 @@ const CreatorDashboard = () => {
     };
   }, [studyId]);
 
-  // Mock data for components not yet connected to the real-time feed
+  // Mock data for components
   const kpiStats = [
     { label: 'Total Responses', value: '1,234' },
     { label: 'Completion Rate', value: '85%' },
@@ -71,9 +59,28 @@ const CreatorDashboard = () => {
       ]
     : [];
 
+  const ageData = [
+    { name: '18-24', value: 300 },
+    { name: '25-34', value: 500 },
+    { name: '35-44', value: 200 },
+    { name: '45+', value: 150 },
+  ];
+
+  const recommendation = {
+    title: 'Increase outreach to younger audiences',
+    description: 'Based on the analysis, a significant portion of the participants are in the 25-34 age group. To broaden the study's reach, consider targeting the 18-24 age group through social media campaigns.',
+  };
+
+  const qualData = {
+    headers: ['Theme', 'Key Insight', 'Supporting Quote'],
+    rows: [
+      ['High initial setup costs', 'Founders are struggling with the initial capital required to start a business.', '“The biggest challenge is just getting started. The paperwork is overwhelming.”'],
+      ['Complex regulatory procedures', 'Navigating the legal and regulatory landscape is a major hurdle.', '“High initial setup costs and complex regulatory procedures are significant barriers to entry for young entrepreneurs.”'],
+    ],
+  };
+
   const themes = analysisData?.themes ? analysisData.themes.map(theme => theme[0]) : [];
   const keyQuotes = analysisData?.key_quotes ? Object.entries(analysisData.key_quotes) : [];
-
 
   return (
     <DashboardContainer>
@@ -90,28 +97,39 @@ const CreatorDashboard = () => {
         <KPIStatStrip stats={kpiStats} />
       </Section>
 
-      <FindingsPanel>
-        <div className="space-y-6">
-          <h3 className="text-xl font-bold text-gray-800">Real-time Sentiment</h3>
-          {analysisData ? <DonutChart data={sentimentData} /> : <p>Waiting for data...</p>}
-        </div>
-        
-        <div className="space-y-6">
+      <ChartGrid>
+        <ChartCard>
+          {analysisData ? <DonutChart data={sentimentData} title="Sentiment Analysis" /> : <p>Waiting for data...</p>}
+        </ChartCard>
+        <ChartCard>
+          <BarChart data={ageData} title="Participant Age Distribution" />
+        </ChartCard>
+        <ChartCard>
+          <RecommendationCard recommendation={recommendation} />
+        </ChartCard>
+        <ChartCard style={{ gridColumn: 'span 3' }}>
+          <QualTable data={qualData} />
+        </ChartCard>
+        <ChartCard style={{ gridColumn: 'span 2' }}>
+          {analysisData ? <WordCloud words={themes} title="Key Themes Word Cloud" /> : <p>Waiting for data...</p>}
+        </ChartCard>
+        <ChartCard style={{ gridColumn: 'span 1' }}>
           <h3 className="text-xl font-bold text-gray-800">Key Themes</h3>
           {analysisData ? <InsightList insights={themes} /> : <p>Waiting for data...</p>}
-        </div>
-
-        <div className="space-y-6">
+        </ChartCard>
+        <ChartCard style={{ gridColumn: 'span 3' }}>
           <h3 className="text-xl font-bold text-gray-800">Key Quotes</h3>
           {analysisData ? (
-            keyQuotes.map(([theme, quote]) => (
-              <QuoteCard key={theme} quote={quote} role={theme} location="Participant Response" />
-            ))
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {keyQuotes.map(([theme, quote]) => (
+                <QuoteCard key={theme} quote={quote} role={theme} location="Participant Response" />
+              ))}
+            </div>
           ) : (
             <p>Waiting for data...</p>
           )}
-        </div>
-      </FindingsPanel>
+        </ChartCard>
+      </ChartGrid>
 
     </DashboardContainer>
   );
