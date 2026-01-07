@@ -15,6 +15,7 @@ import { theme } from '../theme/theme';
 
 const StyledContainer = styled(Container)`
   background-color: ${props => props.theme.palette.dark};
+
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -23,36 +24,46 @@ const StyledContainer = styled(Container)`
 
 const StyledBox = styled(Box)`
   background-color: ${props => props.theme.palette.primary};
+
   padding: 2rem;
   border-radius: 8px;
   color: ${props => props.theme.text.primary};
+
 `;
 
 const StyledTextField = styled(TextField)`
   .MuiInputBase-root {
     color: ${(props) => props.theme.text.primary};
+
     background-color: ${(props) => props.theme.palette.dark};
+
   }
   .MuiInputLabel-root {
     color: ${(props) => props.theme.text.secondary};
+
   }
   .MuiOutlinedInput-root {
     fieldset {
       border-color: ${(props) => props.theme.palette.secondary};
+
     }
     &:hover fieldset {
       border-color: ${(props) => props.theme.palette.accent};
+
     }
     &.Mui-focused fieldset {
       border-color: ${(props) => props.theme.palette.accent};
+
     }
   }
 `;
 
 const StyledButton = styled(Button)`
   background-color: ${props => props.theme.palette.accent};
+
   &:hover {
     background-color: ${props => props.theme.palette.secondary};
+
   }
 `;
 
