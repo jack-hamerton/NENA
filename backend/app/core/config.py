@@ -17,13 +17,6 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
-    # SMTP
-    SMTP_TLS: bool
-    SMTP_PORT: int
-    SMTP_HOST: str
-    SMTP_USER: str
-    SMTP_PASSWORD: str
-
     # Redis
     REDIS_HOST: str
     REDIS_PORT: int
@@ -31,10 +24,10 @@ class Settings(BaseSettings):
     # Kafka
     KAFKA_BOOTSTRAP_SERVERS: str
 
-    # AWS
-    AWS_ACCESS_KEY_ID: str
-    AWS_SECRET_ACCESS_KEY: str
-    AWS_REGION: str
+    # S3
+    S3_ENDPOINT_URL: str
+    S3_ACCESS_KEY_ID: str
+    S3_SECRET_ACCESS_KEY: str
     S3_BUCKET_NAME: str
     
     # CORS
