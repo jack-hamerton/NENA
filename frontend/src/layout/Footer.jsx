@@ -104,7 +104,7 @@ const Footer = () => {
     <FooterContainer>
       {showBullet && (
         <AnimatedText animation={runningBullet}>
-          Network "Encrypted Naratives & Advocay"
+          Network for Empowerment Naratives & Advocay
         </AnimatedText>
       )}
       {showTagline && <Tagline>Dialogue spark change</Tagline>}
