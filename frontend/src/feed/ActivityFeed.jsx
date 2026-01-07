@@ -10,7 +10,7 @@ const ActivityFeedContainer = styled.div`
   }
 `;
 
-const ActivityFeed = ({ posts, onReportPost, onUsernameLongPress }) => {
+const ActivityFeed = ({ posts, onReportPost, onUsernameLongPress, onHashtagClick }) => {
   if (!posts || posts.length === 0) {
     return <div>No posts to display.</div>;
   }
@@ -23,6 +23,7 @@ const ActivityFeed = ({ posts, onReportPost, onUsernameLongPress }) => {
           post={post} 
           onReportPost={onReportPost}
           onUsernameLongPress={onUsernameLongPress}
+          onHashtagClick={onHashtagClick}
         />
       ))}
     </ActivityFeedContainer>

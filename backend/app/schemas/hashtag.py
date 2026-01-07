@@ -1,27 +1,20 @@
 
 from pydantic import BaseModel
-import uuid
-from typing import Optional
-
 
 class HashtagBase(BaseModel):
-    text: str
-
+    tag: str
 
 class HashtagCreate(HashtagBase):
     pass
 
-
 class HashtagUpdate(HashtagBase):
     pass
 
-
-class HashtagInDBBase(HashtagBase):
-    id: uuid.UUID
+class HashtagInDB(HashtagBase):
+    id: int
 
     class Config:
         orm_mode = True
 
-
-class Hashtag(HashtagInDBBase):
+class Hashtag(HashtagInDB):
     pass

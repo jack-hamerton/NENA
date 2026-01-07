@@ -37,6 +37,6 @@ export const likePost = (postId) => {
   return api.post(`/posts/${postId}/like`);
 };
 
-export const resharePost = (postId) => {
-  return api.post(`/posts/${postId}/reshare`);
-};
+export const getPostsByHashtag = (hashtag) => {
+    return api.get(`/posts/hashtag/${hashtag}`);
+};  

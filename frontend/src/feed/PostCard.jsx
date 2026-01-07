@@ -2,11 +2,11 @@
 import React, { useState, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import UserAvatar from '../components/UserAvatar';
-import CommentSection from '../comments/CommentSection';
-import { likePost, resharePost } from '../services/post.service';
+import { likePost } from '../services/post.service';
 import { IconButton, Typography } from '@mui/material';
-import { FavoriteBorder, Favorite, Repeat, Comment as CommentIcon } from '@mui/icons-material';
+import { FavoriteBorder, Favorite, Comment as CommentIcon } from '@mui/icons-material';
 import FeedPoll from './FeedPoll';
+import CommentModal from '../comments/CommentModal';
 
 const FullScreenCard = styled.div`
   height: 100vh;
@@ -31,6 +31,15 @@ const PostContent = styled.div`
 const PostText = styled.p`
   color: #fff;
   margin-bottom: 1rem;
+  white-space: pre-wrap; /* To respect newlines in post content */
+`;
+
+const Hashtag = styled.span`
+  color: ${props => props.theme.palette.accent};
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const VerticalActions = styled.div`
@@ -58,13 +67,11 @@ const Action = styled.div`
   }
 `;
 
-const PostCard = ({ post, onReportPost, onUsernameLongPress }) => {
+const PostCard = ({ post, onUsernameLongPress, onHashtagClick }) => {
   const [likes, setLikes] = useState(post.likes || 0);
   const [hasLiked, setHasLiked] = useState(post.hasLiked || false);
-  const [showComments, setShowComments] = useState(false);
+  const [isCommentModalOpen, setCommentModalOpen] = useState(false);
   const pressTimer = useRef();
-
-  const canReshare = post.is_following;
 
   const handleLike = async () => {
     if (hasLiked) return;
@@ -74,16 +81,6 @@ const PostCard = ({ post, onReportPost, onUsernameLongPress }) => {
       setHasLiked(true);
     } catch (error) {
       console.error("Failed to like post:", error);
-    }
-  };
-
-  const handleReshare = async () => {
-    if (!canReshare) return;
-    try {
-      await resharePost(post.id);
-      console.log(`Post ${post.id} reshared! A notification would be sent.`);
-    } catch (error) {
-      console.error("Failed to reshare post:", error);
     }
   };
 
@@ -97,20 +94,34 @@ const PostCard = ({ post, onReportPost, onUsernameLongPress }) => {
     clearTimeout(pressTimer.current);
   }, []);
 
+  const renderContentWithHashtags = (content) => {
+    if (!content) return null;
+    const hashtagRegex = /(#\w+)/g;
+    const parts = content.split(hashtagRegex);
+
+    return parts.map((part, index) => {
+      if (part.match(hashtagRegex)) {
+        return <Hashtag key={index} onClick={() => onHashtagClick(part)}>{part}</Hashtag>;
+      }
+      return part;
+    });
+  };
+
+
   return (
     <FullScreenCard>
-      <div 
-        onMouseDown={handlePressStart} 
-        onMouseUp={handlePressEnd} 
-        onMouseLeave={handlePressEnd}
-        onTouchStart={handlePressStart}
-        onTouchEnd={handlePressEnd}
-        style={{ position: 'absolute', top: '20px', left: '20px' }}
-      >
-        <UserAvatar user={post.author} />
-      </div>
+        <div 
+            onMouseDown={handlePressStart} 
+            onMouseUp={handlePressEnd} 
+            onMouseLeave={handlePressEnd}
+            onTouchStart={handlePressStart}
+            onTouchEnd={handlePressEnd}
+            style={{ position: 'absolute', top: '20px', left: '20px' }}
+        >
+            <UserAvatar user={post.author} />
+        </div>
       <PostContent>
-        <PostText>{post.content}</PostText>
+        <PostText>{renderContentWithHashtags(post.content)}</PostText>
         {post.poll && <FeedPoll poll={post.poll} postId={post.id} />}
       </PostContent>
       
@@ -122,24 +133,18 @@ const PostCard = ({ post, onReportPost, onUsernameLongPress }) => {
           <Typography variant="body2">{likes}</Typography>
         </Action>
 
-        <Action onClick={() => setShowComments(!showComments)}>
+        <Action onClick={() => setCommentModalOpen(true)}>
           <IconButton>
             <CommentIcon />
           </IconButton>
         </Action>
-
-        <Action onClick={handleReshare} disabled={!canReshare}>
-          <IconButton disabled={!canReshare}>
-            <Repeat />
-          </IconButton>
-        </Action>
       </VerticalActions>
 
-      {showComments && (
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'white', zIndex: 100 }}>
-             <CommentSection post={post} />
-        </div>
-      )}
+      <CommentModal 
+        open={isCommentModalOpen} 
+        onClose={() => setCommentModalOpen(false)} 
+        post={post} 
+      />
 
     </FullScreenCard>
   );

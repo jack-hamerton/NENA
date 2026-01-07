@@ -17,10 +17,23 @@ const FullScreenFeedContainer = styled.div`
   background-color: ${props => props.theme.palette.background.default};
 `;
 
+const HashtagHeader = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: ${props => props.theme.palette.background.paper};
+    padding: 1rem;
+    z-index: 100;
+    text-align: center;
+    color: ${props => props.theme.text.primary};
+`;
+
 const HomePage = () => {
   const { user: currentUser } = useAuth();
   const [posts, setPosts] = useState([]);
   const [feedType, setFeedType] = useState('for-you');
+  const [hashtagFilter, setHashtagFilter] = useState(null);
   const [isCreatePostModalOpen, setCreatePostModalOpen] = useState(false);
   const [intentModalOpen, setIntentModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -57,9 +70,14 @@ const HomePage = () => {
 
   const fetchPosts = useCallback(async () => {
     try {
-      const response = feedType === 'for-you'
-        ? await postService.getForYouFeed()
-        : await postService.getFollowingFeed();
+        let response;
+        if (hashtagFilter) {
+            response = await postService.getPostsByHashtag(hashtagFilter);
+        } else {
+            response = feedType === 'for-you'
+                ? await postService.getForYouFeed()
+                : await postService.getFollowingFeed();
+        }
       
       const postsWithReportStatus = response.data.map(post => ({ ...post, isReported: false }));
       setPosts(postsWithReportStatus);
@@ -67,13 +85,19 @@ const HomePage = () => {
       console.error("Failed to fetch posts:", error);
       setPosts([]);
     }
-  }, [feedType]);
+  }, [feedType, hashtagFilter]);
 
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
+  
+  const handleHashtagClick = (hashtag) => {
+      setHashtagFilter(hashtag.substring(1)); // remove '#'
+      setNavOpen(false);
+  }
 
   const handleRestart = () => {
+    setHashtagFilter(null);
     fetchPosts();
     setNavOpen(false);
   };
@@ -123,11 +147,17 @@ const HomePage = () => {
   
   const handleSetFeedType = (type) => {
     setFeedType(type);
+    setHashtagFilter(null);
     setNavOpen(false);
   }
 
   return (
       <FullScreenFeedContainer onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+        {hashtagFilter && (
+            <HashtagHeader>
+                Filtering by: #{hashtagFilter}
+            </HashtagHeader>
+        )}
         <FloatingNav 
           isOpen={isNavOpen}
           feedType={feedType}
@@ -140,7 +170,7 @@ const HomePage = () => {
           onClose={() => setCreatePostModalOpen(false)}
           onCreatePost={handleCreatePost}
         />
-        <ActivityFeed posts={posts} onReportPost={handleReportPost} onUsernameLongPress={handleOpenIntentModal} />
+        <ActivityFeed posts={posts} onReportPost={handleReportPost} onUsernameLongPress={handleOpenIntentModal} onHashtagClick={handleHashtagClick} />
         <IntentModal open={intentModalOpen} onClose={handleCloseIntentModal} onFollow={handleFollow} />
       </FullScreenFeedContainer>
   );

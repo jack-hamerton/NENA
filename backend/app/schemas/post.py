@@ -1,23 +1,32 @@
 
-from pydantic import BaseModel, HttpUrl
-import uuid
+from pydantic import BaseModel
+from typing import Optional, List
 from datetime import datetime
-from typing import List, Optional
+from .user import User
+from .hashtag import Hashtag
 
 class PostBase(BaseModel):
     content: str
-    media_url: Optional[HttpUrl] = None
-    audience_control: str = 'everyone'
 
 class PostCreate(PostBase):
     pass
 
-class Post(PostBase):
-    id: uuid.UUID
-    user_id: uuid.UUID
+class PostUpdate(PostBase):
+    pass
+
+class PostInDBBase(PostBase):
+    id: int
+    author_id: int
     created_at: datetime
-    parent_post_id: Optional[uuid.UUID] = None
-    is_following: bool = False
 
     class Config:
         orm_mode = True
+
+class Post(PostInDBBase):
+    author: User
+    likes: int
+    has_liked: bool
+    hashtags: List[Hashtag] = []
+
+class PostInDB(PostInDBBase):
+    pass

@@ -2,11 +2,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Any, List
-import uuid
+import re
 
 from app import crud, models, schemas
 from app.api import deps
-from app.services.notification import create_notification
 
 router = APIRouter()
 
@@ -40,7 +39,7 @@ def read_following_feed(
 
 @router.get("/by-user/{user_id}", response_model=List[schemas.Post])
 def read_posts_by_user(
-    user_id: uuid.UUID,
+    user_id: int,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
     skip: int = 0,
@@ -53,9 +52,22 @@ def read_posts_by_user(
     return crud.post.get_posts_with_follow_status(db, user_id=current_user.id, posts=posts)
 
 
+@router.get("/hashtag/{hashtag}", response_model=List[schemas.Post])
+def read_posts_by_hashtag(
+    hashtag: str,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Retrieve posts containing a specific hashtag.
+    """
+    posts = crud.post.get_by_hashtag(db, hashtag=hashtag)
+    return crud.post.get_posts_with_follow_status(db, user_id=current_user.id, posts=posts)
+
+
 @router.get("/{post_id}", response_model=schemas.Post)
 def read_post(
-    post_id: uuid.UUID,
+    post_id: int,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -70,20 +82,31 @@ def read_post(
 
 @router.post("/", response_model=schemas.Post)
 def create_post(
-    post_in: schemas.PostCreate,
+    *,
     db: Session = Depends(deps.get_db),
+    post_in: schemas.PostCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create new post.
     """
     post = crud.post.create_with_owner(db, obj_in=post_in, user_id=current_user.id)
-    return post
+    
+    hashtags = set(re.findall(r"#(\w+)", post_in.content))
+    for tag_name in hashtags:
+        hashtag_obj = crud.hashtag.get_or_create(db, tag=tag_name)
+        post.hashtags.append(hashtag_obj)
+    
+    db.commit()
+    db.refresh(post)
+    
+    new_post = crud.post.get(db, id=post.id)
+    return crud.post.get_posts_with_follow_status(db, user_id=current_user.id, posts=[new_post])[0]
 
 
 @router.post("/{post_id}/report", response_model=schemas.Post)
 def report_post(
-    post_id: uuid.UUID,
+    post_id: int,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -93,14 +116,12 @@ def report_post(
     post = crud.post.get(db, id=post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    # In a real application, you would have a more robust reporting system.
-    # For now, we will just mark the post as reported.
     return crud.post.update(db, db_obj=post, obj_in={"is_reported": True})
 
 
 @router.post("/{post_id}/like", response_model=schemas.Post)
 def like_post(
-    post_id: uuid.UUID,
+    post_id: int,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -116,44 +137,14 @@ def like_post(
         raise HTTPException(status_code=400, detail="Post already liked")
 
     crud.like.create_with_owner(db, obj_in=schemas.LikeCreate(), post_id=post_id, user_id=current_user.id)
-    return post
-
-
-@router.post("/{post_id}/reshare", response_model=schemas.Reshare)
-def reshare_post(
-    post_id: uuid.UUID,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Reshare a post.
-    """
-    post = crud.post.get(db, id=post_id)
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
-
-    is_following = crud.user.is_following(db, follower_id=current_user.id, followed_id=post.user_id)
-    if not is_following:
-        raise HTTPException(status_code=403, detail="You can only reshare posts from users you follow.")
-
-    reshare = crud.reshare.create_with_owner(
-        db, obj_in=schemas.ReshareCreate(), user_id=current_user.id, post_id=post_id
-    )
-
-    create_notification(
-        db,
-        user_to_notify_id=post.user_id,
-        notification_type="reshare",
-        target_entity_id=reshare.id,
-        actor_id=current_user.id,
-    )
-
-    return reshare
+    
+    db.refresh(post)
+    return crud.post.get_posts_with_follow_status(db, user_id=current_user.id, posts=[post])[0]
 
 
 @router.get("/{post_id}/comments", response_model=List[schemas.Comment])
 def get_comments(
-    post_id: uuid.UUID,
+    post_id: int,
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """
@@ -165,7 +156,7 @@ def get_comments(
 
 @router.post("/{post_id}/comments", response_model=schemas.Comment)
 def create_comment(
-    post_id: uuid.UUID,
+    post_id: int,
     comment_in: schemas.CommentCreate,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
