@@ -14,7 +14,6 @@ import DiscoverPage from '../pages/Discover';
 import SettingsPage from '../pages/SettingsPage';
 import HomePage from '../pages/HomePage';
 import AnalyticsBar from '../analytics/AnalyticsBar';
-import ParticipantQuestionnaire from '../study/ParticipantQuestionnaire';
 import { theme } from '../theme/theme';
 import '../styles/global.css';
 import FloatingNav from './FloatingNav';
@@ -42,7 +41,6 @@ const MainLayout = () => (
         <Route path="/discover" element={<DiscoverPage />} />
         <Route path="/user/:userId/settings" element={<SettingsPage />} />
         <Route path="/analytics" element={<AnalyticsBar />} />
-        <Route path="/study/:studyId/questionnaire" element={<ParticipantQuestionnaire />} />
         <Route path='/success' element={<SuccessPage />} />
         <Route path='/forgot-password' element={<ForgotPasswordPage />} />
       </Routes>
