@@ -3,11 +3,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
 import ConversationList from '../messages/ConversationList';
 import ChatWindow from '../messages/ChatWindow';
-import CallWindow from '../messages/CallWindow';
+import CallWindow from '../components/call/CallWindow';
+import CallPopup from '../components/call/CallPopup';
 import useCall from '../hooks/useCall';
 import { KeyStore } from '../messages/e2ee/keystore';
 import { E2EEManager } from '../messages/e2ee/e2eeManager';
 import { theme } from '../theme/theme';
+import { webRTCService } from '../services/webRTCService';
 
 const MessagesContainer = styled.div`
   display: flex;
@@ -24,6 +26,8 @@ const mockConversations = [
 
 const MessagesPage = () => {
   const [selectedConversation, setSelectedConversation] = useState(mockConversations[0]);
+  const [activeCall, setActiveCall] = useState(null);
+  const [showCallPopup, setShowCallPopup] = useState(false);
   
   // E2EE State
   const [e2eeManager, setE2eeManager] = useState(null);
@@ -73,7 +77,17 @@ const MessagesPage = () => {
   }, [selectedConversation, e2eeManager, sessionMap]);
 
   const handleStartCall = (type) => {
-    startCall(type, selectedConversation);
+    const callData = {
+      to: selectedConversation.id,
+      type: 'outgoing',
+      callType: type
+    };
+    setActiveCall(callData);
+    setShowCallPopup(false);
+  };
+
+  const handleHangUp = () => {
+    setActiveCall(null);
   };
 
   const activeSessionId = useMemo(() => {
@@ -91,11 +105,23 @@ const MessagesPage = () => {
         />
         <ChatWindow 
           conversation={selectedConversation} 
-          onStartCall={handleStartCall}
+          onStartCall={() => setShowCallPopup(true)}
           e2eeManager={e2eeManager}
           sessionId={activeSessionId}
         />
-        {/* Omitted CallWindow and IncomingCall for brevity */}
+        {showCallPopup && 
+          <CallPopup 
+            user={selectedConversation} 
+            onStartCall={handleStartCall} 
+            onClose={() => setShowCallPopup(false)} 
+          />
+        }
+        {activeCall && 
+          <CallWindow 
+            call={activeCall} 
+            onHangUp={handleHangUp} 
+          />
+        }
       </MessagesContainer>
     </ThemeProvider>
   );

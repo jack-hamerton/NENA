@@ -9,7 +9,7 @@ const SplashScreen = ({ onFinish }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowTransition(true);
-    }, 2500);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);

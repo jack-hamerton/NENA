@@ -27,6 +27,7 @@ class UserCreate(UserBase):
 
 # Properties for updating user settings
 class UserUpdate(BaseModel):
+    password: Optional[str] = None
     profile_photo_privacy: Optional[str] = None
     about_privacy: Optional[str] = None
     online_status_privacy: Optional[str] = None

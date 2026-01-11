@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
+    PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Redis
     REDIS_HOST: str

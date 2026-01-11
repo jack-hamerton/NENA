@@ -1,10 +1,13 @@
 
+import random
+import string
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.core.security import create_access_token
-from app.schemas.user import UserCreate, UserLogin
+from app.core.security import create_access_token, create_password_reset_token, verify_password_reset_token
+from app.schemas.user import UserCreate, UserLogin, UserUpdate
 from app.crud import user as crud_user
+from app.services.email_service import send_password_reset_email
 
 router = APIRouter()
 
@@ -13,7 +16,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     """Handles user registration, ensuring data is valid and secure."""
     db_user_by_username = crud_user.get_by_username(db, username=user.username)
     if db_user_by_username:
-        raise HTTPException(status_code=400, detail="Username already registered")
+        user.username = f"{user.username}{''.join(random.choices(string.digits, k=4))}"
 
     if user.email:
         db_user_by_email = crud_user.get_by_email(db, email=user.email)
@@ -51,4 +54,36 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
             "email": db_user.email
         }
     }
+
+@router.post("/forgot-password")
+def forgot_password(email: str, db: Session = Depends(get_db)):
+    """Initiates the password reset process."""
+    user = crud_user.get_by_email(db, email=email)
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="The user with this email does not exist in the system.",
+        )
+    password_reset_token = create_password_reset_token(email=email)
+    send_password_reset_email(
+        email_to=user.email,
+        username=user.username,
+        token=password_reset_token
+    )
+    return {"message": "Password reset email sent"}
+
+@router.post("/reset-password")
+def reset_password(token: str, new_password: str, db: Session = Depends(get_db)):
+    """Resets the user's password."""
+    email = verify_password_reset_token(token)
+    if not email:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    user = crud_user.get_by_email(db, email=email)
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="The user with this email does not exist in the system.",
+        )
+    crud_user.update(db, db_obj=user, obj_in=UserUpdate(password=new_password))
+    return {"message": "Password updated successfully"}
 

@@ -8,14 +8,13 @@ import {
   Box,
   Link as MuiLink,
 } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth }. from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import styled, { ThemeProvider } from 'styled-components';
 import { theme } from '../theme/theme';
 
 const StyledContainer = styled(Container)`
   background-color: ${props => props.theme.palette.dark};
-
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -24,62 +23,52 @@ const StyledContainer = styled(Container)`
 
 const StyledBox = styled(Box)`
   background-color: ${props => props.theme.palette.primary};
-
   padding: 2rem;
   border-radius: 8px;
   color: ${props => props.theme.text.primary};
-
 `;
 
 const StyledTextField = styled(TextField)`
   .MuiInputBase-root {
     color: ${(props) => props.theme.text.primary};
-
     background-color: ${(props) => props.theme.palette.dark};
-
   }
   .MuiInputLabel-root {
     color: ${(props) => props.theme.text.secondary};
-
   }
   .MuiOutlinedInput-root {
     fieldset {
       border-color: ${(props) => props.theme.palette.secondary};
-
     }
     &:hover fieldset {
       border-color: ${(props) => props.theme.palette.accent};
-
     }
     &.Mui-focused fieldset {
       border-color: ${(props) => props.theme.palette.accent};
-
     }
   }
 `;
 
 const StyledButton = styled(Button)`
   background-color: ${props => props.theme.palette.accent};
-
   &:hover {
     background-color: ${props => props.theme.palette.secondary};
-
   }
 `;
 
-const LoginPage = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+const ForgotPasswordPage = () => {
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const [message, setMessage] = useState('');
+  const { resetPassword } = useAuth();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setMessage('');
     try {
-      await login(username, password);
-      navigate('/success'); 
+      await resetPassword(email);
+      setMessage('Check your inbox for further instructions.');
     } catch (err) {
       setError(err.message);
     }
@@ -90,40 +79,33 @@ const LoginPage = () => {
       <StyledContainer maxWidth='xs'>
         <StyledBox sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Typography component='h1' variant='h5'>
-            Login
+            Reset Password
           </Typography>
           {error && (
             <Typography color='error' align='center' sx={{ mt: 2 }}>
               {error}
             </Typography>
           )}
-          <form onSubmit={handleLogin}>
+          {message && (
+            <Typography color='success' align='center' sx={{ mt: 2 }}>
+              {message}
+            </Typography>
+          )}
+          <form onSubmit={handleSubmit}>
             <StyledTextField
               margin='normal'
               required
               fullWidth
-              label='Username'
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              label='Email Address'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               autoFocus
             />
-            <StyledTextField
-              margin='normal'
-              required
-              fullWidth
-              label='Password'
-              type='password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
             <StyledButton type='submit' fullWidth variant='contained' sx={{ mt: 3, mb: 2 }}>
-              Sign In
+              Reset Password
             </StyledButton>
-            <MuiLink component={Link} to='/forgot-password' variant='body2'>
-              Forgot Password?
-            </MuiLink>
-            <MuiLink component={Link} to='/signup' variant='body2'>
-              {"Don\'t have an account? Sign Up"}
+            <MuiLink component={Link} to='/login' variant='body2'>
+              Back to Login
             </MuiLink>
           </form>
         </StyledBox>
@@ -132,4 +114,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default ForgotPasswordPage;

@@ -1,153 +1,149 @@
-
-import React, { useState, useEffect } from 'react';
-import { Container, Typography, Select, MenuItem, Button, FormControl, InputLabel, Box, Switch, FormControlLabel, FormGroup } from '@mui/material';
-import { getUserById, updateProfile } from '../services/user.service';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Box, Typography, TextField, Button, Paper } from '@mui/material';
+import { useSnackbar } from '../contexts/SnackbarContext';
+import { api } from '../utils/api';
 
 const SettingsPage = () => {
-    const { id } = useParams();
-    const [user, setUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+  const [hasPin, setHasPin] = useState(false);
+  const [currentPin, setCurrentPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmNewPin, setConfirmNewPin] = useState('');
+  const { showSnackbar } = useSnackbar();
+  const [user, setUser] = useState({});
 
-    // Privacy settings
-    const [profilePrivacy, setProfilePrivacy] = useState('everyone');
-    const [aboutPrivacy, setAboutPrivacy] = useState('everyone');
-    const [statusPrivacy, setStatusPrivacy] = useState('everyone');
+  useEffect(() => {
+    const storedPin = localStorage.getItem('app_pin');
+    setHasPin(!!storedPin);
+  }, []);
 
-    // Security settings
-    const [pinEnabled, setPinEnabled] = useState(false);
-
-    // Call settings
-    const [silenceUnknownCallers, setSilenceUnknownCallers] = useState(false);
-    const [callSetting, setCallSetting] = useState('anyone');
-
-    useEffect(() => {
-        const fetchUserSettings = async () => {
-            try {
-                const response = await getUserById(id);
-                const userData = response.data;
-                setUser(userData);
-                // Set privacy settings
-                setProfilePrivacy(userData.profile_photo_privacy || 'everyone');
-                setAboutPrivacy(userData.about_privacy || 'everyone');
-                setStatusPrivacy(userData.online_status_privacy || 'everyone');
-                // Set security settings
-                setPinEnabled(userData.pin_enabled || false);
-                // Set call settings
-                setSilenceUnknownCallers(userData.silence_unknown_callers || false);
-                setCallSetting(userData.call_setting || 'anyone');
-            } catch (error) {
-                console.error("Failed to fetch user settings:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchUserSettings();
-    }, [id]);
-
-    const handleSave = async () => {
-        const settingsData = {
-            // Privacy
-            profile_photo_privacy: profilePrivacy,
-            about_privacy: aboutPrivacy,
-            online_status_privacy: statusPrivacy,
-            // Security
-            pin_enabled: pinEnabled,
-            // Calls
-            silence_unknown_callers: silenceUnknownCallers,
-            call_setting: callSetting,
-        };
-
-        try {
-            await updateProfile(id, settingsData);
-            alert('Settings saved successfully!');
-        } catch (error) {
-            console.error("Failed to save settings:", error);
-            alert('Failed to save settings. Please try again.');
-        }
-    };
-
-    const handleLogout = () => {
-        console.log("User logging out...");
-        // You would typically clear auth tokens and redirect here
-    };
-
-    if (isLoading) {
-        return <p>Loading settings...</p>;
+  const handleSetPin = () => {
+    if (newPin.length !== 4) {
+      showSnackbar('PIN must be 4 digits', 'error');
+      return;
+    }
+    if (newPin !== confirmNewPin) {
+      showSnackbar('PINs do not match', 'error');
+      return;
     }
 
-    return (
-        <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
-            {/* Privacy Settings */}
-            <Typography variant="h5" gutterBottom>Privacy Settings</Typography>
-            <Box sx={{ pl: 2, mb: 3 }}>
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel>Who can see your profile picture?</InputLabel>
-                    <Select value={profilePrivacy} onChange={(e) => setProfilePrivacy(e.target.value)}>
-                        <MenuItem value="everyone">Everyone</MenuItem>
-                        <MenuItem value="followers">Followers</MenuItem>
-                        <MenuItem value="none">None</MenuItem>
-                    </Select>
-                </FormControl>
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel>Who can see your "About Me"?</InputLabel>
-                    <Select value={aboutPrivacy} onChange={(e) => setAboutPrivacy(e.target.value)}>
-                        <MenuItem value="everyone">Everyone</MenuItem>
-                        <MenuItem value="followers">Followers</MenuItem>
-                        <MenuItem value="none">None</MenuItem>
-                    </Select>
-                </FormControl>
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel>Who can see your online status?</InputLabel>
-                    <Select value={statusPrivacy} onChange={(e) => setStatusPrivacy(e.target.value)}>
-                        <MenuItem value="everyone">Everyone</MenuItem>
-                        <MenuItem value="followers">Followers</MenuItem>
-                        <MenuItem value="none">None</MenuItem>
-                    </Select>
-                </FormControl>
-            </Box>
+    localStorage.setItem('app_pin', newPin);
+    setHasPin(true);
+    setNewPin('');
+    setConfirmNewPin('');
+    showSnackbar('Application PIN has been set successfully', 'success');
+  };
 
-            {/* Security Settings */}
-            <Typography variant="h5" gutterBottom>Security Settings</Typography>
-            <Box sx={{ pl: 2, mb: 3 }}>
-                <FormGroup>
-                    <FormControlLabel 
-                        control={<Switch checked={pinEnabled} onChange={(e) => setPinEnabled(e.target.checked)} />} 
-                        label="Enable Two-Step Verification (PIN)" 
-                    />
-                </FormGroup>
-            </Box>
+  const handleChangePin = () => {
+    const storedPin = localStorage.getItem('app_pin');
+    if (currentPin !== storedPin) {
+      showSnackbar('Current PIN is incorrect', 'error');
+      return;
+    }
+    if (newPin.length !== 4) {
+      showSnackbar('New PIN must be 4 digits', 'error');
+      return;
+    }
+    if (newPin !== confirmNewPin) {
+      showSnackbar('New PINs do not match', 'error');
+      return;
+    }
 
-            {/* Call Settings */}
-            <Typography variant="h5" gutterBottom>Call Settings</Typography>
-            <Box sx={{ pl: 2, mb: 3 }}>
-                <FormGroup>
-                    <FormControlLabel 
-                        control={<Switch checked={silenceUnknownCallers} onChange={(e) => setSilenceUnknownCallers(e.target.checked)} />} 
-                        label="Silence Unknown Callers"
-                    />
-                </FormGroup>
-                <FormControl fullWidth sx={{ mt: 2 }}>
-                    <InputLabel>Who can call you?</InputLabel>
-                    <Select value={callSetting} onChange={(e) => setCallSetting(e.target.value)}>
-                        <MenuItem value="anyone">Anyone</MenuItem>
-                        <MenuItem value="friends">Friends</MenuItem>
-                        <MenuItem value="none">None</MenuItem>
-                    </Select>
-                </FormControl>
-            </Box>
+    localStorage.setItem('app_pin', newPin);
+    setCurrentPin('');
+    setNewPin('');
+    setConfirmNewPin('');
+    showSnackbar('Application PIN has been changed successfully', 'success');
+  };
 
-            <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
-                <Button variant="contained" color="primary" onClick={handleSave}>
-                    Save All Settings
-                </Button>
-                <Button variant="outlined" color="error" onClick={handleLogout}>
-                    Logout
-                </Button>
-            </Box>
-        </Container>
-    );
+  const handleRemovePin = () => {
+    const storedPin = localStorage.getItem('app_pin');
+    if (currentPin !== storedPin) {
+      showSnackbar('Current PIN is incorrect', 'error');
+      return;
+    }
+
+    localStorage.removeItem('app_pin');
+    setHasPin(false);
+    setCurrentPin('');
+    showSnackbar('Application PIN has been removed', 'success');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await api.put('/users/settings', user, {});
+    // Handle success or error
+  };
+
+
+  return (
+    <Box sx={{ padding: '2rem' }}>
+      <Typography variant="h4" gutterBottom>Settings</Typography>
+      <Paper sx={{ padding: '2rem', marginBottom: '2rem' }}>
+        <Typography variant="h6" gutterBottom>User Settings</Typography>
+        <form onSubmit={handleSubmit}>
+          {/* Form fields for user settings */}
+          <button type="submit">Save Settings</button>
+        </form>
+      </Paper>
+      <Paper sx={{ padding: '2rem' }}>
+        <Typography variant="h6" gutterBottom>Security Settings</Typography>
+        {hasPin ? (
+          // View for changing or removing PIN
+          <Box>
+            <Typography sx={{ mb: 2 }}>Change or remove your application PIN.</Typography>
+            <TextField
+              label="Current PIN"
+              type="password"
+              value={currentPin}
+              onChange={(e) => setCurrentPin(e.target.value)}
+              inputProps={{ maxLength: 4 }}
+              sx={{ mb: 2, display: 'block' }}
+            />
+            <TextField
+              label="New PIN"
+              type="password"
+              value={newPin}
+              onChange={(e) => setNewPin(e.target.value)}
+              inputProps={{ maxLength: 4 }}
+              sx={{ mb: 2, display: 'block' }}
+            />
+            <TextField
+              label="Confirm New PIN"
+              type="password"
+              value={confirmNewPin}
+              onChange={(e) => setConfirmNewPin(e.target.value)}
+              inputProps={{ maxLength: 4 }}
+              sx={{ mb: 2, display: 'block' }}
+            />
+            <Button variant="contained" onClick={handleChangePin} sx={{ mr: 2 }}>Change PIN</Button>
+            <Button variant="outlined" color="error" onClick={handleRemovePin}>Remove PIN</Button>
+          </Box>
+        ) : (
+          // View for setting PIN
+          <Box>
+            <Typography sx={{ mb: 2 }}>Set a 4-digit PIN to secure your application.</Typography>
+            <TextField
+              label="New PIN"
+              type="password"
+              value={newPin}
+              onChange={(e) => setNewPin(e.target.value)}
+              inputProps={{ maxLength: 4 }}
+              sx={{ mb: 2, display: 'block' }}
+            />
+            <TextField
+              label="Confirm New PIN"
+              type="password"
+              value={confirmNewPin}
+              onChange={(e) => setConfirmNewPin(e.target.value)}
+              inputProps={{ maxLength: 4 }}
+              sx={{ mb: 2, display: 'block' }}
+            />
+            <Button variant="contained" onClick={handleSetPin}>Set PIN</Button>
+          </Box>
+        )}
+      </Paper>
+    </Box>
+  );
 };
 
 export default SettingsPage;

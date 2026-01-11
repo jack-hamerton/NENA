@@ -12,7 +12,7 @@ from app.api.endpoints import (
 )
 from app.ai.services import ai_service
 from app.reminders import start_scheduler
-from app.websocket_manager import websocket_manager
+from app.websockets import manager
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -40,12 +40,29 @@ app.include_router(webrtc_router.router, prefix="/api/webrtc", tags=["webrtc"])
 app.include_router(room_router.router, prefix="/api/rooms", tags=["rooms"])
 
 
-@app.websocket("/ws/study/{study_id}")
-async def websocket_endpoint(websocket: WebSocket, study_id: int):
-    await websocket_manager.connect(websocket, study_id)
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: int):
+    await manager.connect(user_id, websocket)
     try:
         while True:
-            # The backend will listen for messages, but for now, we just keep the connection open
-            data = await websocket.receive_text()
+            data = await websocket.receive_json()
+            if data['type'] == 'webrtc-offer':
+                await manager.send_personal_message({
+                    "type": "webrtc-offer",
+                    "offer": data['offer'],
+                    "from": user_id
+                }, data['to'])
+            elif data['type'] == 'webrtc-answer':
+                await manager.send_personal_message({
+                    "type": "webrtc-answer",
+                    "answer": data['answer'],
+                    "from": user_id
+                }, data['to'])
+            elif data['type'] == 'webrtc-ice-candidate':
+                await manager.send_personal_message({
+                    "type": "webrtc-ice-candidate",
+                    "candidate": data['candidate'],
+                    "from": user_id
+                }, data['to'])
     except WebSocketDisconnect:
-        websocket_manager.disconnect(websocket, study_id)
+        manager.disconnect(user_id)

@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { webRTCService } from '../services/webRTCService';
+import { socket } from '../services/socket';
 
 const useCall = () => {
   const [call, setCall] = useState(null);
   const [incomingCall, setIncomingCall] = useState(null);
-  const [stream, setStream] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
-  const [isRemoteMuted, setIsRemoteMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [callTimer, setCallTimer] = useState(0);
@@ -13,126 +14,118 @@ const useCall = () => {
   const userVideo = useRef();
 
   useEffect(() => {
+    const handleNewOffer = ({ offer, from }) => {
+      console.log('Incoming call from', from);
+      setIncomingCall({ from, offer, type: 'video' }); // Assuming video call for now
+    };
+
+    socket.on('webrtc-offer', handleNewOffer);
+
+    return () => {
+      socket.off('webrtc-offer', handleNewOffer);
+    };
+  }, []);
+
+  useEffect(() => {
     let timer;
-    if (call && call.status === 'connected') {
+    if (call) {
       timer = setInterval(() => {
         setCallTimer(prev => prev + 1);
       }, 1000);
     } else {
       setCallTimer(0);
     }
-
     return () => clearInterval(timer);
   }, [call]);
 
-  // Simulate connection time
-  useEffect(() => {
-    if (call && call.status === 'connecting') {
-      const timer = setTimeout(() => {
-        setCall(prev => ({ ...prev, status: 'connected' }));
-      }, 2000); // 2-second connection delay
-
-      return () => clearTimeout(timer);
+  const handleTrack = useCallback((stream) => {
+    if (userVideo.current) {
+      userVideo.current.srcObject = stream;
     }
-  }, [call]);
+  }, []);
 
+  const startCall = useCallback(async (type, user) => {
+    const callData = { type, user, initiator: true, status: 'connecting' };
+    setCall(callData);
+    await webRTCService.startCall(user.id, handleTrack);
+    if (myVideo.current) {
+      myVideo.current.srcObject = webRTCService.localStream;
+    }
+    setCall(prev => ({...prev, status: 'connected'}))
+  }, [handleTrack]);
 
-  const startCall = (type, user) => {
-    const newCall = { type, user, initiator: true, status: 'connecting' };
-    setCall(newCall);
-    navigator.mediaDevices.getUserMedia({ video: type === 'video', audio: true })
-      .then(stream => {
-        setStream(stream);
-        if (myVideo.current) {
-          myVideo.current.srcObject = stream;
-        }
-      })
-      .catch(err => {
-        console.error('Failed to get media', err);
-      });
-  };
-
-  const endCall = () => {
+  const endCall = useCallback(() => {
+    webRTCService.hangUp();
     setCall(null);
     setIncomingCall(null);
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-    }
-    setStream(null);
     setIsScreenSharing(false);
-  };
+    if(myVideo.current) myVideo.current.srcObject = null;
+    if(userVideo.current) userVideo.current.srcObject = null;
+  }, []);
 
-  const acceptCall = () => {
-    const newCall = { ...incomingCall, status: 'connecting' };
-    setCall(newCall);
+  const acceptCall = useCallback(async () => {
+    if (!incomingCall) return;
+
+    const callData = { ...incomingCall, initiator: false, status: 'connecting' };
+    setCall(callData);
+    const answer = await webRTCService.handleOffer(incomingCall.offer, handleTrack);
+    socket.emit('webrtc-answer', { answer, to: incomingCall.from });
     setIncomingCall(null);
-     navigator.mediaDevices.getUserMedia({ video: newCall.type === 'video', audio: true })
-      .then(stream => {
-        setStream(stream);
-        if (myVideo.current) {
-          myVideo.current.srcObject = stream;
-        }
-      })
-      .catch(err => {
-        console.error('Failed to get media', err);
-      });
-  }
+    if (myVideo.current) {
+      myVideo.current.srcObject = webRTCService.localStream;
+    }
+    setCall(prev => ({...prev, status: 'connected'}))
+  }, [incomingCall, handleTrack]);
 
-  const rejectCall = () => {
-      setIncomingCall(null);
-  }
+  const rejectCall = useCallback(() => {
+    // In a real app, you might want to send a 'reject' signal
+    setIncomingCall(null);
+  }, []);
 
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
+    const stream = webRTCService.localStream;
     if (stream) {
       stream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
-      setIsMuted(!isMuted);
+      setIsMuted(prev => !prev);
     }
-  };
+  }, []);
 
-  const toggleRemoteMute = () => {
-      setIsRemoteMuted(!isRemoteMuted);
-  }
-
-  const toggleCamera = () => {
+  const toggleCamera = useCallback(() => {
+    const stream = webRTCService.localStream;
     if (stream) {
       stream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
-      setIsCameraOff(!isCameraOff);
+      setIsCameraOff(prev => !prev);
+      // Disabling screen sharing if camera is turned off
       if(isScreenSharing) {
         toggleScreenSharing();
       }
     }
-  };
+  }, [isScreenSharing]);
 
-  const toggleScreenSharing = () => {
-      if(!isCameraOff) {
-        setIsScreenSharing(!isScreenSharing);
+  const toggleScreenSharing = useCallback(async () => {
+    if (isScreenSharing) {
+      // Stop screen sharing and revert to camera
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      webRTCService.replaceTrack(stream.getVideoTracks()[0]);
+      if (myVideo.current) {
+        myVideo.current.srcObject = stream;
       }
-  }
-
-  // Mock receiving a call
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!call && !incomingCall) {
-        setIncomingCall({ type: 'video', user: { name: 'Jane Smith' } });
+      webRTCService.localStream = stream;
+      setIsScreenSharing(false);
+    } else {
+      // Start screen sharing
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      webRTCService.replaceTrack(stream.getVideoTracks()[0]);
+       if (myVideo.current) {
+        myVideo.current.srcObject = stream;
       }
-    }, 5000);
+      webRTCService.localStream = stream;
+      setIsScreenSharing(true);
+      setIsCameraOff(false); // Screen sharing implies video is on
+    }
+  }, [isScreenSharing]);
 
-    return () => clearTimeout(timer);
-  }, [call, incomingCall]);
-
-  // Mock remote user toggling mute
-  useEffect(() => {
-      if(call && call.status === 'connected') {
-          const randomInterval = Math.random() * 5000 + 5000; // between 5 and 10 seconds
-          const timer = setInterval(() => {
-              toggleRemoteMute();
-          }, randomInterval);
-
-          return () => clearInterval(timer);
-      }
-  }, [call]);
-
-  return { call, incomingCall, startCall, endCall, acceptCall, rejectCall, myVideo, userVideo, isMuted, toggleMute, isCameraOff, toggleCamera, callTimer, isScreenSharing, toggleScreenSharing, isRemoteMuted };
+  return { call, incomingCall, startCall, endCall, acceptCall, rejectCall, myVideo, userVideo, isMuted, toggleMute, isCameraOff, toggleCamera, callTimer, isScreenSharing, toggleScreenSharing };
 };
 
 export default useCall;

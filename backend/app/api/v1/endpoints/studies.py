@@ -1,14 +1,12 @@
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, WebSocket
 from sqlalchemy.orm import Session
 from typing import List
-import random
-import string
 
 from app import crud, models, schemas
 from app.db.session import SessionLocal
 from app.websocket_manager import websocket_manager
-from app.ai.services.study_analyzer import analyze_study_data
+from app.ai.services.study_ai_service import analyze_study_data
 
 router = APIRouter()
 
@@ -20,12 +18,8 @@ def get_db():
     finally:
         db.close()
 
-def generate_unique_code():
-    return ''.join(random.choices(string.digits, k=8))
-
 @router.post("/", response_model=schemas.Study)
 def create_study(study: schemas.StudyCreate, db: Session = Depends(get_db)):
-    study.unique_code = generate_unique_code()
     return crud.create_study(db=db, study=study)
 
 @router.get("/", response_model=List[schemas.Study])
@@ -35,6 +29,11 @@ def get_studies(db: Session = Depends(get_db)):
 @router.get("/search", response_model=List[schemas.Study])
 def search_studies(q: str, db: Session = Depends(get_db)):
     return crud.search_studies(db=db, query=q)
+
+@router.get("/{study_id}/participation")
+def check_participation(study_id: int, user_id: str, db: Session = Depends(get_db)):
+    has_participated = crud.has_user_participated(db, study_id=study_id, user_id=user_id)
+    return {"hasParticipated": has_participated}
 
 @router.post("/{study_id}/verify")
 def verify_study_access(study_id: int, code: str, db: Session = Depends(get_db)):
@@ -51,36 +50,41 @@ def get_study(study_id: int, db: Session = Depends(get_db)):
     return study
 
 @router.post("/{study_id}/answers", status_code=202)
-async def submit_answers(study_id: int, answers: schemas.AnswerCreate, db: Session = Depends(get_db)):
-    # In a real app, you would save the answers to the database.
-    print(f"Received answers for study {study_id}: {answers}")
+async def submit_answers(study_id: int, answer_submission: schemas.AnswerSubmission, db: Session = Depends(get_db)):
+    # Check if user has already participated
+    if crud.has_user_participated(db, study_id=study_id, user_id=answer_submission.user_id):
+        raise HTTPException(status_code=403, detail="User has already participated in this study.")
 
-    # In a real implementation, you would fetch all responses for the study from the database.
-    # For this simulation, we'll use a static list and add the new answer.
-    # We'll assume the `answers` object has a text attribute.
-    all_responses = [
-        "The biggest challenge is just getting started. The paperwork is overwhelming.",
-        "High initial setup costs and complex regulatory procedures are significant barriers to entry for young entrepreneurs.",
-        "I wish I had a mentor to guide me through the process.",
-        "Finding our first customers in a competitive market was very difficult.",
-    ]
-    # This is a placeholder for extracting the submitted answer text.
-    # In a real app, you would properly extract the text from the `answers` schema.
-    if hasattr(answers, 'text'):
-        all_responses.append(answers.text)
+    # Save the answers
+    for question_id, answer_text in answer_submission.answers.items():
+        answer = schemas.AnswerCreate(text=answer_text, question_id=question_id, user_id=answer_submission.user_id)
+        crud.create_answer(db, study_id=study_id, answer=answer)
+    
+    # Record the participation
+    crud.add_participant(db, study_id=study_id, user_id=answer_submission.user_id)
 
-    # Trigger the analysis
-    analysis_results = analyze_study_data(study_id=study_id, raw_data=all_responses)
+    # Trigger the AI analysis for the study
+    analysis_results = analyze_study_data(db_session=db, study_id=study_id)
 
-    # Broadcast the new results to listening clients
-    await websocket_manager.broadcast_to_study(study_id, analysis_results)
+    # Broadcast the new analysis to all listening clients for that study
+    if analysis_results:
+        await websocket_manager.broadcast_to_study(study_id, analysis_results)
 
-    return {"message": "Answers submitted successfully and analysis broadcasted."}
+    return {"message": "Answers submitted and analysis complete."}
 
+@router.get("/{study_id}/answers", response_model=List[schemas.Answer])
+def get_study_answers(study_id: int, db: Session = Depends(get_db)):
+    # This endpoint now serves the anonymized answers to the creator
+    return crud.get_answers_for_study(db, study_id=study_id)
 
-@router.get("/{study_id}/results")
-def get_study_results(study_id: int, db: Session = Depends(get_db)):
-    # This endpoint can now be a fallback or for initial data loading.
-    # The real-time updates will happen via WebSocket.
-    analysis_results = analyze_study_data(study_id=study_id, raw_data=[])
-    return analysis_results
+@router.websocket("/ws/study/{study_id}")
+async def websocket_endpoint(websocket: WebSocket, study_id: int):
+    await websocket_manager.connect(websocket, study_id)
+    try:
+        while True:
+            # The backend is only pushing data, so we just keep the connection alive
+            await websocket.receive_text()
+    except Exception as e:
+        print(f"WebSocket Error: {e}")
+    finally:
+        websocket_manager.disconnect(websocket, study_id)

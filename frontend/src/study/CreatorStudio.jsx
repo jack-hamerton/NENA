@@ -1,33 +1,58 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { FindingsPanel } from './FindingsPanel';
-import { MethodologyPanel } from './MethodologyPanel';
-import { BarChart } from './charts/BarChart';
-import { DonutChart } from './charts/DonutChart';
-import { KPIStatStrip } from './charts/KPIStatStrip';
-import { QualTable } from './charts/QualTable';
-import { InsightList } from './charts/InsightList';
-import { QuoteCard } from './charts/QuoteCard';
+
+// Import chart components
+import KPIStatStrip from './charts/KPIStatStrip';
+import QuoteCard from './charts/QuoteCard';
+import InsightList from './charts/InsightList';
+import DonutChart from '../components/DonutChart';
+import BarChart from './charts/BarChart';
+import WordCloud from './charts/WordCloud';
 import { RecommendationCard } from './charts/RecommendationCard';
+import { QualTable } from './charts/QualTable';
+
+// Import panel components
+import MethodologyPanel from './MethodologyPanel';
+import { FindingsPanel } from './findings/FindingsPanel';
+import CreatorQuestionBuilder from './CreatorQuestionBuilder';
+
 import {
   StudioContainer,
   TabContainer,
   TabButton,
   ContentContainer,
-  ChartGrid
+  ChartGrid,
+  ChartCard,
 } from './CreatorStudio.styled';
 
 const CreatorStudio = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('build');
+  const { studyId } = useParams();
+  const [analysisData, setAnalysisData] = useState(null);
   const [study, setStudy] = useState(null);
   const [answers, setAnswers] = useState([]);
-  const { id } = useParams();
+
+  useEffect(() => {
+    if (studyId) {
+      const ws = new WebSocket(`ws://localhost:8000/ws/study/${studyId}`);
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        setAnalysisData(data);
+      };
+
+      // Cleanup on component unmount
+      return () => {
+        ws.close();
+      };
+    }
+  }, [studyId]);
 
   useEffect(() => {
     const fetchStudyData = async () => {
       try {
-        const studyResponse = await fetch(`http://localhost:8000/api/v1/studies/${id}`);
+        const studyResponse = await fetch(`http://localhost:8000/api/v1/studies/${studyId}`);
         if (studyResponse.ok) {
           const studyData = await studyResponse.json();
           setStudy(studyData);
@@ -35,7 +60,7 @@ const CreatorStudio = () => {
           console.error('Failed to fetch study data');
         }
 
-        const answersResponse = await fetch(`http://localhost:8000/api/v1/studies/${id}/answers`);
+        const answersResponse = await fetch(`http://localhost:8000/api/v1/studies/${studyId}/answers`);
         if (answersResponse.ok) {
           const answersData = await answersResponse.json();
           setAnswers(answersData);
@@ -47,84 +72,130 @@ const CreatorStudio = () => {
       }
     };
 
-    if (id) {
+    if (studyId) {
       fetchStudyData();
     }
-  }, [id]);
+  }, [studyId]);
 
-  const barChartData = [
-    { name: 'A', value: 400 },
-    { name: 'B', value: 300 },
-    { name: 'C', value: 200 },
-    { name: 'D', value: 100 },
-  ];
+  const handleSaveStudy = async (questions, methodology) => {
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/studies/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ questions, methodology }),
+      });
 
-  const donutChartData = [
-    { name: 'Group A', value: 400 },
-    { name: 'Group B', value: 300 },
-    { name: 'Group C', value: 300 },
-    { name: 'Group D', value: 200 },
-  ];
-
-  const kpiData = [
-      { title: 'Responses', value: answers.length },
-      { title: 'Completion Rate', value: '-' },
-      { title: 'Avg. Time', value: '-' },
-  ];
-
-  const qualTableData = {
-      headers: ['Question', 'Answer'],
-      rows: answers.map(answer => [answer.question.text, answer.text]),
+      if (response.ok) {
+        const newStudy = await response.json();
+        // Handle successful study creation, e.g., by redirecting to the new study's page
+        console.log('Study created successfully:', newStudy);
+        window.location.href = `/study/${newStudy.id}`;
+      } else {
+        console.error('Failed to save study');
+      }
+    } catch (error) {
+      console.error('Error saving study:', error);
+    }
   };
 
-  const insights = ['No insights yet'];
-  const quote = { text: 'No quotes yet', author: '' };
-  const recommendation = { title: 'No recommendations yet', description: '' };
+  // Mock data for components
+  const kpiStats = [
+    { label: 'Total Responses', value: answers.length },
+    { label: 'Completion Rate', value: '85%' },
+    { label: 'Surveys Sent', value: '1,450' },
+  ];
 
-  if (answers.length > 0) {
-      insights.pop();
-      insights.push('The first insight is that users want more features.');
+  const sentimentData = analysisData?.sentiment
+    ? [
+        { name: 'Positive', value: analysisData.sentiment.positive },
+        { name: 'Negative', value: analysisData.sentiment.negative },
+        { name: 'Neutral', value: analysisData.sentiment.neutral },
+      ]
+    : [];
 
-      quote.text = answers[0].text;
-      quote.author = `Participant ${answers[0].id}`;
+  const ageData = [
+    { name: '18-24', value: 300 },
+    { name: '25-34', value: 500 },
+    { name: '35-44', value: 200 },
+    { name: '45+', value: 150 },
+  ];
 
-      recommendation.title = 'Add more features';
-      recommendation.description = 'Users are asking for more features, so we should add them.';
+  const recommendation = {
+    title: 'Increase outreach to younger audiences',
+    description: 'Based on the analysis, a significant portion of the participants are in the 25-34 age group. To broaden the study\'s reach, consider targeting the 18-24 age group through social media campaigns.',
+  };
 
-  }
+  const qualData = {
+    headers: ['Question', 'Answer'],
+    rows: answers.map(answer => [answer.question.text, answer.text]),
+  };
 
-  if (!study) {
-    return <div>Loading...</div>;
-  }
+  const themes = analysisData?.themes ? analysisData.themes.map(theme => theme[0]) : [];
+  const keyQuotes = analysisData?.key_quotes ? Object.entries(analysisData.key_quotes) : [];
 
   return (
     <StudioContainer>
       <TabContainer>
-        <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')}>
+        <TabButton active={activeTab === 'build'} onClick={() => setActiveTab('build')}>
+          Build
+        </TabButton>
+        <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} disabled={!studyId}>
           Dashboard
         </TabButton>
-        <TabButton active={activeTab === 'findings'} onClick={() => setActiveTab('findings')}>
+        <TabButton active={activeTab === 'findings'} onClick={() => setActiveTab('findings')} disabled={!studyId}>
           Findings
         </TabButton>
-        <TabButton active={activeTab === 'methodology'} onClick={() => setActiveTab('methodology')}>
+        <TabButton active={activeTab === 'methodology'} onClick={() => setActiveTab('methodology')} disabled={!studyId}>
           Methodology
         </TabButton>
       </TabContainer>
 
       <ContentContainer>
-        {activeTab === 'dashboard' && (
-            <ChartGrid>
-                <BarChart data={barChartData} />
-                <DonutChart data={donutChartData} />
-                <KPIStatStrip stats={kpiData} />
-                <QualTable data={qualTableData} />
-                <InsightList insights={insights} />
-                <QuoteCard quote={quote} />
-                <RecommendationCard recommendation={recommendation} />
-            </ChartGrid>
+        {activeTab === 'build' && <CreatorQuestionBuilder onSave={handleSaveStudy} />}
+
+        {activeTab === 'dashboard' && studyId && (
+          <ChartGrid>
+            <KPIStatStrip stats={kpiStats} />
+            <ChartCard>
+              {analysisData ? <DonutChart data={sentimentData} title="Sentiment Analysis" /> : <p>Waiting for data...</p>}
+            </ChartCard>
+            <ChartCard>
+              <BarChart data={ageData} title="Participant Age Distribution" />
+            </ChartCard>
+            <ChartCard>
+              <RecommendationCard recommendation={recommendation} />
+            </ChartCard>
+            <ChartCard style={{ gridColumn: 'span 3' }}>
+              <QualTable data={qualData} />
+            </ChartCard>
+            <ChartCard style={{ gridColumn: 'span 2' }}>
+              {analysisData ? <WordCloud words={themes} title="Key Themes Word Cloud" /> : <p>Waiting for data...</p>}
+            </ChartCard>
+            <ChartCard style={{ gridColumn: 'span 1' }}>
+              <h3 className="text-xl font-bold text-gray-800">Key Themes</h3>
+              {analysisData ? <InsightList insights={themes} /> : <p>Waiting for data...</p>}
+            </ChartCard>
+            <ChartCard style={{ gridColumn: 'span 3' }}>
+              <h3 className="text-xl font-bold text-gray-800">Key Quotes</h3>
+              {analysisData ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {keyQuotes.map(([theme, quote]) => (
+                    <QuoteCard key={theme} quote={quote} role={theme} location="Participant Response" />
+                  ))}
+                </div>
+              ) : (
+                <p>Waiting for data...</p>
+              )}
+            </ChartCard>
+          </ChartGrid>
         )}
-        {activeTab === 'findings' && <FindingsPanel />}
-        {activeTab === 'methodology' && <MethodologyPanel study={study} />}
+
+        {activeTab === 'findings' && studyId && <FindingsPanel />}
+
+        {activeTab === 'methodology' && studyId && <MethodologyPanel study={study} />}
+
       </ContentContainer>
     </StudioContainer>
   );
