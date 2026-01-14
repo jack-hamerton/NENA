@@ -16,10 +16,10 @@ const InsightItem = styled.li`
     margin-bottom: 0.5rem;
 `;
 
-const InsightList = ({ insights }) => {
+const InsightList = ({ insights, title }) => {
   return (
     <ListContainer>
-      <Title>Key Insights</Title>
+      <Title>{title}</Title>
       <ul>
         {insights.map((insight, index) => (
           <InsightItem key={index}>{insight}</InsightItem>

@@ -1,9 +1,9 @@
 
-import { api } from './api';
+import apiClient from './api';
 
 class UserService {
   async getUser(userId) {
-    return await api.get(`/users/${userId}`);
+    return await apiClient.get(`/users/${userId}`);
   }
 }
 

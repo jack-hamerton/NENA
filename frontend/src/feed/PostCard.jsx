@@ -6,7 +6,7 @@ import { likePost } from '../services/post.service';
 import { IconButton, Typography } from '@mui/material';
 import { FavoriteBorder, Favorite, Comment as CommentIcon } from '@mui/icons-material';
 import FeedPoll from './FeedPoll';
-import CommentModal from '../comments/CommentModal';
+import CommentModal from '../components/modals/CommentModal';
 
 const FullScreenCard = styled.div`
   height: 100vh;

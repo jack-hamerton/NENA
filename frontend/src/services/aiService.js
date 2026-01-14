@@ -1,7 +1,7 @@
-import { api } from './api';
+import apiClient from './api';
 
 export const rewriteText = async (text, tone) => {
-  const response = await api.post('/ai/assist', { 
+  const response = await apiClient.post('/ai/assist', { 
     prompt: text, 
     context: {
       type: 'rewrite',
@@ -12,7 +12,7 @@ export const rewriteText = async (text, tone) => {
 };
 
 export const summarizeText = async (text) => {
-  const response = await api.post('/ai/assist', { 
+  const response = await apiClient.post('/ai/assist', { 
     prompt: text, 
     context: {
       type: 'summarize'
@@ -22,7 +22,7 @@ export const summarizeText = async (text) => {
 };
 
 export const suggestNextSteps = async (text) => {
-  const response = await api.post('/ai/assist', { 
+  const response = await apiClient.post('/ai/assist', { 
     prompt: text, 
     context: {
       type: 'suggest_next_steps'

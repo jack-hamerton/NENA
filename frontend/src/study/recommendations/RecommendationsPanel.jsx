@@ -14,16 +14,21 @@ const Title = styled.h2`
   color: ${({ theme }) => theme.text.primary};
 `;
 
-const MethodologyPanel = ({ study }) => {
+const RecommendationsPanel = ({ study }) => {
   if (!study) {
     return <div>Loading...</div>;
   }
+
   return (
     <PanelContainer>
-      <Title>Methodology</Title>
-      <p>{study.methodology}</p>
+      <Title>Recommendations</Title>
+      <ul>
+        {study.recommendations.map((rec, index) => (
+          <li key={index}>{rec}</li>
+        ))}
+      </ul>
     </PanelContainer>
   );
 };
 
-export default MethodologyPanel;
+export default RecommendationsPanel;

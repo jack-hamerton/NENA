@@ -28,3 +28,10 @@ export const ChartGrid = styled.div`
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
 `;
+
+export const ChartCard = styled.div`
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+`;

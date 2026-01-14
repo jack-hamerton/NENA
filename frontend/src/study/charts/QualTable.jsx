@@ -8,6 +8,10 @@ const TableContainer = styled.div`
   border: 1px solid #ddd;
 `;
 
+const Title = styled.h4`
+    margin-bottom: 1rem;
+`;
+
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -24,9 +28,10 @@ const Td = styled.td`
   border-bottom: 1px solid #ddd;
 `;
 
-const QualTable = ({ data }) => {
+const QualTable = ({ data, title }) => {
   return (
     <TableContainer>
+      <Title>{title}</Title>
       <Table>
         <thead>
           <tr>

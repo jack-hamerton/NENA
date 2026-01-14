@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
 // Import chart components
-import KPIStatStrip from './charts/KPIStatStrip';
-import QuoteCard from './charts/QuoteCard';
-import InsightList from './charts/InsightList';
+import { KPIStatStrip } from './charts/KPIStatStrip';
+import { QuoteCard } from './charts/QuoteCard';
+import { InsightList } from './charts/InsightList';
 import DonutChart from '../components/DonutChart';
 import BarChart from './charts/BarChart';
 import WordCloud from './charts/WordCloud';
@@ -14,7 +14,7 @@ import { QualTable } from './charts/QualTable';
 
 // Import panel components
 import MethodologyPanel from './MethodologyPanel';
-import { FindingsPanel } from './findings/FindingsPanel';
+import FindingsPanel from './findings/FindingsPanel';
 import CreatorQuestionBuilder from './CreatorQuestionBuilder';
 
 import {
@@ -102,9 +102,9 @@ const CreatorStudio = () => {
 
   // Mock data for components
   const kpiStats = [
-    { label: 'Total Responses', value: answers.length },
-    { label: 'Completion Rate', value: '85%' },
-    { label: 'Surveys Sent', value: '1,450' },
+    { title: 'Total Responses', value: answers.length },
+    { title: 'Completion Rate', value: '85%' },
+    { title: 'Surveys Sent', value: '1,450' },
   ];
 
   const sentimentData = analysisData?.sentiment
@@ -168,21 +168,20 @@ const CreatorStudio = () => {
               <RecommendationCard recommendation={recommendation} />
             </ChartCard>
             <ChartCard style={{ gridColumn: 'span 3' }}>
-              <QualTable data={qualData} />
+              <QualTable data={qualData} title="Qualitative Data" />
             </ChartCard>
             <ChartCard style={{ gridColumn: 'span 2' }}>
               {analysisData ? <WordCloud words={themes} title="Key Themes Word Cloud" /> : <p>Waiting for data...</p>}
             </ChartCard>
             <ChartCard style={{ gridColumn: 'span 1' }}>
-              <h3 className="text-xl font-bold text-gray-800">Key Themes</h3>
-              {analysisData ? <InsightList insights={themes} /> : <p>Waiting for data...</p>}
+              {analysisData ? <InsightList insights={themes} title="Key Themes" /> : <p>Waiting for data...</p>}
             </ChartCard>
             <ChartCard style={{ gridColumn: 'span 3' }}>
               <h3 className="text-xl font-bold text-gray-800">Key Quotes</h3>
               {analysisData ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {keyQuotes.map(([theme, quote]) => (
-                    <QuoteCard key={theme} quote={quote} role={theme} location="Participant Response" />
+                    <QuoteCard key={theme} quote={{ text: quote, author: theme }} />
                   ))}
                 </div>
               ) : (

@@ -9,7 +9,7 @@ import {
   Link as MuiLink,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth }. from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import styled, { ThemeProvider } from 'styled-components';
 import { theme } from '../theme/theme';
 

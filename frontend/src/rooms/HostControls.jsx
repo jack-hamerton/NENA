@@ -32,7 +32,7 @@ const HostControlButton = styled.button`
   }
 `;
 
-export const HostControls: React.FC = () => {
+export const HostControls = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
 

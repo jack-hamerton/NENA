@@ -4,7 +4,7 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { api } from '../../utils/api';
 import { Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
-import { useNotifications } from '../../context/NotificationContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 const localizer = momentLocalizer(moment);
 

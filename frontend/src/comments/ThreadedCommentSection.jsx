@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Comment } from './Comment';
+import Comment from './Comment';
 import { CommentComposer } from './CommentComposer';
 
 export const ThreadedCommentSection = ({ comments, onCommentSubmitted }) => {

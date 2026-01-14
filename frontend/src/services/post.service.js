@@ -1,42 +1,42 @@
 
-import { api } from './api';
+import apiClient from './api';
 
 export const getForYouFeed = () => {
-  return api.get('/posts/for-you');
+  return apiClient.get('/posts/for-you');
 };
 
 export const getFollowingFeed = () => {
-  return api.get('/posts/following');
+  return apiClient.get('/posts/following');
 };
 
 export const getPostsByUser = (userId) => {
-  return api.get(`/posts/by-user/${userId}`);
+  return apiClient.get(`/posts/by-user/${userId}`);
 };
 
 export const getPostById = (postId) => {
-  return api.get(`/posts/${postId}`);
+  return apiClient.get(`/posts/${postId}`);
 };
 
 export const createPost = (postData) => {
-  return api.post('/posts/', postData);
+  return apiClient.post('/posts/', postData);
 };
 
 export const reportPost = (postId) => {
-  return api.post(`/posts/${postId}/report`);
+  return apiClient.post(`/posts/${postId}/report`);
 };
 
 export const getComments = (postId) => {
-  return api.get(`/posts/${postId}/comments`);
+  return apiClient.get(`/posts/${postId}/comments`);
 };
 
 export const createComment = (postId, commentData) => {
-  return api.post(`/posts/${postId}/comments`, commentData);
+  return apiClient.post(`/posts/${postId}/comments`, commentData);
 };
 
 export const likePost = (postId) => {
-  return api.post(`/posts/${postId}/like`);
+  return apiClient.post(`/posts/${postId}/like`);
 };
 
 export const getPostsByHashtag = (hashtag) => {
-    return api.get(`/posts/hashtag/${hashtag}`);
+    return apiClient.get(`/posts/hashtag/${hashtag}`);
 };  

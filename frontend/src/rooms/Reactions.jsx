@@ -1,18 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './Reactions.css';
 
-interface Reaction {
-  id: string;
-  emoji: string;
-  participantId: string;
-}
-
-interface ReactionsProps {
-  reactions: Reaction[];
-}
-
-export const Reactions: React.FC<ReactionsProps> = ({ reactions }) => {
-  const [visibleReactions, setVisibleReactions] = useState<Reaction[]>([]);
+export const Reactions= ({ reactions }) => {
+  const [visibleReactions, setVisibleReactions] = useState([]);
 
   useEffect(() => {
     setVisibleReactions(reactions);

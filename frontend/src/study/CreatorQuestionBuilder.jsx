@@ -11,20 +11,11 @@ import {
   QuestionItem
 } from './CreatorQuestionBuilder.styled';
 
-interface Question {
-  text: string;
-  type: 'qualitative' | 'quantitative';
-}
-
-interface CreatorQuestionBuilderProps {
-  onSave: (questions: Question[], methodology: 'KII' | 'Survey') => void;
-}
-
-const CreatorQuestionBuilder: React.FC<CreatorQuestionBuilderProps> = ({ onSave }) => {
-  const [questions, setQuestions] = useState<Question[]>([]);
+const CreatorQuestionBuilder = ({ onSave }) => {
+  const [questions, setQuestions] = useState([]);
   const [questionText, setQuestionText] = useState('');
-  const [questionType, setQuestionType] = useState<'qualitative' | 'quantitative'>('quantitative');
-  const [methodology, setMethodology] = useState<'KII' | 'Survey'>('Survey');
+  const [questionType, setQuestionType] = useState('quantitative');
+  const [methodology, setMethodology] = useState('Survey');
 
   const handleAddQuestion = () => {
     if (questionText.trim() && questions.length < 20) {
@@ -46,7 +37,7 @@ const CreatorQuestionBuilder: React.FC<CreatorQuestionBuilderProps> = ({ onSave 
         <Select
           id="methodology"
           value={methodology}
-          onChange={(e) => setMethodology(e.target.value as 'KII' | 'Survey')}
+          onChange={(e) => setMethodology(e.target.value)}
         >
           <option value="Survey">Survey</option>
           <option value="KII">Key Informant Interview (KII)</option>
@@ -66,7 +57,7 @@ const CreatorQuestionBuilder: React.FC<CreatorQuestionBuilderProps> = ({ onSave 
           />
           <Select
             value={questionType}
-            onChange={(e) => setQuestionType(e.target.value as 'qualitative' | 'quantitative')}
+            onChange={(e) => setQuestionType(e.target.value)}
             style={{ borderRadius: 0, width: 'auto' }}
           >
             <option value="quantitative">Quantitative</option>
