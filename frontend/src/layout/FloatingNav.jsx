@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,13 +11,14 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 const NavContainer = styled.div`
   position: fixed;
   top: 50%;
-  left: 20px;
-  transform: translateY(-50%);
+  right: 20px;
+  transform: translateY(-50%) translateX(${props => props.isOpen ? '0' : '150%'});
   background-color: transparent;
   padding: 20px 10px;
   border-radius: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+  transition: transform 0.3s ease-in-out;
 `;
 
 const NavLinks = styled.div`
@@ -72,13 +73,52 @@ const AvatarContainer = styled(RouterNavLink)`
 const FloatingNav = () => {
   const { user } = useAuth();
   const theme = useTheme();
+  const [isOpen, setIsOpen] = useState(false);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (!isOpen && isLeftSwipe && touchStartX.current > window.innerWidth - 50) {
+      setIsOpen(true);
+    }
+
+    if (isOpen && isRightSwipe) {
+      setIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isOpen]);
 
   if (!user) {
     return null;
   }
 
   return (
-    <NavContainer theme={theme}>
+    <NavContainer theme={theme} isOpen={isOpen}>
       <NavLinks>
         <IconLink to={`/user/${user.id}/settings`} theme={theme}>
           <MoreHorizIcon />

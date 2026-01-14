@@ -6,7 +6,7 @@ import * as postService from '../services/post.service';
 import { followUser } from '../services/user.service';
 import CreatePostModal from '../components/modals/CreatePostModal';
 import IntentModal from '../components/profile/IntentModal';
-import FloatingNav from '../layout/FloatingNav';
+import FeedControlNav from '../layout/FeedControlNav';
 import { useAuth } from '../hooks/useAuth';
 
 const FullScreenFeedContainer = styled.div`
@@ -158,7 +158,7 @@ const HomePage = () => {
                 Filtering by: #{hashtagFilter}
             </HashtagHeader>
         )}
-        <FloatingNav 
+        <FeedControlNav 
           isOpen={isNavOpen}
           feedType={feedType}
           setFeedType={handleSetFeedType}

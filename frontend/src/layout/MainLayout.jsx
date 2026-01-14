@@ -21,6 +21,7 @@ import ScreenShotBlocker from './ScreenshotBlocker';
 import Footer from './Footer';
 import SuccessPage from '../pages/SuccessPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
+import AIAssistant from '../components/AIAssistant';
 
 const MainLayout = () => (
   <ThemeProvider theme={theme}>
@@ -46,6 +47,7 @@ const MainLayout = () => (
       </Routes>
       <Footer />
     </Router>
+    <AIAssistant />
   </ThemeProvider>
 );
 
