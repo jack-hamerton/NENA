@@ -10,64 +10,63 @@ import {
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import styled, { ThemeProvider } from 'styled-components';
-import { theme } from '../theme/theme';
-
-const StyledContainer = styled(Container)`
-  background-color: ${props => props.theme.palette.dark};
-
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const StyledBox = styled(Box)`
-  background-color: ${props => props.theme.palette.primary};
-
-  padding: 2rem;
-  border-radius: 8px;
-  color: ${props => props.theme.text.primary};
-
-`;
-
-const StyledTextField = styled(TextField)`
-  .MuiInputBase-root {
-    color: ${(props) => props.theme.text.primary};
-
-    background-color: ${(props) => props.theme.palette.dark};
-
-  }
-  .MuiInputLabel-root {
-    color: ${(props) => props.theme.text.secondary};
-
-  }
-  .MuiOutlinedInput-root {
-    fieldset {
-      border-color: ${(props) => props.theme.palette.secondary};
-
-    }
-    &:hover fieldset {
-      border-color: ${(props) => props.theme.palette.accent};
-
-    }
-    &.Mui-focused fieldset {
-      border-color: ${(props) => props.theme.palette.accent};
-
-    }
-  }
-`;
-
-const StyledButton = styled(Button)`
-  background-color: ${props => props.theme.palette.accent};
-
-  &:hover {
-    background-color: ${props => props.theme.palette.secondary};
-
-  }
-`;
+import styled from 'styled-components';
 
 const LoginPage = () => {
+  const StyledContainer = styled(Container)`
+    background-color: ${props => props.theme.palette.dark};
+
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+
+  const StyledBox = styled(Box)`
+    background-color: ${props => props.theme.palette.primary};
+
+    padding: 2rem;
+    border-radius: 8px;
+    color: ${props => props.theme.text.primary};
+
+  `;
+
+  const StyledTextField = styled(TextField)`
+    .MuiInputBase-root {
+      color: ${(props) => props.theme.text.primary};
+
+      background-color: ${(props) => props.theme.palette.dark};
+
+    }
+    .MuiInputLabel-root {
+      color: ${(props) => props.theme.text.secondary};
+
+    }
+    .MuiOutlinedInput-root {
+      fieldset {
+        border-color: ${(props) => props.theme.palette.secondary};
+
+      }
+      &:hover fieldset {
+        border-color: ${(props) => props.theme.palette.accent};
+
+      }
+      &.Mui-focused fieldset {
+        border-color: ${(props) => props.theme.palette.accent};
+
+      }
+    }
+  `;
+
+  const StyledButton = styled(Button)`
+    background-color: ${props => props.theme.palette.accent};
+
+    &:hover {
+      background-color: ${props => props.theme.palette.secondary};
+
+    }
+  `;
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -86,7 +85,6 @@ const LoginPage = () => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
       <StyledContainer maxWidth='xs'>
         <StyledBox sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Typography component='h1' variant='h5'>
@@ -128,7 +126,6 @@ const LoginPage = () => {
           </form>
         </StyledBox>
       </StyledContainer>
-    </ThemeProvider>
   );
 };
 

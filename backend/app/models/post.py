@@ -31,5 +31,5 @@ class Post(Base):
 
     author = relationship("User", back_populates="posts")
     likes = relationship("Like", back_populates="post")
-    comments = relationship("Comment")
+    comments = relationship("Comment", back_populates="post")
     hashtags = relationship("Hashtag", secondary=post_hashtag_association)

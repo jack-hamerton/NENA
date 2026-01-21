@@ -14,8 +14,10 @@ class Comment(Base):
     post_id = Column(UUID(as_uuid=True), ForeignKey("posts.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     parent_comment_id = Column(Integer, ForeignKey("comments.id"))
+    episode_id = Column(Integer, ForeignKey("episodes.id"))
 
     user = relationship("User")
     post = relationship("Post", back_populates="comments")
+    episode = relationship("Episode", back_populates="comments")
     replies = relationship("Comment", cascade="all, delete-orphan", back_populates="parent_comment")
     parent_comment = relationship("Comment", remote_side=[id], back_populates="replies")
