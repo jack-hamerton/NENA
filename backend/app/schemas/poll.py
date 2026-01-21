@@ -29,6 +29,12 @@ class Poll(PollBase):
     class Config:
         orm_mode = True
 
+class PollUpdate(PollBase):
+    pass
+
+class PollInDB(Poll):
+    pass
+
 class PollVoteBase(BaseModel):
     option_id: int
 

@@ -1,14 +1,15 @@
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 import uuid
 from collections import Counter
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func, distinct
+
 from app.crud.base import CRUDBase
 from app.models.post import Post
 from app.models.hashtag import Hashtag
-from app.schemas.post import PostCreate, PostUpdate
+from app.schemas.post import PostCreate, PostUpdate, Audience
 from app import crud
 
 
@@ -16,7 +17,11 @@ class CRUDPost(CRUDBase[Post, PostCreate, PostUpdate]):
     def create_with_owner(
         self, db: Session, *, obj_in: PostCreate, user_id: uuid.UUID
     ) -> Post:
-        db_obj = self.model(**obj_in.dict(), user_id=user_id)
+        db_obj = self.model(
+            content=obj_in.content,
+            audience=obj_in.audience,
+            user_id=user_id
+        )
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
@@ -106,13 +111,19 @@ class CRUDPost(CRUDBase[Post, PostCreate, PostUpdate]):
             .all()
         )
 
-    def update(self, db: Session, *, db_obj: Post, obj_in: Dict[str, Any]) -> Post:
-        for field, value in obj_in.items():
-            setattr(db_obj, field, value)
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        return db_obj
+    def update(
+        self, db: Session, *, db_obj: Post, obj_in: Union[PostUpdate, Dict[str, Any]]
+    ) -> Post:
+        if isinstance(obj_in, dict):
+            update_data = obj_in
+        else:
+            update_data = obj_in.dict(exclude_unset=True)
+
+        if "audience" in update_data:
+            db_obj.audience = update_data["audience"]
+        
+        # Call the base class update method for other fields
+        return super().update(db, db_obj=db_obj, obj_in=update_data)
 
     def search(self, db: Session, *, query: str, limit: int = 10) -> List[Post]:
         return db.query(self.model).filter(Post.content.ilike(f"%{query}%")).limit(limit).all()

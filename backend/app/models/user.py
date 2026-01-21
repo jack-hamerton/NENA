@@ -1,10 +1,27 @@
-
-import uuid
-from sqlalchemy import Boolean, Column, String, DateTime
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID
-from app.db.base_class import Base
 import datetime
+import uuid
+
+from sqlalchemy import Boolean, Column, DateTime, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+
+from app.db.base_class import Base
+from app.models.analytics import Analytics
+from app.models.challenge import Challenge
+from app.models.document import Document
+from app.models.calendar import Event, EventParticipant
+from app.models.feed_poll import FeedPoll
+from app.models.follower import Follower
+from app.models.like import Like
+from app.models.notification import Notification
+from app.models.podcast import Podcast, PodcastFollower
+from app.models.poll import Poll, PollVote
+from app.models.post import Post
+from app.models.profile import Profile
+from app.models.badge import UserBadge
+from app.models.room import Room
+from app.models.study import Study
+
 
 class User(Base):
     __tablename__ = "users"
@@ -30,11 +47,11 @@ class User(Base):
 
     # Call settings
     silence_unknown_callers = Column(Boolean(), default=False)
-    call_setting = Column(String, default="anyone") # anyone, friends, none
+    call_setting = Column(String, default="anyone")  # anyone, friends, none
 
-    posts = relationship("Post", back_populates="owner")
-    followers = relationship("Follower", foreign_keys=['Follower.followed_id'], back_populates="followed")
-    following = relationship("Follower", foreign_keys=['Follower.follower_id'], back_populates="follower")
+    posts = relationship("Post", back_populates="author")
+    followers = relationship("Follower", foreign_keys=[Follower.followed_id], back_populates="followed")
+    following = relationship("Follower", foreign_keys=[Follower.follower_id], back_populates="follower")
     poll_votes = relationship("PollVote", back_populates="user")
     podcasts = relationship("Podcast", back_populates="creator")
     podcast_following = relationship("PodcastFollower", back_populates="user")
@@ -43,7 +60,11 @@ class User(Base):
     event_participations = relationship("EventParticipant", back_populates="user")
     notifications = relationship("Notification", back_populates="user")
     profile = relationship("Profile", uselist=False, back_populates="user")
-    rooms = relationship("Room", back_populates="owner")
+    rooms = relationship("Room", back_populates="creator")
     feed_polls = relationship("FeedPoll", back_populates="user")
     user_badges = relationship("UserBadge", back_populates="user")
-    messages = relationship("RoomMessage", back_populates="user")
+    documents = relationship("Document", back_populates="author")
+    polls = relationship("Poll", back_populates="author")
+    studies = relationship("Study", back_populates="author")
+    challenges = relationship("Challenge", back_populates="author")
+    analytics = relationship("Analytics", back_populates="user")

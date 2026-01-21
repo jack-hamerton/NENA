@@ -1,21 +1,38 @@
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+import uuid
+from sqlalchemy import Column, String, ForeignKey, Integer, event
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship, declarative_base
+from app.db.base_class import Base
 
-class UserEngagementView(Base):
-    __tablename__ = 'user_engagement_view'
-    user_id = Column(Integer, primary_key=True, index=True)
-    full_name = Column(String)
-    posts_count = Column(Integer)
-    comments_count = Column(Integer)
-    following_count = Column(Integer)
-    followers_count = Column(Integer)
+class Analytics(Base):
+    __tablename__ = "analytics"
 
-class PostEngagementView(Base):
-    __tablename__ = 'post_engagement_view'
-    post_id = Column(Integer, primary_key=True, index=True)
-    text = Column(String)
-    author = Column(String)
-    comments_count = Column(Integer)
-    likes_count = Column(Integer)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    resource_id = Column(UUID(as_uuid=True), nullable=False)
+    resource_type = Column(String, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    views = Column(Integer, default=0)
+
+    user = relationship("User")
+
+def track_views(mapper, connection, target):
+    if hasattr(target, 'id'):
+        Analytics.create(
+            resource_id=target.id,
+            resource_type=target.__tablename__,
+            user_id=target.author_id if hasattr(target, 'author_id') else None
+        )
+
+# Add event listeners to the models
+from app.models.post import Post
+from app.models.document import Document
+from app.models.poll import Poll
+from app.models.study import Study
+from app.models.challenge import Challenge
+
+event.listen(Post, 'after_insert', track_views)
+event.listen(Document, 'after_insert', track_views)
+event.listen(Poll, 'after_insert', track_views)
+event.listen(Study, 'after_insert', track_views)
+event.listen(Challenge, 'after_insert', track_views)

@@ -1,11 +1,7 @@
 
 from pydantic import BaseModel
+from typing import List
 
-class PostEngagement(BaseModel):
-    likes: int
-    comments: int
-    reshares: int
-
-class UserEngagement(BaseModel):
-    new_followers: int
-    profile_views: int
+class AdvocacyImpactMatrix(BaseModel):
+    matrix: List[List[int]]
+    recommendation: str
