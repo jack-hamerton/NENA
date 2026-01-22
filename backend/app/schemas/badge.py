@@ -21,7 +21,7 @@ class Badge(BadgeBase):
     id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserBadgeBase(BaseModel):
@@ -38,4 +38,4 @@ class UserBadge(UserBadgeBase):
     awarded_at: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True

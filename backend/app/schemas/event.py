@@ -27,7 +27,7 @@ class EventInDBBase(EventBase):
     participants: List[EventParticipant] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Properties to return to client
 class Event(EventInDBBase):

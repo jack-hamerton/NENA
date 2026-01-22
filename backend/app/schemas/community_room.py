@@ -14,7 +14,7 @@ class CommunityRoomUpdate(CommunityRoomBase):
 class CommunityRoomInDBBase(CommunityRoomBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CommunityRoom(CommunityRoomInDBBase):
     pass

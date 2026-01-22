@@ -21,7 +21,7 @@ class Comment(CommentBase):
     created_at: datetime.datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CommentWithReplies(Comment):
     replies: List["CommentWithReplies"] = []

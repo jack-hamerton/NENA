@@ -6,19 +6,9 @@ from sqlalchemy.sql import func
 from ..db.base_class import Base
 from ..schemas.post import Audience
 from app.models.comment import Comment
+from app.models.hashtag import post_hashtags
 import uuid
 
-# Association table for the many-to-many relationship between posts and hashtags
-post_hashtag_association = Table(
-    'post_hashtag', Base.metadata,
-    Column('post_id', UUID(as_uuid=True), ForeignKey('posts.id')),
-    Column('hashtag_id', Integer, ForeignKey('hashtags.id'))
-)
-
-class Hashtag(Base):
-    __tablename__ = 'hashtags'
-    id = Column(Integer, primary_key=True, index=True)
-    tag = Column(String, unique=True, index=True)
 
 class Post(Base):
     __tablename__ = 'posts'
@@ -32,4 +22,4 @@ class Post(Base):
     author = relationship("User", back_populates="posts")
     likes = relationship("Like", back_populates="post")
     comments = relationship("Comment", back_populates="post")
-    hashtags = relationship("Hashtag", secondary=post_hashtag_association)
+    hashtags = relationship("Hashtag", secondary=post_hashtags, back_populates="posts")

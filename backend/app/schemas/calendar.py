@@ -24,7 +24,7 @@ class Event(EventBase):
     collaborators: List["UserSchema"] = [] # You might need a User schema
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # You might need to create a User schema to avoid circular dependencies
 from .user import User
@@ -34,6 +34,6 @@ class UserSchema(BaseModel):
     username: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 Event.update_forward_refs()

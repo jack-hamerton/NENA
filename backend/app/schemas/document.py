@@ -17,4 +17,4 @@ class DocumentRead(BaseModel):
     last_accessed: datetime.datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True

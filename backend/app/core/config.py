@@ -1,7 +1,9 @@
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(case_sensitive=True, env_file="backend/.env")
+
     PROJECT_NAME: str = "Nena"
     API_V1_STR: str = "/api/v1"
 
@@ -33,9 +35,5 @@ class Settings(BaseSettings):
     
     # CORS
     BACKEND_CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:8080"]
-
-    class Config:
-        case_sensitive = True
-        env_file = "backend/.env"
 
 settings = Settings()

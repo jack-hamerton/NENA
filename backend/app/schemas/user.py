@@ -1,6 +1,6 @@
 import re
 from typing import Optional
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, field_validator
 
 # Shared properties
 class UserBase(BaseModel):
@@ -11,7 +11,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
-    @validator('password')
+    @field_validator('password')
     def password_complexity(cls, v):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
@@ -47,4 +47,4 @@ class User(UserBase):
     is_active: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
