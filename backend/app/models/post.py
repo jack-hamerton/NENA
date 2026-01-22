@@ -9,6 +9,12 @@ from app.models.comment import Comment
 from app.models.hashtag import post_hashtags
 import uuid
 
+post_mentions = Table(
+    "post_mentions",
+    Base.metadata,
+    Column("post_id", UUID(as_uuid=True), ForeignKey("posts.id"), primary_key=True),
+    Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
+)
 
 class Post(Base):
     __tablename__ = 'posts'
@@ -23,3 +29,4 @@ class Post(Base):
     likes = relationship("Like", back_populates="post")
     comments = relationship("Comment", back_populates="post")
     hashtags = relationship("Hashtag", secondary=post_hashtags, back_populates="posts")
+    mentions = relationship("User", secondary=post_mentions, back_populates="mentioned_in")

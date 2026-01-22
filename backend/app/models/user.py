@@ -13,12 +13,15 @@ from app.models.calendar import Event, EventParticipant
 from app.models.feed_poll import FeedPoll
 from app.models.follower import Follower
 from app.models.like import Like
+from app.models.message import Message
 from app.models.notification import Notification
 from app.models.podcast import Podcast, PodcastFollower
 from app.models.poll import Poll, PollVote
-from app.models.post import Post
+from app.models.post import Post, post_mentions
 from app.models.profile import Profile
 from app.models.badge import UserBadge
+from app.models.quote_post import QuotePost
+from app.models.reshare import Reshare
 from app.models.room import Room
 from app.models.study import Study
 
@@ -68,3 +71,12 @@ class User(Base):
     studies = relationship("Study", back_populates="author")
     challenges = relationship("Challenge", back_populates="author")
     analytics = relationship("Analytics", back_populates="user")
+    mentioned_in = relationship("Post", secondary=post_mentions, back_populates="mentions")
+    sent_messages = relationship("Message", foreign_keys=[Message.sender_id], back_populates="sender")
+    received_messages = relationship("Message", foreign_keys=[Message.recipient_id], back_populates="recipient")
+    quote_posts = relationship("QuotePost", back_populates="user")
+    reshares = relationship("Reshare", back_populates="user")
+    room_messages = relationship("RoomMessage", back_populates="user")
+    comments = relationship("Comment", back_populates="user")
+    collaborations = relationship("Collaboration", back_populates="creator")
+

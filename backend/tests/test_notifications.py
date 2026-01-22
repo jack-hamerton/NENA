@@ -21,7 +21,6 @@ from app.models.message import Message
 from app.models.podcast import Podcast
 from app.models.poll import Poll, PollVote
 from app.models.post import Post
-from app.models.post_mention import PostMention
 from app.models.profile import Profile
 from app.models.quote_post import QuotePost
 from app.models.reshare import Reshare
