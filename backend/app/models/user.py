@@ -2,7 +2,7 @@ import datetime
 import uuid
 
 from sqlalchemy import Boolean, Column, DateTime, String
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.types import UUID
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -24,6 +24,7 @@ from app.models.quote_post import QuotePost
 from app.models.reshare import Reshare
 from app.models.room import Room
 from app.models.study import Study
+from app.models.room_message import RoomMessage
 
 
 class User(Base):
@@ -76,7 +77,6 @@ class User(Base):
     received_messages = relationship("Message", foreign_keys=[Message.recipient_id], back_populates="recipient")
     quote_posts = relationship("QuotePost", back_populates="user")
     reshares = relationship("Reshare", back_populates="user")
-    room_messages = relationship("RoomMessage", back_populates="user")
+    room_messages = relationship("RoomMessage", back_populates="sender")
     comments = relationship("Comment", back_populates="user")
     collaborations = relationship("Collaboration", back_populates="creator")
-

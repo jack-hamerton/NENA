@@ -1,4 +1,5 @@
 
+import uuid
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -7,7 +8,7 @@ class NotificationBase(BaseModel):
     payload: dict
 
 class NotificationCreate(NotificationBase):
-    user_id: int
+    user_id: uuid.UUID
 
 class Notification(NotificationBase):
     id: int
