@@ -7,6 +7,8 @@ from app.models.user import User
 from app.models.post import Post
 from app.models.trending_audio import TrendingAudio
 from app.models.analytics import Analytics, track_views
+from app.models.collaboration import Collaboration
+from app.models.challenge import Challenge
 
 @pytest.fixture(scope="module")
 def db_session():
