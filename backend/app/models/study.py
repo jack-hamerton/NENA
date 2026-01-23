@@ -13,6 +13,7 @@ class Study(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String, nullable=False)
     description = Column(Text)
+    methodology = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     unique_code = Column(String, unique=True, index=True, default=generate_unique_code, nullable=False)
     author_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
@@ -20,12 +21,13 @@ class Study(Base):
     author = relationship("User")
     questions = relationship("Question", back_populates="study")
     answers = relationship("Answer", back_populates="study")
+    analysis_results = relationship("AnalysisResult", uselist=False, back_populates="study")
 
 class Question(Base):
     __tablename__ = 'questions'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     text = Column(String, nullable=True)
-    type = Column(String, nullable=True) # quantitative, qualitative
+    type = Column(String, nullable=True)
     study_id = Column(UUID(as_uuid=True), ForeignKey('studies.id'))
 
     study = relationship("Study", back_populates="questions")

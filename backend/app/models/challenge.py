@@ -15,7 +15,7 @@ class Challenge(Base):
     trending_audio_id = Column(UUID(as_uuid=True), ForeignKey("trending_audio.id"))
     collaboration_id = Column(UUID(as_uuid=True), ForeignKey("collaborations.id"))
 
-    author = relationship("User")
+    author = relationship("User", back_populates="challenges")
     hashtag = relationship("Hashtag")
     trending_audio = relationship("TrendingAudio")
     collaboration = relationship("Collaboration", back_populates="challenges")

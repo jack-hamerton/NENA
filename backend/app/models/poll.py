@@ -1,16 +1,17 @@
 
+import uuid
 from sqlalchemy import Column, String, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
-import uuid
 
 class Poll(Base):
     __tablename__ = "polls"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     question = Column(String, nullable=False)
-    episode_id = Column(Integer, ForeignKey("episodes.id"))
+    episode_id = Column(UUID(as_uuid=True), ForeignKey("episodes.id"))
     author_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
 
     author = relationship("User")
@@ -20,6 +21,7 @@ class Poll(Base):
 
 class PollOption(Base):
     __tablename__ = "poll_options"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     poll_id = Column(UUID(as_uuid=True), ForeignKey("polls.id"), nullable=False)
@@ -30,6 +32,7 @@ class PollOption(Base):
 
 class PollVote(Base):
     __tablename__ = "poll_votes"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     poll_id = Column(UUID(as_uuid=True), ForeignKey("polls.id"), nullable=False)

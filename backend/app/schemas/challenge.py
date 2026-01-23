@@ -8,6 +8,9 @@ class ChallengeBase(BaseModel):
 class ChallengeCreate(ChallengeBase):
     pass
 
+class ChallengeUpdate(BaseModel):
+    pass
+
 class Challenge(ChallengeBase):
     id: uuid.UUID
 

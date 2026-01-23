@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import { Document } from '../components/collaboration/Document'; // Import Document component
+import { Document } from '../components/collaboration/Document';
 import { chatService } from '../services/chatService';
 
 const ChatWindowContainer = styled.div`
@@ -20,7 +20,7 @@ const Tabs = styled.div`
 `;
 
 const Tab = styled.button`
-  flex: 0.5; // Give equal space to tabs
+  flex: 0.5;
   padding: 1rem;
   background: none;
   border: none;
@@ -39,60 +39,86 @@ const ContentContainer = styled.div`
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden; // Important for nested scrolling
+    overflow: hidden;
 `;
 
-const ChatWindow = ({ conversation, onStartCall, e2eeManager, sessionId }) => {
+const ChatWindow = ({ conversation, onStartCall }) => {
   const [messages, setMessages] = useState([]);
-  const [activeTab, setActiveTab] = useState('chat'); // 'chat' or 'collaborate'
+  const [activeTab, setActiveTab] = useState('chat');
+  const userId = 'user123'; // This would be dynamically set in a real app
 
   useEffect(() => {
     if (!conversation) return;
 
-    chatService.getMessages(conversation.id).then(setMessages);
+    // Connect to the chat service
+    chatService.connect(userId);
 
     const handleNewMessage = (message) => {
-        // In a real app, you'd check if the message belongs to the current conversation
+      if (message.conversationId === conversation.id) {
         setMessages(prevMessages => [...prevMessages, message]);
+      }
     };
 
-    chatService.onNewMessage(handleNewMessage);
+    const handleNewFile = (fileMessage) => {
+      if (fileMessage.conversationId === conversation.id) {
+        // For now, we'll just display a message with the file name
+        const fileInfo = {
+          ...fileMessage,
+          text: `File received: ${fileMessage.fileName}`,
+        };
+        setMessages(prevMessages => [...prevMessages, fileInfo]);
+      }
+    };
+
+    chatService.on('new-message', handleNewMessage);
+    chatService.on('new-file', handleNewFile);
+
+    // Fetch initial messages (optional, if you have message history)
+    // chatService.getMessages(conversation.id).then(setMessages);
 
     return () => {
-      chatService.offNewMessage(handleNewMessage);
+      chatService.off('new-message', handleNewMessage);
+      chatService.off('new-file', handleNewFile);
     };
-  }, [conversation]);
+  }, [conversation, userId]);
 
-  const handleSendMessage = (text) => {
-    if (!conversation || !text.trim()) return;
-    
-    // E2EE logic would go here before sending
-    // For now, we'll send plaintext for simplicity in this component
+  const handleSendMessage = (textOrFile) => {
+    if (!conversation) return;
 
-    const messageData = {
-      text,
-      sender: { id: 'me', name: 'Me' },
-      conversationId: conversation.id,
-    };
-
-    chatService.sendMessage(messageData);
-    setMessages(prevMessages => [...prevMessages, messageData]);
+    if (typeof textOrFile === 'string') {
+      chatService.sendMessage({
+        text: textOrFile,
+        conversationId: conversation.id,
+        recipientId: conversation.id, // Assuming conversation ID is the recipient ID
+      });
+    } else {
+      chatService.sendFile({
+        file: textOrFile,
+        conversationId: conversation.id,
+        recipientId: conversation.id,
+      });
+    }
+  };
+  
+  const handleStartCall = () => {
+    if (!conversation) return;
+    chatService.startCall(conversation.id);
+    onStartCall(); // Notify the parent component to show the call window
   };
 
   if (!conversation) {
     return <ChatWindowContainer>Select a conversation to start chatting.</ChatWindowContainer>;
   }
-  
-  // Create a unique document ID for each conversation to isolate collaboration sessions
+
   const collaborationDocument = {
       id: `conversation-${conversation.id}`,
       name: `Notes for ${conversation.name}`,
-      content: '' // Initial content can be loaded from your backend
+      content: ''
   };
 
   return (
     <ChatWindowContainer>
-      <ChatHeader conversation={conversation} onStartCall={onStartCall} />
+      <ChatHeader conversation={conversation} onStartCall={handleStartCall} />
       <Tabs>
         <Tab active={activeTab === 'chat'} onClick={() => setActiveTab('chat')}>
           Chat
@@ -108,7 +134,6 @@ const ChatWindow = ({ conversation, onStartCall, e2eeManager, sessionId }) => {
             <MessageInput onSendMessage={handleSendMessage} />
           </>
         ) : (
-          // The Document component is now rendered here
           <Document document={collaborationDocument} />
         )}
       </ContentContainer>

@@ -129,7 +129,7 @@ def get_user_posts(
     """
     Get a user's posts.
     """
-    user = crud.user.get(db, id=user_id)
+    user = crud.user.get(d, id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user.posts

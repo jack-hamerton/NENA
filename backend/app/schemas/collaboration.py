@@ -1,6 +1,7 @@
 
 from pydantic import BaseModel
 from typing import Optional
+import uuid
 
 class CollaborationBase(BaseModel):
     title: str
@@ -11,8 +12,8 @@ class CollaborationCreate(CollaborationBase):
     pass
 
 class Collaboration(CollaborationBase):
-    id: int
-    creator_id: int
+    id: uuid.UUID
+    creator_id: uuid.UUID
 
     class Config:
         from_attributes = True

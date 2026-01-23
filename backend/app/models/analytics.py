@@ -38,16 +38,3 @@ def track_views(mapper, connection, target):
                 views=1
             )
             connection.execute(insert_stmt)
-
-# Add event listeners to the models
-from app.models.post import Post
-from app.models.document import Document
-from app.models.poll import Poll
-from app.models.study import Study
-from app.models.challenge import Challenge
-
-event.listen(Post, 'after_insert', track_views)
-event.listen(Document, 'after_insert', track_views)
-event.listen(Poll, 'after_insert', track_views)
-event.listen(Study, 'after_insert', track_views)
-event.listen(Challenge, 'after_insert', track_views)

@@ -12,10 +12,10 @@ class CommunityRoom(Base):
     name = Column(String, unique=True, index=True)
     description = Column(String)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    messages = relationship("RoomMessage", back_populates="room")
+    messages = relationship("CommunityRoomMessage", back_populates="room")
 
-class RoomMessage(Base):
-    __tablename__ = "room_messages"
+class CommunityRoomMessage(Base):
+    __tablename__ = "community_room_messages"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     room_id = Column(UUID(as_uuid=True), ForeignKey('community_rooms.id'))
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
@@ -23,4 +23,4 @@ class RoomMessage(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     room = relationship("CommunityRoom", back_populates="messages")
-    user = relationship("User", back_populates="room_messages")
+    user = relationship("User", back_populates="community_room_messages")

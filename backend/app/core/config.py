@@ -2,7 +2,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(case_sensitive=True, env_file="backend/.env")
+    model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
 
     PROJECT_NAME: str = "Nena"
     API_V1_STR: str = "/api/v1"

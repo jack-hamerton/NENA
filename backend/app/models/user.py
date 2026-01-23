@@ -1,30 +1,11 @@
 import datetime
 import uuid
 
-from sqlalchemy import Boolean, Column, DateTime, String
-from sqlalchemy.types import UUID
+from sqlalchemy import Boolean, Column, DateTime, String, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
-from app.models.analytics import Analytics
-from app.models.challenge import Challenge
-from app.models.document import Document
-from app.models.calendar import Event, EventParticipant
-from app.models.feed_poll import FeedPoll
-from app.models.follower import Follower
-from app.models.like import Like
-from app.models.message import Message
-from app.models.notification import Notification
-from app.models.podcast import Podcast, PodcastFollower
-from app.models.poll import Poll, PollVote
-from app.models.post import Post, post_mentions
-from app.models.profile import Profile
-from app.models.badge import UserBadge
-from app.models.quote_post import QuotePost
-from app.models.reshare import Reshare
-from app.models.room import Room
-from app.models.study import Study
-from app.models.room_message import RoomMessage
 
 
 class User(Base):
@@ -54,8 +35,8 @@ class User(Base):
     call_setting = Column(String, default="anyone")  # anyone, friends, none
 
     posts = relationship("Post", back_populates="author")
-    followers = relationship("Follower", foreign_keys=[Follower.followed_id], back_populates="followed")
-    following = relationship("Follower", foreign_keys=[Follower.follower_id], back_populates="follower")
+    followers = relationship("Follower", foreign_keys="Follower.followed_id", back_populates="followed")
+    following = relationship("Follower", foreign_keys="Follower.follower_id", back_populates="follower")
     poll_votes = relationship("PollVote", back_populates="user")
     podcasts = relationship("Podcast", back_populates="creator")
     podcast_following = relationship("PodcastFollower", back_populates="user")
@@ -72,11 +53,12 @@ class User(Base):
     studies = relationship("Study", back_populates="author")
     challenges = relationship("Challenge", back_populates="author")
     analytics = relationship("Analytics", back_populates="user")
-    mentioned_in = relationship("Post", secondary=post_mentions, back_populates="mentions")
-    sent_messages = relationship("Message", foreign_keys=[Message.sender_id], back_populates="sender")
-    received_messages = relationship("Message", foreign_keys=[Message.recipient_id], back_populates="recipient")
+    mentioned_in = relationship("Post", secondary="post_mentions", back_populates="mentions")
+    sent_messages = relationship("Message", foreign_keys="Message.sender_id", back_populates="sender")
+    received_messages = relationship("Message", foreign_keys="Message.recipient_id", back_populates="recipient")
     quote_posts = relationship("QuotePost", back_populates="user")
     reshares = relationship("Reshare", back_populates="user")
     room_messages = relationship("RoomMessage", back_populates="sender")
+    community_room_messages = relationship("CommunityRoomMessage", back_populates="user")
     comments = relationship("Comment", back_populates="user")
     collaborations = relationship("Collaboration", back_populates="creator")

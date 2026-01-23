@@ -1,15 +1,11 @@
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import Dict, List
 
-from app import crud
-from app.core.dependencies import get_db
-
-router = APIRouter()
-
+# The validated ConnectionManager class
 class ConnectionManager:
     def __init__(self):
+        # Structure: {room_id: {user_id: websocket}}
         self.active_connections: Dict[str, Dict[str, WebSocket]] = {}
 
     async def connect(self, websocket: WebSocket, room_id: str, user_id: str):
@@ -22,49 +18,36 @@ class ConnectionManager:
         if room_id in self.active_connections and user_id in self.active_connections[room_id]:
             del self.active_connections[room_id][user_id]
 
-    async def broadcast(self, room_id: str, message: dict, exclude_user_id: str = None):
+    async def broadcast(self, room_id: str, message: dict, exclude_user_id: str):
         if room_id in self.active_connections:
             for user_id, connection in self.active_connections[room_id].items():
                 if user_id != exclude_user_id:
                     await connection.send_json(message)
 
-    async def send_personal_message(self, message: dict, room_id: str, user_id: str):
-        if room_id in self.active_connections and user_id in self.active_connections[room_id]:
-            await self.active_connections[room_id][user_id].send_json(message)
 
+router = APIRouter()
 manager = ConnectionManager()
 
 @router.websocket("/ws/{room_id}/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, room_id: str, user_id: str, db: Session = Depends(get_db)):
+async def websocket_endpoint(websocket: WebSocket, room_id: str, user_id: str):
+    """
+    This WebSocket endpoint handles the WebRTC signaling.
+
+    - It accepts a WebSocket connection for a given user in a specific room.
+    - It listens for incoming messages (like offers, answers, candidates) and
+      broadcasts them to all other participants in the same room.
+    - It handles disconnection to clean up the connections.
+    """
     await manager.connect(websocket, room_id, user_id)
     try:
         while True:
+            # Wait for a message from the client
             data = await websocket.receive_json()
-            event_type = data.get("type")
-
-            if event_type == "join-room":
-                crud.room.add_participant(db, room_id=int(room_id), user_id=int(user_id))
-                await manager.broadcast(room_id, {"type": "user-joined", "user": {"id": user_id}}, exclude_user_id=user_id)
-            
-            elif event_type == "leave-room":
-                crud.room.remove_participant(db, room_id=int(room_id), user_id=int(user_id))
-                await manager.broadcast(room_id, {"type": "user-left", "user": {"id": user_id}}, exclude_user_id=user_id)
-
-            elif event_type == "send-message":
-                await manager.broadcast(room_id, {"type": "new-message", "message": data["message"]}, exclude_user_id=user_id)
-
-            elif event_type == "remove-user":
-                # Additional logic to check if the user is the room creator would be needed here
-                removed_user_id = data["user_id"]
-                crud.room.remove_participant(db, room_id=int(room_id), user_id=int(removed_user_id))
-                await manager.send_personal_message({"type": "user-removed"}, room_id, removed_user_id)
-                await manager.broadcast(room_id, {"type": "user-left", "user": {"id": removed_user_id}}, exclude_user_id=removed_user_id)
-            
-            else:
-                # Handle WebRTC signaling
-                await manager.broadcast(room_id, data, exclude_user_id=user_id)
-
+            # Broadcast the received message to others in the room
+            await manager.broadcast(room_id, data, exclude_user_id=user_id)
     except WebSocketDisconnect:
+        # The client disconnected, so we clean up the connection
         manager.disconnect(room_id, user_id)
-        crud.room.remove_participant(db, room_id=int(room_id), user_id=int(user_id))
-        await manager.broadcast(room_id, {"type": "user-left", "user": {"id": user_id}})
+        # Optionally, you could broadcast a "user-left" message here
+        await manager.broadcast(room_id, {"type": "user-left", "userId": user_id}, exclude_user_id=user_id)
+

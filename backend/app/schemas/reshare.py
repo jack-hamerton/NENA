@@ -7,6 +7,9 @@ class ReshareBase(BaseModel):
 class ReshareCreate(ReshareBase):
     pass
 
+class ReshareUpdate(BaseModel):
+    pass
+
 class Reshare(ReshareBase):
     id: uuid.UUID
     user_id: uuid.UUID

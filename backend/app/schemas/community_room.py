@@ -1,5 +1,6 @@
 
 from pydantic import BaseModel
+import uuid
 
 class CommunityRoomBase(BaseModel):
     name: str
@@ -12,7 +13,7 @@ class CommunityRoomUpdate(CommunityRoomBase):
     pass
 
 class CommunityRoomInDBBase(CommunityRoomBase):
-    id: int
+    id: uuid.UUID
     class Config:
         from_attributes = True
 

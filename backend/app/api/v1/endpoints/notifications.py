@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
-from app.database import get_db
+from app.db.session import get_db
 from app.models.user import User
 from app.schemas.notification import Notification
 from app.api.v1.auth import get_current_user

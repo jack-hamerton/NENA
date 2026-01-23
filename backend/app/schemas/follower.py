@@ -23,3 +23,8 @@ class Follower(FollowerBase):
 
     class Config:
         orm_mode = True
+
+class FollowerIntentMetrics(BaseModel):
+    collaborator_percentage: float
+    mentor_percentage: float
+    peer_percentage: float

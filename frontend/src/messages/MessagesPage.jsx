@@ -1,26 +1,33 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Box, Grid, useMediaQuery, ThemeProvider } from '@mui/material';
 import { theme } from '../theme/theme';
 import ConversationList from './ConversationList';
 import Chat from './Chat';
 import AIChat from '../components/AIChat';
+import { AuthContext } from '../contexts/AuthContext';
 
 const MessagesPage = () => {
-  const [selectedConversation, setSelectedConversation] = useState('ai');
+  const [selectedConversation, setSelectedConversation] = useState(null);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { user } = useContext(AuthContext);
 
-  const handleSelectConversation = (conversationId) => {
-    setSelectedConversation(conversationId);
+  const handleSelectConversation = (conversation) => {
+    setSelectedConversation(conversation);
   };
-
-  const currentUserId = 1; // This would come from auth context
 
   const renderChat = () => {
     if (selectedConversation === 'ai') {
       return <AIChat />;
     }
-    // For other conversations, you would fetch the recipient ID etc.
-    return <Chat conversationId={selectedConversation} currentUserId={currentUserId} recipientId={2} />;
+
+    if (!selectedConversation) {
+      return <AIChat />;
+    }
+
+    // Find the other participant in the conversation
+    const recipient = selectedConversation.participants.find(p => p.id !== user.id);
+
+    return <Chat conversationId={selectedConversation.id} currentUserId={user.id} recipientId={recipient.id} />;
   };
 
   if (isMobile) {

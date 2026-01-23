@@ -1,9 +1,10 @@
-from pydantic import BaseModel
 
+from pydantic import BaseModel
+import uuid
 
 class EventParticipantBase(BaseModel):
-    event_id: int
-    user_id: int
+    event_id: uuid.UUID
+    user_id: uuid.UUID
     status: str = "pending"
 
 
@@ -16,7 +17,7 @@ class EventParticipantUpdate(EventParticipantBase):
 
 
 class EventParticipantInDBBase(EventParticipantBase):
-    id: int
+    id: uuid.UUID
 
     class Config:
         from_attributes = True

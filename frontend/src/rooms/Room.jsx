@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import { useParams } from 'react-router-dom'; // To get the room ID from the URL
 import { callService } from '../services/callService';
 import { RoomControls } from './RoomControls';
 import { RoomVideoGrid } from './RoomVideoGrid';
@@ -11,34 +13,67 @@ const RoomContainer = styled.div`
   background-color: ${props => props.theme.palette.dark};
 `;
 
+const VideoContainer = styled.div`
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+`;
+
+const LocalVideo = styled.video`
+    width: 200px;
+    height: 150px;
+    border: 2px solid ${props => props.theme.palette.primary.main};
+    border-radius: 8px;
+    position: absolute;
+    bottom: 90px; /* Above the controls */
+    right: 20px;
+`;
+
 export const Room = () => {
+  const { roomId } = useParams(); // Get the room ID from the URL
   const [participants, setParticipants] = useState([]);
-  const [roomTranscript, setRoomTranscript] = useState('');
+  const [localStream, setLocalStream] = useState(null);
+  const localVideoRef = useRef(null);
 
   useEffect(() => {
-    const updateParticipants = () => {
-      setParticipants(callService.getParticipants());
+    // Handler for when the local stream is available
+    const handleLocalStream = (stream) => {
+        setLocalStream(stream);
+        if (localVideoRef.current) {
+            localVideoRef.current.srcObject = stream;
+        }
     };
 
-    callService.on('participantsChanged', updateParticipants);
-    updateParticipants();
+    // Handler for when the participant list changes
+    const handleParticipantsChanged = (updatedParticipants) => {
+      setParticipants(updatedParticipants);
+    };
 
-    // In a real application, this would be updated in real time
-    setRoomTranscript('This is a placeholder for the room transcript.');
+    // Subscribe to events from the call service
+    callService.onLocalStream = handleLocalStream;
+    callService.onParticipantsChanged = handleParticipantsChanged;
 
+    // Join the call
+    callService.joinCall(roomId);
+
+    // Clean up on component unmount
     return () => {
-      callService.off('participantsChanged', updateParticipants);
+      callService.leaveCall();
+      callService.onLocalStream = null;
+      callService.onParticipantsChanged = null;
     };
-  }, []);
-
-  const onLeave = () => {
-    callService.leaveCall();
-  };
+  }, [roomId]); // Re-run the effect if the room ID changes
 
   return (
     <RoomContainer>
-      <RoomVideoGrid participants={participants} />
-      <RoomControls onLeave={onLeave} roomTranscript={roomTranscript} />
+      <VideoContainer>
+        <RoomVideoGrid participants={participants} />
+        {localStream && (
+            <LocalVideo ref={localVideoRef} autoPlay muted playsInline />
+        )}
+      </VideoContainer>
+      <RoomControls onLeave={() => callService.leaveCall()} />
     </RoomContainer>
   );
 };

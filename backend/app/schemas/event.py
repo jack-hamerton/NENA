@@ -1,6 +1,8 @@
+
 from typing import Optional, List
 from pydantic import BaseModel
 from .event_participant import EventParticipant
+import uuid
 
 # Shared properties
 class EventBase(BaseModel):
@@ -21,9 +23,9 @@ class EventUpdate(EventBase):
 
 # Properties shared by models in DB
 class EventInDBBase(EventBase):
-    id: int
+    id: uuid.UUID
     title: str
-    owner_id: int
+    owner_id: uuid.UUID
     participants: List[EventParticipant] = []
 
     class Config:

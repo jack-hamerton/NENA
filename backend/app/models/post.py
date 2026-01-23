@@ -1,4 +1,5 @@
 
+import uuid
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, DateTime, Enum as SQLAlchemyEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -7,7 +8,7 @@ from ..db.base_class import Base
 from ..schemas.post import Audience
 from app.models.comment import Comment
 from app.models.hashtag import post_hashtags
-import uuid
+
 
 post_mentions = Table(
     "post_mentions",

@@ -58,7 +58,7 @@ const FollowButtonGroup = styled.div`
   margin-top: 1rem;
 `;
 
-const ProfileHeader = ({ user, onFollow }) => {
+const ProfileHeader = ({ user, followerCount, followingCount, onFollow }) => {
   const fileInputRef = useRef(null);
 
   const handleAvatarClick = () => {
@@ -106,6 +106,10 @@ const ProfileHeader = ({ user, onFollow }) => {
       <Typography variant="body1" color="text.secondary">@{user.handle}</Typography>
       <RoleBadge>👑 {user.role}</RoleBadge>
       <Tagline>{user.tagline}</Tagline>
+      <div>
+        <span>{followerCount} Followers</span>
+        <span>{followingCount} Following</span>
+      </div>
       <FollowButtonGroup>
         <Button variant="contained" color="success" onClick={() => onFollow('supporter')}>Follow as Supporter</Button>
         <Button variant="contained" color="warning" onClick={() => onFollow('amplifier')}>Follow as Amplifier</Button>

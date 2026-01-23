@@ -1,6 +1,8 @@
+
 from pydantic import BaseModel
 from typing import Optional
 import datetime
+import uuid
 
 class MessageBase(BaseModel):
     content: str
@@ -10,15 +12,15 @@ class MessageBase(BaseModel):
     disappearing_duration: Optional[int] = None
     is_view_once: Optional[bool] = False
     is_encrypted: Optional[bool] = False
-    parent_message_id: Optional[int] = None
+    parent_message_id: Optional[uuid.UUID] = None
 
 class MessageCreate(MessageBase):
-    recipient_id: int
+    recipient_id: uuid.UUID
 
 class Message(MessageBase):
-    id: int
-    sender_id: int
-    recipient_id: int
+    id: uuid.UUID
+    sender_id: uuid.UUID
+    recipient_id: uuid.UUID
     sent_at: datetime.datetime
 
     class Config:

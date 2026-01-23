@@ -66,6 +66,10 @@ async def submit_answers(study_id: int, answer_submission: schemas.AnswerSubmiss
     # Trigger the AI analysis for the study
     analysis_results = analyze_study_data(db_session=db, study_id=study_id)
 
+    # Save the analysis results
+    if analysis_results:
+        crud.create_analysis_result(db=db, analysis_result=analysis_results, study_id=study_id)
+
     # Broadcast the new analysis to all listening clients for that study
     if analysis_results:
         await websocket_manager.broadcast_to_study(study_id, analysis_results)

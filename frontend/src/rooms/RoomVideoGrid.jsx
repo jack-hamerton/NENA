@@ -1,50 +1,63 @@
-import React, { useRef, useEffect } from 'react';
+
+import { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
-const VideoGrid = styled.div`
-  flex-grow: 1;
+const GridContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-  padding: 10px;
-  overflow-y: auto;
-`;
-
-const VideoContainer = styled.div`
-  position: relative;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  padding: 16px;
   width: 100%;
   height: 100%;
 `;
 
-const StyledVideo = styled.video`
+const ParticipantContainer = styled.div`
+  position: relative;
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const Video = styled.video`
   width: 100%;
   height: 100%;
   object-fit: cover;
 `;
 
-const Video = ({ stream, muted }) => {
-  const ref = useRef();
+const UserIdLabel = styled.div`
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+`;
 
-  useEffect(() => {
-    if (ref.current) {
-      ref.current.srcObject = stream;
-    }
-  }, [stream]);
+const ParticipantVideo = ({ participant }) => {
+    const videoRef = useRef(null);
 
-  return (
-    <VideoContainer>
-      <StyledVideo ref={ref} autoPlay playsInline muted={muted} />
-    </VideoContainer>
-  );
+    useEffect(() => {
+        if (videoRef.current && participant.stream) {
+            videoRef.current.srcObject = participant.stream;
+        }
+    }, [participant.stream]);
+
+    return (
+        <ParticipantContainer>
+            <Video ref={videoRef} autoPlay playsInline />
+            <UserIdLabel>{participant.userId}</UserIdLabel>
+        </ParticipantContainer>
+    );
 };
 
-export const RoomVideoGrid = ({ localStream, remoteStreams }) => {
+export const RoomVideoGrid = ({ participants }) => {
   return (
-    <VideoGrid>
-      {localStream && <Video stream={localStream} muted={true} />}
-      {Object.entries(remoteStreams).map(([clientId, stream]) => (
-        <Video key={clientId} stream={stream} muted={false} />
+    <GridContainer>
+      {participants.map((participant) => (
+        <ParticipantVideo key={participant.userId} participant={participant} />
       ))}
-    </VideoGrid>
+    </GridContainer>
   );
 };

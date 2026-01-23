@@ -1,7 +1,7 @@
 
 from typing import Optional
 from pydantic import BaseModel
-
+import uuid
 
 class BadgeBase(BaseModel):
     name: str
@@ -18,15 +18,15 @@ class BadgeUpdate(BadgeBase):
 
 
 class Badge(BadgeBase):
-    id: str
+    id: uuid.UUID
 
     class Config:
         from_attributes = True
 
 
 class UserBadgeBase(BaseModel):
-    user_id: str
-    badge_id: str
+    user_id: uuid.UUID
+    badge_id: uuid.UUID
 
 
 class UserBadgeCreate(UserBadgeBase):
@@ -34,7 +34,7 @@ class UserBadgeCreate(UserBadgeBase):
 
 
 class UserBadge(UserBadgeBase):
-    id: str
+    id: uuid.UUID
     awarded_at: str
 
     class Config:

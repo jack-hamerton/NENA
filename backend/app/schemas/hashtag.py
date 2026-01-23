@@ -18,3 +18,7 @@ class HashtagInDB(HashtagBase):
 
 class Hashtag(HashtagInDB):
     pass
+
+class HashtagMetrics(BaseModel):
+    hashtag: str
+    post_count: int

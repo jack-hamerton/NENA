@@ -5,6 +5,7 @@ from datetime import datetime
 from enum import Enum
 from .user import User
 from .hashtag import Hashtag
+import uuid
 
 class Audience(str, Enum):
     PUBLIC = "public"
@@ -21,8 +22,8 @@ class PostUpdate(PostBase):
     audience: Optional[Audience] = None
 
 class PostInDBBase(PostBase):
-    id: int
-    author_id: int
+    id: uuid.UUID
+    author_id: uuid.UUID
     created_at: datetime
     audience: Audience
 

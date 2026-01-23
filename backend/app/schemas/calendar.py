@@ -1,6 +1,8 @@
+
 from typing import Optional, List
 from pydantic import BaseModel
 import datetime
+import uuid
 
 class EventBase(BaseModel):
     title: str
@@ -9,18 +11,18 @@ class EventBase(BaseModel):
     end_time: datetime.datetime
 
 class EventCreate(EventBase):
-    collaborator_ids: Optional[List[int]] = []
+    collaborator_ids: Optional[List[uuid.UUID]] = []
 
 class EventUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     start_time: Optional[datetime.datetime] = None
     end_time: Optional[datetime.datetime] = None
-    collaborator_ids: Optional[List[int]] = []
+    collaborator_ids: Optional[List[uuid.UUID]] = []
 
 class Event(EventBase):
-    id: int
-    owner_id: int
+    id: uuid.UUID
+    owner_id: uuid.UUID
     collaborators: List["UserSchema"] = [] # You might need a User schema
 
     class Config:
@@ -30,7 +32,7 @@ class Event(EventBase):
 from .user import User
 
 class UserSchema(BaseModel):
-    id: int
+    id: uuid.UUID
     username: str
 
     class Config:

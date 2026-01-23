@@ -1,24 +1,26 @@
 
+import uuid
 from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, Table
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base_class import Base
 
 podcast_recommendations = Table(
     'podcast_recommendations',
     Base.metadata,
-    Column('podcast_id', Integer, ForeignKey('podcasts.id'), primary_key=True),
-    Column('recommendation_id', Integer, ForeignKey('podcasts.id', ondelete='CASCADE'), primary_key=True)
+    Column('podcast_id', UUID(as_uuid=True), ForeignKey('podcasts.id'), primary_key=True),
+    Column('recommendation_id', UUID(as_uuid=True), ForeignKey('podcasts.id', ondelete='CASCADE'), primary_key=True)
 )
 
 
 class Podcast(Base):
     __tablename__ = "podcasts"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String, index=True)
     description = Column(Text)
     cover_art_url = Column(String)
-    creator_id = Column(Integer, ForeignKey("users.id"))
+    creator_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     creator = relationship("User", back_populates="podcasts")
     episodes = relationship("Episode", back_populates="podcast", cascade="all, delete-orphan")
     followers = relationship("PodcastFollower", back_populates="podcast", cascade="all, delete-orphan")
@@ -35,7 +37,7 @@ class Podcast(Base):
 
 class Episode(Base):
     __tablename__ = "episodes"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String, index=True)
     description = Column(Text)
     audio_url = Column(String)
@@ -43,7 +45,7 @@ class Episode(Base):
     thumbnail_url = Column(String)
     transcription = Column(Text)
     notes = Column(Text)
-    podcast_id = Column(Integer, ForeignKey("podcasts.id"))
+    podcast_id = Column(UUID(as_uuid=True), ForeignKey("podcasts.id"))
     podcast = relationship("Podcast", back_populates="episodes")
     shortcuts = relationship("Shortcut", back_populates="episode", cascade="all, delete-orphan")
     comments = relationship("Comment", back_populates="episode", cascade="all, delete-orphan")
@@ -54,17 +56,17 @@ class Episode(Base):
 
 class Shortcut(Base):
     __tablename__ = "shortcuts"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     label = Column(String)
     url = Column(String)
-    episode_id = Column(Integer, ForeignKey("episodes.id"))
+    episode_id = Column(UUID(as_uuid=True), ForeignKey("episodes.id"))
     episode = relationship("Episode", back_populates="shortcuts")
 
 class PodcastFollower(Base):
     __tablename__ = "podcast_followers"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    podcast_id = Column(Integer, ForeignKey("podcasts.id"))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    podcast_id = Column(UUID(as_uuid=True), ForeignKey("podcasts.id"))
     user = relationship("User", back_populates="podcast_following")
     podcast = relationship("Podcast", back_populates="followers")
 

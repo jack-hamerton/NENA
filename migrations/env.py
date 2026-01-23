@@ -24,6 +24,7 @@ fileConfig(config.config_file_name)
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
 from models.base import Base
 from models.chat import User, Room, Message
+from models.post import Post
 
 target_metadata = Base.metadata
 

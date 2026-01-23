@@ -17,4 +17,4 @@ class Document(Base):
 
     # Optional: If you want to associate documents with a user
     author_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
-    author = relationship("User")
+    author = relationship("User", back_populates="documents")

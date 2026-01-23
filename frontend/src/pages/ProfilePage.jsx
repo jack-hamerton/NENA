@@ -11,6 +11,7 @@ import { theme } from '../theme/theme';
 import {
   getUserById,
   getFollowers,
+  getFollowing,
   followUser,
   getUserPosts,
   getUserPodcasts,
@@ -33,6 +34,7 @@ const ProfilePage = () => {
   const { id } = useParams();
   const [user, setUser] = useState(null);
   const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [followersOfFollowers, setFollowersOfFollowers] = useState([]);
   const [posts, setPosts] = useState([]);
   const [podcasts, setPodcasts] = useState([]);
@@ -48,9 +50,10 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const [userResponse, followersResponse, followersOfFollowersResponse, postsResponse, podcastsResponse, followerIntentMetricsResponse, hashtagMetricsResponse, badgesResponse] = await Promise.all([
+        const [userResponse, followersResponse, followingResponse, followersOfFollowersResponse, postsResponse, podcastsResponse, followerIntentMetricsResponse, hashtagMetricsResponse, badgesResponse] = await Promise.all([
           getUserById(id),
           getFollowers(id),
+          getFollowing(id),
           getFollowersOfFollowers(id),
           getUserPosts(id),
           getUserPodcasts(id),
@@ -60,6 +63,7 @@ const ProfilePage = () => {
         ]);
         setUser(userResponse.data);
         setFollowers(followersResponse.data);
+        setFollowing(followingResponse.data);
         setFollowersOfFollowers(followersOfFollowersResponse);
         setPosts(postsResponse.data);
         setPodcasts(podcastsResponse.data);
@@ -99,7 +103,7 @@ const ProfilePage = () => {
   return (
     <ThemeProvider theme={theme}>
       <ProfilePageContainer>
-        <ProfileHeader user={user} onFollow={() => setIntentModalOpen(true)} />
+        <ProfileHeader user={user} followerCount={followers.length} followingCount={following.length} onFollow={() => setIntentModalOpen(true)} />
         <IntentModal open={intentModalOpen} onClose={() => setIntentModalOpen(false)} onFollow={handleFollow} />
 
         <SpiderWebCanvasSection>

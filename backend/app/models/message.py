@@ -24,4 +24,5 @@ class Message(Base):
 
     sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_messages")
     recipient = relationship("User", foreign_keys=[recipient_id], back_populates="received_messages")
-    parent_message = relationship("Message", remote_side=[id])
+    parent_message = relationship("Message", remote_side=[id], back_populates="replies")
+    replies = relationship("Message", back_populates="parent_message")
