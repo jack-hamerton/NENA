@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID
 
 from app import crud, models, schemas
 from app.db.session import SessionLocal
@@ -31,26 +32,26 @@ def search_studies(q: str, db: Session = Depends(get_db)):
     return crud.search_studies(db=db, query=q)
 
 @router.get("/{study_id}/participation")
-def check_participation(study_id: int, user_id: str, db: Session = Depends(get_db)):
+def check_participation(study_id: UUID, user_id: str, db: Session = Depends(get_db)):
     has_participated = crud.has_user_participated(db, study_id=study_id, user_id=user_id)
     return {"hasParticipated": has_participated}
 
 @router.post("/{study_id}/verify")
-def verify_study_access(study_id: int, code: str, db: Session = Depends(get_db)):
+def verify_study_access(study_id: UUID, code: str, db: Session = Depends(get_db)):
     study = crud.get_study_by_code(db, study_id, code)
     if not study:
         raise HTTPException(status_code=403, detail="Invalid access code")
     return {"message": "Access granted"}
 
 @router.get("/{study_id}", response_model=schemas.Study)
-def get_study(study_id: int, db: Session = Depends(get_db)):
+def get_study(study_id: UUID, db: Session = Depends(get_db)):
     study = crud.get_study(db, study_id)
     if not study:
         raise HTTPException(status_code=404, detail="Study not found")
     return study
 
 @router.post("/{study_id}/answers", status_code=202)
-async def submit_answers(study_id: int, answer_submission: schemas.AnswerSubmission, db: Session = Depends(get_db)):
+async def submit_answers(study_id: UUID, answer_submission: schemas.AnswerSubmission, db: Session = Depends(get_db)):
     # Check if user has already participated
     if crud.has_user_participated(db, study_id=study_id, user_id=answer_submission.user_id):
         raise HTTPException(status_code=403, detail="User has already participated in this study.")
@@ -77,12 +78,12 @@ async def submit_answers(study_id: int, answer_submission: schemas.AnswerSubmiss
     return {"message": "Answers submitted and analysis complete."}
 
 @router.get("/{study_id}/answers", response_model=List[schemas.Answer])
-def get_study_answers(study_id: int, db: Session = Depends(get_db)):
+def get_study_answers(study_id: UUID, db: Session = Depends(get_db)):
     # This endpoint now serves the anonymized answers to the creator
     return crud.get_answers_for_study(db, study_id=study_id)
 
 @router.websocket("/ws/study/{study_id}")
-async def websocket_endpoint(websocket: WebSocket, study_id: int):
+async def websocket_endpoint(websocket: WebSocket, study_id: UUID):
     await websocket_manager.connect(websocket, study_id)
     try:
         while True:

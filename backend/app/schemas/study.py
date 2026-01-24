@@ -1,6 +1,7 @@
 
 from pydantic import BaseModel
 from typing import List, Optional, Dict
+from uuid import UUID
 import datetime
 
 class QuestionBase(BaseModel):
@@ -11,8 +12,8 @@ class QuestionCreate(QuestionBase):
     pass
 
 class Question(QuestionBase):
-    id: int
-    study_id: int
+    id: UUID
+    study_id: UUID
 
     class Config:
         orm_mode = True
@@ -27,7 +28,7 @@ class StudyCreate(StudyBase):
     unique_code: Optional[str] = None
 
 class Study(StudyBase):
-    id: int
+    id: UUID
     created_at: datetime.datetime
     unique_code: str
     questions: List[Question] = []
@@ -39,18 +40,18 @@ class AnswerBase(BaseModel):
     text: str
 
 class AnswerCreate(AnswerBase):
-    question_id: int
-    user_id: int
+    question_id: UUID
+    user_id: UUID
 
 class Answer(AnswerBase):
-    id: int
-    study_id: int
-    question_id: int
-    user_id: int
+    id: UUID
+    study_id: UUID
+    question_id: UUID
+    user_id: UUID
 
     class Config:
         orm_mode = True
 
 class AnswerSubmission(BaseModel):
-    user_id: int
-    answers: Dict[int, str]
+    user_id: UUID
+    answers: Dict[str, str]

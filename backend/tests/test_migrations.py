@@ -24,9 +24,10 @@ def test_run_migrations(test_db):
     
     # Set up Alembic configuration
     alembic_ini_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../alembic.ini"))
+    migrations_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../migrations"))
     
     alembic_cfg = Config(alembic_ini_path)
-    alembic_cfg.set_main_option("script_location", "migrations")
+    alembic_cfg.set_main_option("script_location", migrations_path)
     alembic_cfg.set_main_option("sqlalchemy.url", db_url)
 
     # Run migrations to the 'head' (latest) version

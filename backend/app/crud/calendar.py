@@ -1,5 +1,6 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session, or_
+from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from app.crud.base import CRUDBase
 from app.models.calendar import Event, EventParticipant
 from app.schemas.calendar import EventCreate, EventUpdate
