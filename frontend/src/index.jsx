@@ -1,19 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import MainLayout from './layout/MainLayout';
-import reportWebVitals from './reportWebVitals';
 import { AuthProvider } from './contexts/AuthContext.jsx';
+import MainLayout from './layout/MainLayout';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root')
-);
+console.log('App starting...');
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
 root.render(
-  <React.StrictMode>
-    <AuthProvider>
-      <MainLayout />
-    </AuthProvider>
-  </React.StrictMode>
+  <AuthProvider>
+    <MainLayout />
+  </AuthProvider>
 );
 
-reportWebVitals();
+console.log('App rendered');
+
+
+

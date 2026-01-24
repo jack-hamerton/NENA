@@ -8,24 +8,33 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        try {
-          const response = await getMe();
-          setUser(response.data);
-          socket.auth = { userId: response.data.id };
-          socket.connect();
-        } catch (error) {
-          console.error("Failed to fetch user", error);
-          // Handle error, e.g., by logging out the user
-          logout();
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          try {
+            const response = await getMe();
+            setUser(response.data);
+            socket.auth = { userId: response.data.id };
+            socket.connect();
+          } catch (error) {
+            console.error("Failed to fetch user", error);
+            localStorage.removeItem('token');
+            delete api.defaults.headers.common['Authorization'];
+            setUser(null);
+          }
         }
+      } catch (error) {
+        console.error("Error in AuthProvider:", error);
+      } finally {
+        setLoading(false);
       }
     };
+    
     fetchUser();
 
     return () => {
@@ -65,7 +74,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, resetPassword }}>
+    <AuthContext.Provider value={{ user, login, logout, register, resetPassword, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -17,6 +17,10 @@ export const getFollowersOfFollowers = (id) => {
     return api.get(`/users/${id}/followers-of-followers`);
 };
 
+export const getFollowing = (id) => {
+    return api.get(`/users/${id}/following`);
+};
+
 export const followUser = (id, intent) => {
     return api.post(`/users/${id}/follow`, { intent });
 };

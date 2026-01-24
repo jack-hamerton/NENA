@@ -12,60 +12,50 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import styled from 'styled-components';
 
+const StyledContainer = styled(Container)`
+  background-color: #35424c;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const StyledBox = styled(Box)`
+  background-color: #4a5969;
+  padding: 2rem;
+  border-radius: 8px;
+  color: #ffffff;
+`;
+
+const StyledTextField = styled(TextField)`
+  .MuiInputBase-root {
+    color: #ffffff;
+    background-color: #35424c;
+  }
+  .MuiInputLabel-root {
+    color: #a0a0a0;
+  }
+  .MuiOutlinedInput-root {
+    fieldset {
+      border-color: #73beb0;
+    }
+    &:hover fieldset {
+      border-color: #427973;
+    }
+    &.Mui-focused fieldset {
+      border-color: #427973;
+    }
+  }
+`;
+
+const StyledButton = styled(Button)`
+  background-color: #427973;
+  &:hover {
+    background-color: #73beb0;
+  }
+`;
+
 const LoginPage = () => {
-  const StyledContainer = styled(Container)`
-    background-color: ${props => props.theme.palette.dark};
-
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-
-  const StyledBox = styled(Box)`
-    background-color: ${props => props.theme.palette.primary};
-
-    padding: 2rem;
-    border-radius: 8px;
-    color: ${props => props.theme.text.primary};
-
-  `;
-
-  const StyledTextField = styled(TextField)`
-    .MuiInputBase-root {
-      color: ${(props) => props.theme.text.primary};
-
-      background-color: ${(props) => props.theme.palette.dark};
-
-    }
-    .MuiInputLabel-root {
-      color: ${(props) => props.theme.text.secondary};
-
-    }
-    .MuiOutlinedInput-root {
-      fieldset {
-        border-color: ${(props) => props.theme.palette.secondary};
-
-      }
-      &:hover fieldset {
-        border-color: ${(props) => props.theme.palette.accent};
-
-      }
-      &.Mui-focused fieldset {
-        border-color: ${(props) => props.theme.palette.accent};
-
-      }
-    }
-  `;
-
-  const StyledButton = styled(Button)`
-    background-color: ${props => props.theme.palette.accent};
-
-    &:hover {
-      background-color: ${props => props.theme.palette.secondary};
-
-    }
-  `;
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
