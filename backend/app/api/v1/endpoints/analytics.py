@@ -52,7 +52,7 @@ def get_advocacy_impact_matrix(
     polls = db.query(models.Poll).filter(models.Poll.author_id == user_id).all()
     studies = db.query(models.Study).filter(models.Study.author_id == user_id).all()
     events = db.query(models.Event).filter(models.Event.owner_id == user_id).all()
-    challenges = db.query(models.Challenge).filter(models.Challenge.creator_id == user_id).all()
+    challenges = db.query(models.Challenge).filter(models.Challenge.author_id == user_id).all()
     
     all_activities = posts + documents + polls + studies + events + challenges
 

@@ -10,3 +10,7 @@ from .calendar import Event, EventParticipant
 from .profile import Profile
 from .follower import Follower
 from .badge import Badge, UserBadge
+from .room import Room, RoomParticipant
+from .room_message import RoomMessage
+from .document import Document
+from .challenge import Challenge

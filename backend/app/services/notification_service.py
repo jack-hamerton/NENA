@@ -57,11 +57,14 @@ class NotificationService:
     def get_notifications_for_user(self, db: Session, user_id: uuid.UUID):
         return db.query(Notification).filter(Notification.user_id == user_id).all()
 
-    def mark_as_read(self, db: Session, notification_id: uuid.UUID, user_id: uuid.UUID):
+    def mark_as_read(self, db: Session, notification_id: uuid.UUID, user_id: uuid.UUID) -> Optional[Notification]:
         notification = db.query(Notification).filter(Notification.id == notification_id, Notification.user_id == user_id).first()
         if notification:
             notification.read = True
             db.commit()
+            db.refresh(notification)
+            return notification
+        return None
 
     def clear_read(self, db: Session, user_id: uuid.UUID):
         db.query(Notification).filter(Notification.user_id == user_id, Notification.read == True).delete()

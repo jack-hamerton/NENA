@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Typography, TextField, Button, Paper } from '@mui/material';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { api } from '../utils/api';
 
 const SettingsPage = () => {
+  const navigate = useNavigate();
   const [hasPin, setHasPin] = useState(false);
   const [currentPin, setCurrentPin] = useState('');
   const [newPin, setNewPin] = useState('');
@@ -74,6 +76,34 @@ const SettingsPage = () => {
     // Handle success or error
   };
 
+  const handleLogout = async () => {
+    try {
+      // Call logout endpoint if available
+      try {
+        await api.post('/auth/logout', {});
+      } catch (error) {
+        // Continue logout even if endpoint fails
+        console.log('Logout endpoint not available, proceeding with client-side logout');
+      }
+
+      // Clear localStorage
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('app_pin');
+      localStorage.removeItem('user');
+
+      // Show success message
+      showSnackbar('Logged out successfully', 'success');
+
+      // Redirect to login page
+      setTimeout(() => {
+        navigate('/login');
+      }, 500);
+    } catch (error) {
+      showSnackbar('Error logging out', 'error');
+      console.error('Logout error:', error);
+    }
+  };
+
 
   return (
     <Box sx={{ padding: '2rem' }}>
@@ -85,7 +115,7 @@ const SettingsPage = () => {
           <button type="submit">Save Settings</button>
         </form>
       </Paper>
-      <Paper sx={{ padding: '2rem' }}>
+      <Paper sx={{ padding: '2rem', marginBottom: '2rem' }}>
         <Typography variant="h6" gutterBottom>Security Settings</Typography>
         {hasPin ? (
           // View for changing or removing PIN
@@ -141,6 +171,15 @@ const SettingsPage = () => {
             <Button variant="contained" onClick={handleSetPin}>Set PIN</Button>
           </Box>
         )}
+      </Paper>
+      <Paper sx={{ padding: '2rem' }}>
+        <Typography variant="h6" gutterBottom>Account</Typography>
+        <Typography sx={{ mb: 2 }} color="textSecondary">
+          Log out from your account. You'll need to sign in again to access the application.
+        </Typography>
+        <Button variant="contained" color="error" onClick={handleLogout}>
+          Logout
+        </Button>
       </Paper>
     </Box>
   );

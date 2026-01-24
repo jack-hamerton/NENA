@@ -17,6 +17,11 @@ class MessageBase(BaseModel):
 class MessageCreate(MessageBase):
     recipient_id: uuid.UUID
 
+class MessageUpdate(MessageBase):
+    content: Optional[str] = None
+    message_type: Optional[str] = None
+    media_url: Optional[str] = None
+
 class Message(MessageBase):
     id: uuid.UUID
     sender_id: uuid.UUID

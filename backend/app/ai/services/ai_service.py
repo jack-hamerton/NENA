@@ -133,7 +133,7 @@ def assist_in_room(db: Session, prompt: str, user_profile, room_id: int):
 
     else:
         add_to_chat_history(user_profile.id, f"User: {prompt}")
-        history = get_chat_history(user_id)
+        history = get_chat_history(user_profile.id)
         response = f"I'm Kenyan, and I'm here to help. You said: '{prompt}'. In this room, you can ask me to 'summarize' or 'suggest next steps'."
         add_to_chat_history(user_profile.id, f"AI: {response}")
         return {"response": response}
