@@ -34,6 +34,6 @@ class Settings(BaseSettings):
     S3_BUCKET_NAME: str
     
     # CORS
-    BACKEND_CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:8080"]
+    BACKEND_CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174", "http://localhost:8080"]
 
 settings = Settings()
