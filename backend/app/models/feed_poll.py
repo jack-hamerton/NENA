@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy import Column, String, ForeignKey, Integer, Boolean, Interval
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -10,7 +11,8 @@ class FeedPoll(Base):
     question = Column(String, nullable=False)
     duration = Column(Interval, nullable=False)
     anonymous = Column(Boolean, default=False)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+   #  user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
 
     options = relationship("FeedPollOption", back_populates="poll")
     user = relationship("User", back_populates="feed_polls")
@@ -31,4 +33,4 @@ class FeedPollVote(Base):
     id = Column(Integer, primary_key=True, index=True)
     feed_poll_id = Column(Integer, ForeignKey("feed_polls.id"), nullable=False)
     option_id = Column(Integer, ForeignKey("feed_poll_options.id"), nullable=False)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)

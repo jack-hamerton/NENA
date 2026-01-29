@@ -44,8 +44,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     const response = await api.post('/auth/login', { username, password });
-    localStorage.setItem('token', response.data.token);
-    api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+    localStorage.setItem('token', response.data.access_token);
+    api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
     const userResponse = await getMe();
     setUser(userResponse.data);
     socket.auth = { userId: userResponse.data.id };

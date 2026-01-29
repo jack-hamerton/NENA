@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: gunicorn --config backend/gunicorn.conf.py app.main:app
+    command: gunicorn --config /app/gunicorn.conf.py app.main:app
     ports:
       - "8000:8000"
     depends_on:
@@ -15,6 +15,8 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=app
       - DATABASE_URL=postgresql://user:password@db/app
+    env_file:
+      - ./backend/.env
 
   db:
     image: postgres:13
@@ -30,7 +32,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - backend
 

@@ -3,3 +3,11 @@ uvicorn
 sqlalchemy
 psycopg2-binary
 cryptography
+gunicorn
+pydantic-settings
+python-jose
+passlib[bcrypt]
+email-validator
+python-multipart
+apscheduler
+bcrypt==3.2.2

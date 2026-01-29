@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = '/api/auth/';
+const API_URL = '/api/v1/auth/';
 
 const sendPnv = (email, username, password, phoneNumber, countryCode) => {
   return axios.post(API_URL + 'register/send-pnv', {
@@ -34,9 +34,9 @@ const checkPnvAndRegister = (verificationId, code, email, username, password, ph
 };
 
 
-const login = async (email, password) => {
-  const response = await axios.post(API_URL + 'login/access-token', {
-    email,
+const login = async (username, password) => {
+  const response = await axios.post(API_URL + 'login', {
+    username,
     password,
   });
   if (response.data.access_token) {

@@ -1,8 +1,10 @@
 
 import uuid
 from sqlalchemy import Column, ForeignKey, String, DateTime, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
+
 
 class Badge(Base):
     __tablename__ = "badges"
@@ -18,7 +20,8 @@ class UserBadge(Base):
     __tablename__ = "user_badges"
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, ForeignKey("users.id"))
+   # user_id = Column(String, ForeignKey("users.id"))
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     badge_id = Column(String, ForeignKey("badges.id"))
     awarded_at = Column(DateTime, server_default=func.now())
 

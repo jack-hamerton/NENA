@@ -24,7 +24,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Email already registered")
 
     db_user = crud_user.create(db=db, obj_in=user)
-    access_token = create_access_token(data={"sub": db_user.username, "email": db_user.email})
+    access_token = create_access_token(subject=db_user.id)
+
+# access_token = create_access_token(data={"sub": db_user.username, "email": db_user.email})
     
     return {
         "message": "User registered successfully",
@@ -43,8 +45,9 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     if not db_user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
 
-    access_token = create_access_token(data={"sub": db_user.username, "email": db_user.email})
-    
+    # access_token = create_access_token(data={"sub": db_user.username, "email": db_user.email})
+    access_token = create_access_token(subject=db_user.id)
+
     return {
         "message": "Login successful",
         "access_token": access_token,
