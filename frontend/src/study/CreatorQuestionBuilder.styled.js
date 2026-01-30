@@ -27,7 +27,7 @@ export const Select = styled.select`
   padding: 0.75rem;
   border: 1px solid ${({ theme }) => theme.palette.highlight};
   border-radius: 8px;
-  background-color: ${({ theme }) => theme.palette.background};
+  background-color: ${({ theme }) => theme.palette.background.default};
   color: ${({ theme }) => theme.text.primary};
   &:focus {
     outline: none;
@@ -41,7 +41,7 @@ export const Input = styled.input`
   padding: 0.75rem;
   border: 1px solid ${({ theme }) => theme.palette.highlight};
   border-radius: 8px 0 0 8px;
-  background-color: ${({ theme }) => theme.palette.background};
+  background-color: ${({ theme }) => theme.palette.background.default};
   color: ${({ theme }) => theme.text.primary};
   &:focus {
     outline: none;
@@ -67,7 +67,7 @@ export const Button = styled.button`
 export const QuestionList = styled.ul`
   list-style-type: decimal;
   list-style-position: inside;
-  background-color: ${({ theme }) => theme.palette.background};
+  background-color: ${({ theme }) => theme.palette.background.default};
   padding: 1rem;
   border-radius: 8px;
   max-height: 240px;

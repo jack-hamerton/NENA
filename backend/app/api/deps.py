@@ -13,6 +13,7 @@ from app.crud.user import user
 from app.models.user import User
 
 class TokenData(BaseModel):
+    sub: Optional[str] = None
     username: Optional[str] = None
 
 def get_db() -> Generator:
@@ -35,7 +36,15 @@ def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
-    user_obj = user.get_by_username(db, username=token_data.username)
+    if token_data.sub:
+        user_obj = user.get(db, id=token_data.sub)
+    elif token_data.username:
+        user_obj = user.get_by_username(db, username=token_data.username)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
     if not user_obj:
         raise HTTPException(status_code=404, detail="User not found")
     return user_obj

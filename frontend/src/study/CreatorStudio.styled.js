@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 export const StudioContainer = styled.div`
   padding: 2rem;
-  background-color: ${({ theme }) => theme.palette.background};
+  background-color: ${({ theme }) => theme.palette.background.default};
 `;
 
 export const TabContainer = styled.div`

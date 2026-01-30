@@ -37,7 +37,7 @@ const SignUpPage = () => {
   const handleRegister = async (username, password, email) => {
     setError('');
     try {
-      await register(username, password, email);
+      await register({ username, password, email });
       navigate('/success');
     } catch (err) {
       setError(err.message);

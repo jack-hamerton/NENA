@@ -36,7 +36,7 @@ export const TextInput = styled.input`
   padding: 0.75rem;
   border: 1px solid ${({ theme }) => theme.palette.highlight};
   border-radius: 4px;
-  background-color: ${({ theme }) => theme.palette.background};
+  background-color: ${({ theme }) => theme.palette.background.default};
   color: ${({ theme }) => theme.text.primary};
   font-size: 1rem;
 `;
@@ -70,7 +70,7 @@ export const QuestionListItem = styled.li`
   margin-bottom: 2rem;
   padding: 1.5rem;
   border-radius: 8px;
-  background-color: ${({ theme }) => theme.palette.background};
+  background-color: ${({ theme }) => theme.palette.background.default};
 `;
 
 export const QuestionText = styled.p`

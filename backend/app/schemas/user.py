@@ -1,4 +1,5 @@
 import re
+from uuid import UUID
 from typing import Optional
 from pydantic import BaseModel, EmailStr, field_validator
 
@@ -9,6 +10,8 @@ class UserBase(BaseModel):
 
 # Properties to receive on user creation
 class UserCreate(UserBase):
+    first_name: str | None = None
+    last_name: str | None = None
     password: str
 
     @field_validator('password')
@@ -43,7 +46,7 @@ class UserLogin(BaseModel):
 
 # Properties to return to client
 class User(UserBase):
-    id: int
+    id: UUID
     is_active: bool
 
     class Config:

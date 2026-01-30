@@ -52,10 +52,10 @@ export const AuthProvider = ({ children }) => {
     socket.connect();
   };
 
-  const register = async (username, password, email) => {
+  const register = async ({ username, password, email }) => {
     const response = await api.post('/auth/register', { username, password, email });
-    localStorage.setItem('token', response.data.token);
-    api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+    localStorage.setItem('token', response.data.access_token);
+    api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
     const userResponse = await getMe();
     setUser(userResponse.data);
     socket.auth = { userId: userResponse.data.id };
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, resetPassword, loading }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, register, resetPassword, loading }}>
       {children}
     </AuthContext.Provider>
   );

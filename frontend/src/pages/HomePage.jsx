@@ -29,6 +29,19 @@ const HashtagHeader = styled.div`
     color: ${props => props.theme.text.primary};
 `;
 
+const NavToggle = styled.button`
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1001;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: ${props => props.theme.palette.accent};
+  color: ${props => props.theme.text.primary};
+  cursor: pointer;
+`;
+
 const HomePage = () => {
   const { user: currentUser } = useAuth();
   const [posts, setPosts] = useState([]);
@@ -153,6 +166,9 @@ const HomePage = () => {
 
   return (
       <FullScreenFeedContainer onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+        <NavToggle onClick={() => setNavOpen((open) => !open)}>
+          {isNavOpen ? 'Close' : 'Menu'}
+        </NavToggle>
         {hashtagFilter && (
             <HashtagHeader>
                 Filtering by: #{hashtagFilter}

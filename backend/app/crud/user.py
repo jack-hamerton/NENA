@@ -20,6 +20,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         create_data = {
             'username': obj_in.username,
             'email': obj_in.email,
+            'first_name': obj_in.first_name or obj_in.username,
+            'last_name': obj_in.last_name or obj_in.username,
             'hashed_password': get_password_hash(obj_in.password),
         }
         db_obj = User(**create_data)
