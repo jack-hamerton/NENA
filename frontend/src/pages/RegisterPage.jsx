@@ -28,7 +28,7 @@ const RegisterPage = () => {
     setError('');
     try {
       await register({ username, email, password });
-      navigate('/');
+      navigate('/home');
     } catch (err) {
       setError(err.message);
     }

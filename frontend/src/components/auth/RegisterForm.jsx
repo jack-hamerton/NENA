@@ -35,11 +35,12 @@ const ErrorMessage = styled.div`
   text-align: center;
 `;
 
-export const RegisterForm = () => {
+export const RegisterForm = ({ onSubmit }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const [passwordCriteria, setPasswordCriteria] = useState({
@@ -65,6 +66,7 @@ export const RegisterForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
 
     if (!isPasswordValid) {
       setError('Password does not meet all requirements.');
@@ -73,7 +75,13 @@ export const RegisterForm = () => {
     
     setLoading(true);
     try {
-      await register({ username, email, password });
+      if (onSubmit) {
+        await onSubmit(username, password, email);
+      } else {
+        await register({ username, email, password });
+      }
+      setSuccess('Registration successful. You are now signed in.');
+      setPassword('');
     } catch (err) {
       setError(err.message || 'Failed to register. Please try again.');
     } finally {
@@ -127,6 +135,7 @@ export const RegisterForm = () => {
           </ul>
       </PasswordReqs>
       {error && <ErrorMessage>{error}</ErrorMessage>}
+      {success && <ErrorMessage style={{ color: '#37c978' }}>{success}</ErrorMessage>}
       <Button type="submit" disabled={loading || !username || !isPasswordValid}>
         {loading ? 'Registering...' : 'Register'}
       </Button>

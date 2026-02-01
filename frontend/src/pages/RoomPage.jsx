@@ -110,7 +110,7 @@ const RoomPage = () => {
 
   const leaveRoom = () => {
     // Leave room logic remains the same
-    navigate('/');
+    navigate('/home');
   };
 
   if (!roomId) {

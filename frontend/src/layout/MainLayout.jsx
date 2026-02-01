@@ -13,6 +13,7 @@ import MessagesPage from '../pages/MessagesPage';
 import DiscoverPage from '../pages/Discover';
 import SettingsPage from '../pages/SettingsPage';
 import HomePage from '../pages/HomePage';
+import LandingPage from '../pages/LandingPage';
 import AnalyticsBar from '../analytics/AnalyticsBar';
 import { theme } from '../theme/theme';
 import '../styles/global.css';
@@ -29,12 +30,13 @@ const MainLayout = () => {
       <Router>
         <Routes>
           <Route path="/test" element={<TestPage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path='/forgot-password' element={<ForgotPasswordPage />} />
           
           <Route element={<PrivateRoute />}>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/home" element={<HomePage />} />
             <Route path="/study" element={<StudyPage />} />
             <Route path="/podcasts" element={<PodcastPage />} />
             <Route path="/calendar" element={<CalendarPage />} />
