@@ -301,7 +301,7 @@ const LandingPage = () => {
         </Section>
 
         <Footer>
-          <span>© 2026 NENA. All rights reserved.</span>
+          <span>© 2026 NENA. All rights reserved. Built by Jack Hamerton</span>
           <div>
             <FooterLink to="/login">Login</FooterLink> ·{' '}
             <FooterLink to="/signup">Sign Up</FooterLink>
