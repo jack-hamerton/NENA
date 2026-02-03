@@ -22,34 +22,43 @@ import SuccessPage from '../pages/SuccessPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import PrivateRoute from '../components/PrivateRoute';
 import TestPage from '../TestPage';
+import { Sidebar } from '../components/layout/Sidebar';
+import styled from 'styled-components';
+
+const ContentContainer = styled.div`
+  margin-left: 120px;
+`;
 
 const MainLayout = () => {
   return (
     <ThemeProvider theme={theme}>
       <ScreenShotBlocker />
       <Router>
-        <Routes>
-          <Route path="/test" element={<TestPage />} />
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path='/forgot-password' element={<ForgotPasswordPage />} />
-          
-          <Route element={<PrivateRoute />}>
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/study" element={<StudyPage />} />
-            <Route path="/podcasts" element={<PodcastPage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/profile/:userId" element={<ProfilePage />} />
-            <Route path="/room" element={<RoomPage />} />
-            <Route path="/room/:roomId" element={<RoomPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/discover" element={<DiscoverPage />} />
-            <Route path="/user/:userId/settings" element={<SettingsPage />} />
-            <Route path="/analytics" element={<AnalyticsBar />} />
-            <Route path='/success' element={<SuccessPage />} />
-          </Route>
-        </Routes>
+        <Sidebar />
+        <ContentContainer>
+          <Routes>
+            <Route path="/test" element={<TestPage />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path='/forgot-password' element={<ForgotPasswordPage />} />
+            
+            <Route element={<PrivateRoute />}>
+              <Route path="/home" element={<HomePage />} />
+              <Route path="/study" element={<StudyPage />} />
+              <Route path="/podcasts" element={<PodcastPage />} />
+              <Route path="/calendar" element={<CalendarPage />} />
+              <Route path="/profile/:userId" element={<ProfilePage />} />
+              <Route path="/room" element={<RoomPage />} />
+              <Route path="/room/:roomId" element={<RoomPage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/user/:userId/settings" element={<SettingsPage />} />
+              <Route path="/analytics" element={<AnalyticsBar />} />
+              <Route path='/success' element={<SuccessPage />} />
+            </Route>
+          </Routes>
+        </ContentContainer>
       </Router>
     </ThemeProvider>
   );
