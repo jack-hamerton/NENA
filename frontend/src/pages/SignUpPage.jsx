@@ -34,10 +34,10 @@ const SignUpPage = () => {
   const [error, setError] = useState('');
   const { register } = useAuth();
 
-  const handleRegister = async (username, password, email) => {
+  const handleRegister = async (firstName, lastName, username, email, password) => {
     setError('');
     try {
-      await register({ username, password, email });
+      await register({ firstName, lastName, username, email, password });
       navigate('/success');
     } catch (err) {
       setError(err.message);
