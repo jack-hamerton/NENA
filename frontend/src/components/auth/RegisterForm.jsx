@@ -36,6 +36,8 @@ const ErrorMessage = styled.div`
 `;
 
 export const RegisterForm = ({ onSubmit }) => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -76,9 +78,9 @@ export const RegisterForm = ({ onSubmit }) => {
     setLoading(true);
     try {
       if (onSubmit) {
-        await onSubmit(username, password, email);
+        await onSubmit(firstName, lastName, username, email, password);
       } else {
-        await register({ username, email, password });
+        await register({ firstName, lastName, username, email, password });
       }
       setSuccess('Registration successful. You are now signed in.');
       setPassword('');
@@ -93,6 +95,22 @@ export const RegisterForm = ({ onSubmit }) => {
     <form onSubmit={handleSubmit}>
       <Input
         type="text"
+        placeholder="First Name"
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+        required
+        disabled={loading}
+      />
+      <Input
+        type="text"
+        placeholder="Last Name"
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+        required
+        disabled={loading}
+      />
+      <Input
+        type="text"
         placeholder="Username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
@@ -101,9 +119,10 @@ export const RegisterForm = ({ onSubmit }) => {
       />
       <Input
         type="email"
-        placeholder="Email (optional)"
+        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        required
         disabled={loading}
       />
       <Input
@@ -136,7 +155,7 @@ export const RegisterForm = ({ onSubmit }) => {
       </PasswordReqs>
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {success && <ErrorMessage style={{ color: '#37c978' }}>{success}</ErrorMessage>}
-      <Button type="submit" disabled={loading || !username || !isPasswordValid}>
+      <Button type="submit" disabled={loading || !firstName || !lastName || !username || !email || !isPasswordValid}>
         {loading ? 'Registering...' : 'Register'}
       </Button>
     </form>

@@ -214,11 +214,13 @@ const LandingPage = () => {
 
         <Hero>
           <HeroContent>
-            <Eyebrow>About Us</Eyebrow>
-            <Title>Human-first collaboration for teams that move fast.</Title>
+            <Eyebrow>About NenaSpace</Eyebrow>
+            <Title>Network for Empowerment Narrative & Advocacy Space.</Title>
             <Subtitle>
-              NENA brings secure communication, study spaces, and community tools into one calm,
-              focused experience. We design for clarity, trust, and momentum.
+                In Kiswahili, the word “Nena” means talk. It is a simple word, yet it carries the heartbeat of our communities, the wisdom of elders under acacia trees, the laughter of children in marketplaces, the debates of youth in matatus, and the voices of activists calling for justice.
+               Nena is social inclusive with data impact connection. Nena is a dialogue. It is more than a name; it is a promise. A promise to protect voices, to amplify stories, and to spark change through dialogue. Built in Kenya, built for Africa, and open to the world, Nena is a pioneering digital hub created to spark dialogue,
+                amplify voices, and drive community impact, while remaining deeply rooted in cultural relevance and inclusivity. It offers a dynamic ecosystem where people can connect through podcasts, conferencing, study tools, and creative expression,
+                all within a secure and accessible environment.
             </Subtitle>
             <CTA>
               <SolidLink to="/login">Log In</SolidLink>
@@ -228,10 +230,22 @@ const LandingPage = () => {
           <HeroCard>
             <CardTitle>What we deliver</CardTitle>
             <List>
-              <li>Purpose-built rooms, messaging, and study spaces.</li>
-              <li>Privacy-forward collaboration with configurable roles.</li>
-              <li>Analytics that spotlight engagement without noise.</li>
-              <li>Thoughtful UI that keeps your team aligned.</li>
+              <li>
+                  AI-Powered Synthesis: Turn conversation into action. Our AI engine transcribes, analyzes, and summarizes community dialogue,
+                 automatically generating actionable briefs and policy proposals in minutes, not weeks.
+              </li>
+              <li>
+                A Digital Safe Harbor: Speak freely, act securely. With state-of-the-art end-to-end encryption, anonymized participation modes, and a "Privacy by Design" framework,
+               Nena is a trusted space for sensitive and impactful work.
+              </li>
+              <li>
+                A Unified Workspace: End the digital scramble. Nena brings your meetings, encrypted chats,
+               and collaborative documents into one integrated hub, ensuring no valuable insight is lost between apps.
+              </li>
+              <li>
+                The Impact Attribution Engine: Measure what matters. Nena's relational database connects dialogue to outcomes, providing the data-driven proof of impact that funders and communities demand,
+               moving beyond vanity metrics to demonstrate real-world change.
+              </li>
             </List>
           </HeroCard>
         </Hero>
@@ -240,26 +254,47 @@ const LandingPage = () => {
           <SectionHeader>
             <SectionTitle>Our story</SectionTitle>
             <SectionSubtitle>
-              We started NENA to help mission-driven teams build trust and pace in the same place.
+              In today's fragmented digital landscape, organizations and individuals dedicated to advocacy, social impact,
+             and youth engagement face a critical challenge: a disconnect between conversation and action. Vital discussions happen across a myriad of platforms,
+             but the momentum is often lost in the digital noise. The administrative burden of transcribing meetings, synthesizing feedback, and mobilizing community members is immense,
+             hindering the very impact these organizations and individuals strive to create. Nena is  an Action-Oriented Community Platform. By fusing communication, collaboration,
+             and artificial intelligence into a purpose-built workflow, this data underscores a critical gap: while NGOs and individuals are increasingly digital,
+             they lack purpose-built platforms that translate dialogue into measurable action. Nena is uniquely positioned to fill this void.
             </SectionSubtitle>
           </SectionHeader>
           <Grid>
             <InfoCard>
               <InfoTitle>Mission</InfoTitle>
               <InfoText>
-                Make collaboration feel human, secure, and resilient for distributed teams.
+                A place where technology serves people, where privacy is not optional but foundational, and where inclusivity is woven into every feature.
+               In a world where surveillance and exploitation often silence the most important voices, Nena stands apart. Every message, every voice note,
+                every video call is protected by state-of-the-art end-to-end encryption, utilizing the X3DH and Double Ratchet protocols, with media streams secured by SFrame encryption.
+               This ensures that your voice remains yours alone. When people feel safe, they speak truth, and truth is where transformation begins.
+               Step into Nena, and you’ll discover more than tools, you’ll find spaces. Community Rooms where ideas flow and movements form. Conferencing Grids with floating reactions,
+               breakout spaces, and spotlight controls. Study Modules with overlays that help learners reflect, collaborate, and grow. Creative Panels where podcasts and art come alive.
+               Every pixel, every feature, every interaction is designed to celebrate identity, culture, and connection.
+               At its heart, Nena is more than a platform, it is a movement for dialogue, inclusivity, and empowerment. It is where a mother in Kisumu can share her story, where a student in Nairobi can host a podcast, and where an activist in Mombasa can organize a campaign, all without fear, all with dignity. It is a place where dialogue sparks change, where empowerment narratives become tools for advocacy, and where communities rise together.
+
               </InfoText>
             </InfoCard>
             <InfoCard>
               <InfoTitle>Principles</InfoTitle>
               <InfoText>
-                Privacy by default, clarity over clutter, and tools that respect your time.
+                At Nena, our principles are the code we live by, the very foundation of the transformation we enable. We believe that every significant movement is born from conversation—dialogue is the engine of progress.
+               We are committed to inclusivity by design, ensuring that every voice, from every corner of the community, can be part of this dialogue. 
+               But for these voices to speak their truth, they must be safe. In an era of pervasive surveillance, we see security as a sacred trust.
+                We provide a digital sanctuary where state-of-the-art encryption is not an option, but a guarantee. This is how we move communities from vulnerability to empowerment,
+               creating a space where they can organize and advocate without fear. Ultimately, our purpose is empowerment. We engineer tools not just for discussion, but for tangible,
+                data-driven outcomes. By capturing the fleeting moments of grassroots wisdom and transforming them into measurable victories, we shift the definition of success from superficial clicks to real-world change.
               </InfoText>
             </InfoCard>
             <InfoCard>
               <InfoTitle>Impact</InfoTitle>
               <InfoText>
-                Teams use NENA to host events, share insights, and keep communities thriving.
+                Nena provides a single, streamlined hub, transforming that digital chaos into a focused movement. 
+                We capture those once-fleeting moments, creating a powerful, permanent repository of a community's collective intelligence, ready to be synthesized into data-driven proposals. 
+                In our secure digital haven, the most vulnerable can organize and speak their truths without fear. Nena shifts the measure of success from empty clicks to the real-world victories of advocacy,
+               providing the tools to draw a direct line from a single conversation to a successful campaign.
               </InfoText>
             </InfoCard>
           </Grid>
