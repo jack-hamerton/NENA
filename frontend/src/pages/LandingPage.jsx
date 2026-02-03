@@ -228,7 +228,7 @@ const LandingPage = () => {
             </CTA>
           </HeroContent>
           <HeroCard>
-            <CardTitle>What we deliver</CardTitle>
+            <CardTitle>What NenaSpace deliver</CardTitle>
             <List>
               <li>
                   AI-Powered Synthesis: Turn conversation into action. Our AI engine transcribes, analyzes, and summarizes community dialogue,
