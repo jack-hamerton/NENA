@@ -1,13 +1,23 @@
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import Any, List
 import re
-
+import shutil
 from app import crud, models, schemas
 from app.api import deps
 
 router = APIRouter()
+
+
+@router.post("/upload-image")
+def upload_image(file: UploadFile = File(...)):
+    """
+    Upload an image and return its URL.
+    """
+    with open(f"static/images/{file.filename}", "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return {"imageUrl": f"/static/images/{file.filename}"}
 
 
 @router.get("/for-you", response_model=List[schemas.Post])
@@ -91,15 +101,18 @@ def create_post(
     Create new post.
     """
     post = crud.post.create_with_owner(db, obj_in=post_in, user_id=current_user.id)
-    
+
+    # Extract hashtags and associate them with the post
     hashtags = set(re.findall(r"#(\w+)", post_in.content))
     for tag_name in hashtags:
         hashtag_obj = crud.hashtag.get_or_create(db, tag=tag_name)
         post.hashtags.append(hashtag_obj)
-    
+
+    db.add(post)
     db.commit()
     db.refresh(post)
-    
+
+    # Return the post with the author and likes count
     new_post = crud.post.get(db, id=post.id)
     return crud.post.get_posts_with_follow_status(db, user_id=current_user.id, posts=[new_post])[0]
 
@@ -137,7 +150,7 @@ def like_post(
         raise HTTPException(status_code=400, detail="Post already liked")
 
     crud.like.create_with_owner(db, obj_in=schemas.LikeCreate(), post_id=post_id, user_id=current_user.id)
-    
+
     db.refresh(post)
     return crud.post.get_posts_with_follow_status(db, user_id=current_user.id, posts=[post])[0]
 

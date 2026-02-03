@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Modal, TextField, Button, IconButton } from '@mui/material';
-import { PhotoCamera, Videocam } from '@mui/icons-material';
+import { PhotoCamera } from '@mui/icons-material';
 
 const ModalContainer = styled.div`
   position: absolute;
@@ -60,19 +60,13 @@ const MediaUploadContainer = styled.div`
 
 const CreatePostModal = ({ open, onClose, onCreatePost }) => {
   const [postContent, setPostContent] = useState('');
-  const [hashtag, setHashtag] = useState('');
   const [media, setMedia] = useState(null);
 
   const handleCreatePost = () => {
-    if (hashtag) {
-      onCreatePost({ content: postContent, hashtag, media });
-      setPostContent('');
-      setHashtag('');
-      setMedia(null);
-      onClose();
-    } else {
-      // You can add some error handling here to inform the user that a hashtag is required
-    }
+    onCreatePost({ content: postContent, media });
+    setPostContent('');
+    setMedia(null);
+    onClose();
   };
 
   const handleMediaUpload = (event) => {
@@ -93,21 +87,10 @@ const CreatePostModal = ({ open, onClose, onCreatePost }) => {
           placeholder="What's happening?"
           inputProps={{ maxLength: 250 }}
         />
-        <StyledTextField
-          fullWidth
-          variant="outlined"
-          value={hashtag}
-          onChange={(e) => setHashtag(e.target.value)}
-          placeholder="#addahashtag"
-        />
         <MediaUploadContainer>
           <IconButton color="primary" aria-label="upload picture" component="label">
             <input hidden accept="image/*" type="file" onChange={handleMediaUpload} />
             <PhotoCamera />
-          </IconButton>
-          <IconButton color="primary" aria-label="upload video" component="label">
-            <input hidden accept="video/*" type="file" onChange={handleMediaUpload} />
-            <Videocam />
           </IconButton>
         </MediaUploadContainer>
         <PostButton onClick={handleCreatePost} variant="contained">

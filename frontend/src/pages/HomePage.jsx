@@ -128,9 +128,14 @@ const HomePage = () => {
     }
   };
 
-  const handleCreatePost = async (content) => {
+  const handleCreatePost = async ({ content, media }) => {
     try {
-      const response = await postService.createPost({ content });
+      let imageUrl = null;
+      if (media) {
+        const uploadResponse = await postService.uploadImage(media);
+        imageUrl = uploadResponse.data.imageUrl;
+      }
+      const response = await postService.createPost({ content, image_url: imageUrl });
       setPosts(prevPosts => [response.data, ...prevPosts]);
       setCreatePostModalOpen(false); // Close modal on success
     } catch (error) {

@@ -1,6 +1,16 @@
 
 import apiClient from './api';
 
+export const uploadImage = (image) => {
+  const formData = new FormData();
+  formData.append('image', image);
+  return apiClient.post('/posts/upload-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
 export const getForYouFeed = () => {
   return apiClient.get('/posts/for-you');
 };
