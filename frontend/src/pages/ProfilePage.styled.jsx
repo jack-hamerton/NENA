@@ -1,10 +1,15 @@
 
 import styled from 'styled-components';
+import { up } from 'styled-breakpoints';
 
 export const ProfilePageContainer = styled.div`
-  padding: 2rem;
+  padding: 1rem;
   background-color: ${props => props.theme.palette.dark};
   color: ${props => props.theme.text.primary};
+
+  ${up('md')} {
+    padding: 2rem;
+  }
 `;
 
 export const HeaderSection = styled.section`
@@ -13,8 +18,12 @@ export const HeaderSection = styled.section`
 `;
 
 export const SpiderWebCanvasSection = styled.section`
-  height: 400px;
+  height: 300px;
   margin-bottom: 2rem;
+
+  ${up('md')} {
+    height: 400px;
+  }
 `;
 
 export const ContentSection = styled.section`
@@ -41,6 +50,12 @@ export const MetricsSection = styled.section`
 
 export const ProfileFooter = styled.footer`
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   gap: 1rem;
+
+  ${up('sm')} {
+    flex-direction: row;
+    justify-content: center;
+  }
 `;

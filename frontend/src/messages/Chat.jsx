@@ -1,165 +1,165 @@
 
-import { useState, useEffect } from 'react';
-import { Box, TextField, Button, List, ListItem, ListItemText, Typography, IconButton } from '@mui/material';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { chatService } from '../services/chatService';
-import { useSnackbar } from '../context/SnackbarContext';
-import { PinLock } from '../components/PinLock';
-import CallPopup from '../components/call/CallPopup';
-import { realtimeService } from '../services/realtimeService';
+import { FaPaperPlane, FaArrowLeft } from 'react-icons/fa';
 
-const StyledChat = styled(Box)`
-  background-color: ${(props) => props.theme.palette.dark};
-  color: ${(props) => props.theme.text.primary};
+// --- Styled Components ---
+const ChatContainer = styled.div`
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  background-color: ${props => props.theme.background || '#35424c'};
+`;
+
+const ChatHeader = styled.div`
   padding: 1rem;
+  border-bottom: 1px solid ${props => props.theme.borderColor || '#333'};
+  background-color: ${props => props.theme.surface || '#4a5969'};
+  color: ${props => props.theme.text.primary || '#ffffff'};
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 `;
 
-const StyledMessages = styled(List)`
-  color: ${(props) => props.theme.text.primary};
-  background-color: ${(props) => props.theme.palette.primary};
-  margin-bottom: 1rem;
-  border-radius: 5px;
+const BackButton = styled(FaArrowLeft)`
+    margin-right: 1rem;
+    cursor: pointer;
+    font-size: 1.2rem;
 `;
 
-const StyledMessageInputContainer = styled(Box)`
+const Avatar = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 1rem;
+`;
+
+const MessageList = styled.div`
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+`;
+
+const MessageBubble = styled.div`
+  max-width: 70%;
+  padding: 0.75rem 1rem;
+  border-radius: 18px;
+  margin-bottom: 0.5rem;
+  color: #fff;
+  align-self: ${props => props.isSender ? 'flex-end' : 'flex-start'};
+  background-color: ${props => props.isSender ? (props.theme.accent || '#73beb0') : (props.theme.surface || '#4a5969')};
+  border: 1px solid ${props => props.isSender ? 'transparent' : (props.theme.borderColor || '#333')};
+`;
+
+const MessageInputContainer = styled.form`
+  padding: 1rem;
+  border-top: 1px solid ${props => props.theme.borderColor || '#333'};
+  background-color: ${props => props.theme.surface || '#4a5969'};
   display: flex;
   align-items: center;
 `;
 
-const StyledTextField = styled(TextField)`
-  .MuiInputBase-root {
-    color: ${(props) => props.theme.text.primary};
-  }
-  .MuiInputLabel-root {
-    color: ${(props) => props.theme.text.secondary};
-  }
-  .MuiOutlinedInput-root {
-    fieldset {
-      border-color: ${(props) => props.theme.palette.secondary};
-    }
-    &:hover fieldset {
-      border-color: ${(props) => props.theme.palette.accent};
-    }
-    &.Mui-focused fieldset {
-      border-color: ${(props) => props.theme.palette.accent};
-    }
-  }
+const Input = styled.input`
+  flex-grow: 1;
+  padding: 0.75rem;
+  border-radius: 20px;
+  border: 1px solid ${props => props.theme.borderColor || '#333'};
+  background-color: ${props => props.theme.background || '#35424c'};
+  color: ${props => props.theme.text.primary || '#ffffff'};
+  margin-right: 1rem;
 `;
 
-const StyledButton = styled(Button)`
-  background-color: ${(props) => props.theme.palette.primary};
-  color: ${(props) => props.theme.text.primary};
+const SendButton = styled.button`
+  background: ${props => props.theme.accent || '#73beb0'};
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.2rem;
 
   &:hover {
-    background-color: ${(props) => props.theme.palette.accent};
+    background: ${props => props.theme.accentHover || '#427973'};
   }
 `;
 
-const Chat = ({ conversationId, currentUserId, recipientId }) => {
-  const [messages, setMessages] = useState([]);
+const Placeholder = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    text-align: center;
+    color: ${props => props.theme.text.secondary || '#a0a0a0'};
+    padding: 2rem;
+`;
+
+// --- Chat Component ---
+const Chat = ({ conversation, currentUserId, onSendMessage, theme, isMobile, onBack }) => {
   const [newMessage, setNewMessage] = useState('');
-  const [locked, setLocked] = useState(false);
-  const [showCallPopup, setShowCallPopup] = useState(false);
-  const [callUser, setCallUser] = useState(null);
-  const { showSnackbar } = useSnackbar();
+  const messagesEndRef = useRef(null);
+
+  const recipient = conversation?.participants.find(p => p.id !== currentUserId);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
 
   useEffect(() => {
-    const establishE2EESession = async () => {
-      try {
-        await chatService.establishSession(recipientId, null, null);
-        showSnackbar('E2EE session established', 'success');
-      } catch (error) {
-        showSnackbar('Failed to establish E2EE session', 'error');
-        console.error(error);
-      }
-    };
+    scrollToBottom()
+  }, [conversation?.messages]);
 
-    establishE2EESession();
-
-    realtimeService.connect(currentUserId);
-
-    chatService.getMessages(conversationId).then(setMessages);
-
-    const handleNewMessage = (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-      showSnackbar(`New message from ${message.sender.name}`, 'success');
-    };
-
-    chatService.onNewMessage(handleNewMessage);
-
-    return () => {
-      chatService.offNewMessage();
-      realtimeService.disconnect();
-    };
-  }, [conversationId, currentUserId, recipientId, showSnackbar]);
-
-  const handleSendMessage = () => {
-    if (newMessage.trim() !== '') {
-      chatService.sendMessage({ 
-        content: newMessage, 
-        sender_id: currentUserId,
-        recipient_id: recipientId,
-        conversation_id: conversationId
-       }).then(sentMessage => {
-        setMessages(prevMessages => [...prevMessages, sentMessage]);
-       });
-      setNewMessage('');
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (newMessage.trim() !== '' && conversation) {
+        onSendMessage(conversation.id, newMessage);
+        setNewMessage('');
     }
   };
 
-  const handleUnlock = () => {
-    setLocked(false);
-  };
-  
-  const handleUserClick = (user) => {
-    setCallUser(user);
-    setShowCallPopup(true);
-  };
-  
-    const handleStartCall = (callType) => {
-    console.log(`Starting ${callType} call with ${callUser.name}`);
-    setShowCallPopup(false);
-  };
-
-  if (locked) {
-    return <PinLock onUnlock={handleUnlock} />;
+  if (!conversation) {
+    return (
+        <Placeholder theme={theme}>
+            <h2>Welcome to Messaging</h2>
+            <p>Select a conversation from the list on the left to start chatting.</p>
+            <p>If you're on a mobile device, you might need to find the conversation list first.</p>
+        </Placeholder>
+    )
   }
 
   return (
-    <StyledChat>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5">Chat</Typography>
-		    <Box>
-          <IconButton onClick={() => handleUserClick({name: "User"})}>
-            <Typography>Call</Typography>
-          </IconButton>
-          <IconButton onClick={() => setLocked(true)}>
-            <Typography>Lock</Typography>
-          </IconButton>
-		</Box>
-      </Box>
-      <StyledMessages>
-        {messages.map((message) => (
-          <ListItem key={message.id}>
-            <ListItemText primary={message.content} secondary={message.sender.name} />
-          </ListItem>
+    <ChatContainer theme={theme}>
+      <ChatHeader theme={theme}>
+        {isMobile && <BackButton onClick={onBack} />}
+        <Avatar src={recipient?.avatar} alt={recipient?.name} />
+        <h3>{recipient?.name}</h3>
+      </ChatHeader>
+      <MessageList>
+        {conversation.messages.map((msg, index) => (
+          <MessageBubble key={index} isSender={msg.senderId === currentUserId} theme={theme}>
+            {msg.content}
+          </MessageBubble>
         ))}
-      </StyledMessages>
-      <StyledMessageInputContainer>
-        <StyledTextField
-          label="Type a message"
-          variant="outlined"
-          fullWidth
+        <div ref={messagesEndRef} />
+      </MessageList>
+      <MessageInputContainer onSubmit={handleSendMessage}>
+          <Input
+          type="text"
+          placeholder="Type a message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-        />
-        <StyledButton variant="contained" onClick={handleSendMessage} sx={{ ml: 1 }}>
-          Send
-        </StyledButton>
-      </StyledMessageInputContainer>
-      {showCallPopup && <CallPopup user={callUser} onStartCall={handleStartCall} onClose={() => setShowCallPopup(false)} />}
-    </StyledChat>
+          />
+          <SendButton type="submit">
+              <FaPaperPlane />
+          </SendButton>
+      </MessageInputContainer>
+    </ChatContainer>
   );
 };
 

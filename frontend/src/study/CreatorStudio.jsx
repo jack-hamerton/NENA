@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
 
 // Import chart components
 import { KPIStatStrip } from './charts/KPIStatStrip';
@@ -16,6 +17,7 @@ import { QualTable } from './charts/QualTable';
 import MethodologyPanel from './MethodologyPanel';
 import FindingsPanel from './findings/FindingsPanel';
 import CreatorQuestionBuilder from './CreatorQuestionBuilder';
+import { theme } from '../theme/theme';
 
 import {
   StudioContainer,
@@ -136,67 +138,69 @@ const CreatorStudio = () => {
   const keyQuotes = analysisData?.key_quotes ? Object.entries(analysisData.key_quotes) : [];
 
   return (
-    <StudioContainer>
-      <TabContainer>
-        <TabButton active={activeTab === 'build'} onClick={() => setActiveTab('build')}>
-          Build
-        </TabButton>
-        <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} disabled={!studyId}>
-          Dashboard
-        </TabButton>
-        <TabButton active={activeTab === 'findings'} onClick={() => setActiveTab('findings')} disabled={!studyId}>
-          Findings
-        </TabButton>
-        <TabButton active={activeTab === 'methodology'} onClick={() => setActiveTab('methodology')} disabled={!studyId}>
-          Methodology
-        </TabButton>
-      </TabContainer>
+    <ThemeProvider theme={theme}>
+      <StudioContainer>
+        <TabContainer>
+          <TabButton active={activeTab === 'build'} onClick={() => setActiveTab('build')}>
+            Build
+          </TabButton>
+          <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} disabled={!studyId}>
+            Dashboard
+          </TabButton>
+          <TabButton active={activeTab === 'findings'} onClick={() => setActiveTab('findings')} disabled={!studyId}>
+            Findings
+          </TabButton>
+          <TabButton active={activeTab === 'methodology'} onClick={() => setActiveTab('methodology')} disabled={!studyId}>
+            Methodology
+          </TabButton>
+        </TabContainer>
 
-      <ContentContainer>
-        {activeTab === 'build' && <CreatorQuestionBuilder onSave={handleSaveStudy} />}
+        <ContentContainer>
+          {activeTab === 'build' && <CreatorQuestionBuilder onSave={handleSaveStudy} />}
 
-        {activeTab === 'dashboard' && studyId && (
-          <ChartGrid>
-            <KPIStatStrip stats={kpiStats} />
-            <ChartCard>
-              {analysisData ? <DonutChart data={sentimentData} title="Sentiment Analysis" /> : <p>Waiting for data...</p>}
-            </ChartCard>
-            <ChartCard>
-              <BarChart data={ageData} title="Participant Age Distribution" />
-            </ChartCard>
-            <ChartCard>
-              <RecommendationCard recommendation={recommendation} />
-            </ChartCard>
-            <ChartCard style={{ gridColumn: 'span 3' }}>
-              <QualTable data={qualData} title="Qualitative Data" />
-            </ChartCard>
-            <ChartCard style={{ gridColumn: 'span 2' }}>
-              {analysisData ? <WordCloud words={themes} title="Key Themes Word Cloud" /> : <p>Waiting for data...</p>}
-            </ChartCard>
-            <ChartCard style={{ gridColumn: 'span 1' }}>
-              {analysisData ? <InsightList insights={themes} title="Key Themes" /> : <p>Waiting for data...</p>}
-            </ChartCard>
-            <ChartCard style={{ gridColumn: 'span 3' }}>
-              <h3 className="text-xl font-bold text-gray-800">Key Quotes</h3>
-              {analysisData ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {keyQuotes.map(([theme, quote]) => (
-                    <QuoteCard key={theme} quote={{ text: quote, author: theme }} />
-                  ))}
-                </div>
-              ) : (
-                <p>Waiting for data...</p>
-              )}
-            </ChartCard>
-          </ChartGrid>
-        )}
+          {activeTab === 'dashboard' && studyId && (
+            <ChartGrid>
+              <KPIStatStrip stats={kpiStats} />
+              <ChartCard>
+                {analysisData ? <DonutChart data={sentimentData} title="Sentiment Analysis" /> : <p>Waiting for data...</p>}
+              </ChartCard>
+              <ChartCard>
+                <BarChart data={ageData} title="Participant Age Distribution" />
+              </ChartCard>
+              <ChartCard>
+                <RecommendationCard recommendation={recommendation} />
+              </ChartCard>
+              <ChartCard style={{ gridColumn: 'span 3' }}>
+                <QualTable data={qualData} title="Qualitative Data" />
+              </ChartCard>
+              <ChartCard style={{ gridColumn: 'span 2' }}>
+                {analysisData ? <WordCloud words={themes} title="Key Themes Word Cloud" /> : <p>Waiting for data...</p>}
+              </ChartCard>
+              <ChartCard style={{ gridColumn: 'span 1' }}>
+                {analysisData ? <InsightList insights={themes} title="Key Themes" /> : <p>Waiting for data...</p>}
+              </ChartCard>
+              <ChartCard style={{ gridColumn: 'span 3' }}>
+                <h3 className="text-xl font-bold text-gray-800">Key Quotes</h3>
+                {analysisData ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {keyQuotes.map(([theme, quote]) => (
+                      <QuoteCard key={theme} quote={{ text: quote, author: theme }} />
+                    ))}
+                  </div>
+                ) : (
+                  <p>Waiting for data...</p>
+                )}
+              </ChartCard>
+            </ChartGrid>
+          )}
 
-        {activeTab === 'findings' && studyId && <FindingsPanel />}
+          {activeTab === 'findings' && studyId && <FindingsPanel />}
 
-        {activeTab === 'methodology' && studyId && <MethodologyPanel study={study} />}
+          {activeTab === 'methodology' && studyId && <MethodologyPanel study={study} />}
 
-      </ContentContainer>
-    </StudioContainer>
+        </ContentContainer>
+      </StudioContainer>
+    </ThemeProvider>
   );
 };
 

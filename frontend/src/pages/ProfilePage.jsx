@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider } from 'styled-components';
+import { ThemeProvider, useTheme } from 'styled-components';
+import { useMediaQuery, Grid, Button, CircularProgress, Typography, Modal } from '@mui/material';
 import PostsGrid from '../components/profile/PostsGrid';
 import PodcastsGrid from '../components/profile/PodcastsGrid';
 import SpiderWebCanvas from '../components/profile/SpiderWebCanvas';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import IntentModal from '../components/profile/IntentModal';
 import CreatePodcast from '../components/profile/CreatePodcast';
-import { theme } from '../theme/theme';
+import { theme as appTheme } from '../theme/theme';
 import {
   getUserById,
   getFollowers,
@@ -27,7 +28,6 @@ import {
     MetricsSection,
     ProfileFooter
 } from './ProfilePage.styled';
-import { Button, CircularProgress, Typography, Modal } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
 const ProfilePage = () => {
@@ -47,8 +47,12 @@ const ProfilePage = () => {
   const [hashtagMetrics, setHashtagMetrics] = useState([]);
   const [badges, setBadges] = useState([]);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   useEffect(() => {
     const fetchUserData = async () => {
+      setLoading(true);
       try {
         const [userResponse, followersResponse, followingResponse, followersOfFollowersResponse, postsResponse, podcastsResponse, followerIntentMetricsResponse, hashtagMetricsResponse, badgesResponse] = await Promise.all([
           getUserById(id),
@@ -70,9 +74,9 @@ const ProfilePage = () => {
         setFollowerIntentMetrics(followerIntentMetricsResponse.data);
         setHashtagMetrics(hashtagMetricsResponse.data);
         setBadges(badgesResponse.data);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching user data:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -83,7 +87,6 @@ const ProfilePage = () => {
   const handleFollow = async (intent) => {
     try {
       await followUser(id, intent);
-      // Refresh followers after following
       const followersResponse = await getFollowers(id);
       setFollowers(followersResponse.data);
       setIntentModalOpen(false);
@@ -100,64 +103,72 @@ const ProfilePage = () => {
     return <Typography>User not found</Typography>;
   }
 
+  const postsToShow = isMobile ? 4 : 8;
+  const podcastsToShow = isMobile ? 2 : 4;
+
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={appTheme}>
       <ProfilePageContainer>
         <ProfileHeader user={user} followerCount={followers.length} followingCount={following.length} onFollow={() => setIntentModalOpen(true)} />
         <IntentModal open={intentModalOpen} onClose={() => setIntentModalOpen(false)} onFollow={handleFollow} />
 
-        <SpiderWebCanvasSection>
-          <SpiderWebCanvas currentUser={user} follows={followers} followersOfFollowers={followersOfFollowers} followerIntentMetrics={followerIntentMetrics} />
-        </SpiderWebCanvasSection>
+        <Grid container spacing={isMobile ? 2 : 4}>
+          <Grid item xs={12} md={6}>
+            <SpiderWebCanvasSection>
+              <SpiderWebCanvas currentUser={user} follows={followers} followersOfFollowers={followersOfFollowers} followerIntentMetrics={followerIntentMetrics} />
+            </SpiderWebCanvasSection>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <MetricsSection>
+              <Typography variant="h6" gutterBottom>Metrics & Impact</Typography>
+              {followerIntentMetrics && (
+                <Typography variant="body2">Followers by Intent: Supporters ({followerIntentMetrics.supporters}), Amplifiers ({followerIntentMetrics.amplifiers}), Learners ({followerIntentMetrics.learners})</Typography>
+              )}
+              {hashtagMetrics.length > 0 && (
+                <Typography variant="body2" sx={{ mt: 1 }}>Topics Engaged: {hashtagMetrics.map(metric => `${metric.tag} (${metric.count})`).join(', ')}</Typography>
+              )}
+              {badges.length > 0 && (
+                <Typography variant="body2" sx={{ mt: 1 }}>Community Impact Badge: {badges.map(badge => badge.name).join(', ')}</Typography>
+              )}
+            </MetricsSection>
+          </Grid>
+        </Grid>
 
         <ContentSection>
           <div className="section-header">
             <Typography variant="h5">Posts</Typography>
-            <Button onClick={() => setShowMorePosts(!showMorePosts)}>
-              {showMorePosts ? 'Show Less' : 'Show More'}
-            </Button>
+            {posts.length > postsToShow && (
+                <Button onClick={() => setShowMorePosts(!showMorePosts)}>
+                {showMorePosts ? 'Show Less' : 'Show More'}
+                </Button>
+            )}
           </div>
-          <PostsGrid posts={showMorePosts ? posts : posts.slice(0, 8)} />
+          <PostsGrid posts={showMorePosts ? posts : posts.slice(0, postsToShow)} />
         </ContentSection>
 
         <ContentSection>
-        <div className="section-header">
-            <Typography variant="h5">Podcasts</Typography>
-            <Button onClick={() => setCreatePodcastModalOpen(true)}>Create Podcast</Button>
-            <Button onClick={() => setShowMorePodcasts(!showMorePodcasts)}>
-                {showMorePodcasts ? 'Show Less' : 'Show More'}
-            </Button>
-        </div>
-        <PodcastsGrid podcasts={showMorePodcasts ? podcasts : podcasts.slice(0, 4)} />
+            <div className="section-header">
+                <Typography variant="h5">Podcasts</Typography>
+                <div>
+                    <Button onClick={() => setCreatePodcastModalOpen(true)}>Create Podcast</Button>
+                    {podcasts.length > podcastsToShow && (
+                        <Button onClick={() => setShowMorePodcasts(!showMorePodcasts)}>
+                            {showMorePodcasts ? 'Show Less' : 'Show More'}
+                        </Button>
+                    )}
+                </div>
+            </div>
+            <PodcastsGrid podcasts={showMorePodcasts ? podcasts : podcasts.slice(0, podcastsToShow)} />
         </ContentSection>
         
         <Modal open={createPodcastModalOpen} onClose={() => setCreatePodcastModalOpen(false)}>
             <CreatePodcast />
         </Modal>
 
-        <MetricsSection>
-          <h3>Metrics & Impact</h3>
-          {followerIntentMetrics && (
-            <p>
-              Followers by Intent (Supporters: {followerIntentMetrics.supporters}, Amplifiers: {followerIntentMetrics.amplifiers}, Learners: {followerIntentMetrics.learners})
-            </p>
-          )}
-          {hashtagMetrics.length > 0 && (
-            <p>
-              Topics Engaged ({hashtagMetrics.map(metric => `${metric.tag} (${metric.count})`).join(', ')})
-            </p>
-          )}
-          {badges.length > 0 && (
-            <p>
-              Community Impact Badge ({badges.map(badge => badge.name).join(', ')})
-            </p>
-          )}
-        </MetricsSection>
-
         <ProfileFooter>
-          <Button>Community Rooms</Button>
-          <Button>Pinned Story</Button>
-          <Button>Request to Collaborate</Button>
+          <Button variant="outlined">Community Rooms</Button>
+          <Button variant="outlined">Pinned Story</Button>
+          <Button variant="contained">Request to Collaborate</Button>
         </ProfileFooter>
       </ProfilePageContainer>
     </ThemeProvider>

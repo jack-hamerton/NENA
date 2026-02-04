@@ -1,72 +1,32 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import styled, { ThemeProvider } from 'styled-components';
+import { ThemeProvider } from 'styled-components';
 import { RoomVideoGrid } from '../rooms/RoomVideoGrid';
 import { Chat } from '../rooms/Chat';
 import { Polls } from '../rooms/Polls';
 import { Reactions } from '../rooms/Reactions';
 import { ControlsBar } from '../rooms/ControlsBar';
 import { HostControls } from '../rooms/HostControls';
-import { Document } from '../components/collaboration/Document'; // Import Document
+import { Document } from '../components/collaboration/Document';
 import { theme } from '../theme/theme';
 import { WebRTCManager } from '../rooms/e2ee/webrtc';
-
-const RoomContainer = styled.div`
-  display: flex;
-  height: 100vh;
-  background-color: ${props => props.theme.palette.dark};
-  color: ${props => props.theme.text.primary};
-`;
-
-const MainContent = styled.div`
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-`;
-
-const VideoContainer = styled.div`
-  flex-grow: 1;
-  position: relative;
-`;
-
-const Sidebar = styled.div`
-  width: 320px;
-  flex-shrink: 0;
-  background-color: ${props => props.theme.palette.primary};
-  border-left: 1px solid ${props => props.theme.palette.dark};
-  display: flex;
-  flex-direction: column;
-`;
-
-const TabContainer = styled.div`
-    display: flex;
-    border-bottom: 1px solid ${props => props.theme.palette.dark};
-`;
-
-const TabButton = styled.button`
-    flex: 1;
-    padding: 10px;
-    border: none;
-    background-color: ${props => props.active ? props.theme.palette.accent : 'transparent'};
-    color: ${props => props.theme.text.primary};
-    cursor: pointer;
-    font-size: 16px;
-
-    &:hover {
-        background-color: ${props => props.theme.palette.secondary};
-    }
-`;
-
-// New container to ensure Document component can scroll independently
-const SidebarContent = styled.div`
-    flex-grow: 1;
-    overflow: auto; // Allow scrolling for the content area
-`;
+import {
+  RoomContainer,
+  MainContent,
+  VideoContainer,
+  Sidebar,
+  TabContainer,
+  TabButton,
+  SidebarContent,
+  ToggleSidebarButton,
+} from './RoomPage.styled';
 
 const RoomPage = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const [sidebarTab, setSidebarTab] = useState('chat'); // chat, polls, collaborate
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [reactions, setReactions] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [remoteStreams, setRemoteStreams] = useState({});
@@ -113,11 +73,14 @@ const RoomPage = () => {
     navigate('/home');
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!isSidebarOpen);
+  };
+
   if (!roomId) {
     return <div>Room not found</div>;
   }
   
-  // Define the document object for the collaboration component
   const collaborationDocument = {
       id: `room-${roomId}`,
       name: `Shared Notes for Room ${roomId}`,
@@ -135,7 +98,7 @@ const RoomPage = () => {
           <ControlsBar onSendReaction={handleSendReaction} localStream={localStream} onLeave={leaveRoom} />
           {isHost && <HostControls />}
         </MainContent>
-        <Sidebar>
+        <Sidebar className={isSidebarOpen ? 'open' : ''}>
           <TabContainer>
               <TabButton active={sidebarTab === 'chat'} onClick={() => setSidebarTab('chat')}>Chat</TabButton>
               <TabButton active={sidebarTab === 'polls'} onClick={() => setSidebarTab('polls')}>Polls</TabButton>
@@ -149,6 +112,9 @@ const RoomPage = () => {
           </SidebarContent>
           
         </Sidebar>
+        <ToggleSidebarButton onClick={toggleSidebar}>
+          {isSidebarOpen ? 'Close' : 'Open'}
+        </ToggleSidebarButton>
       </RoomContainer>
     </ThemeProvider>
   );

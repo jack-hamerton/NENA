@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import styled from 'styled-components';
-import { Avatar, Button, Typography } from '@mui/material';
+import { Avatar, Button, Typography, useTheme, useMediaQuery } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { uploadImage } from '../../services/image.service';
 import { updateProfile } from '../../services/user.service';
@@ -12,6 +12,7 @@ const HeaderContainer = styled.div`
   align-items: center;
   text-align: center;
   margin-bottom: 2rem;
+  padding: 0 1rem; /* Add padding for smaller screens */
 `;
 
 const AvatarContainer = styled.div`
@@ -39,27 +40,45 @@ const EditIconOverlay = styled.div`
   transition: opacity 0.2s ease-in-out;
 `;
 
-
-const RoleBadge = styled.p`
-  font-size: 1.2rem;
+const RoleBadge = styled(Typography)`
   font-weight: bold;
-  margin: 0.5rem 0;
+  margin-top: 0.5rem;
 `;
 
-const Tagline = styled.p`
+const Tagline = styled(Typography)`
   font-style: italic;
   margin-bottom: 1rem;
   max-width: 600px;
 `;
 
+const StatsContainer = styled.div`
+    display: flex;
+    gap: 1.5rem;
+    margin: 1rem 0;
+    color: ${props => props.theme.palette.text.secondary};
+`;
+
 const FollowButtonGroup = styled.div`
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-top: 1rem;
+  width: 100%;
+  max-width: 300px; /* Max width for mobile button stack */
+
+  /* On screens larger than sm, switch to row */
+  ${({ theme }) => theme.breakpoints.up('sm')} {
+    flex-direction: row;
+    gap: 1rem;
+    width: auto;
+    max-width: none;
+  }
 `;
 
 const ProfileHeader = ({ user, followerCount, followingCount, onFollow }) => {
   const fileInputRef = useRef(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleAvatarClick = () => {
     fileInputRef.current.click();
@@ -69,16 +88,9 @@ const ProfileHeader = ({ user, followerCount, followingCount, onFollow }) => {
     const file = event.target.files[0];
     if (file) {
       try {
-        // 1. Upload the image and get the URL
         const imageUrl = await uploadImage(file);
-
-        // 2. Update the user's profile
         await updateProfile(user.id, { profile_picture_url: imageUrl });
-
-        // 3. Refresh the UI (for now, we'll log to the console)
-        console.log("Profile picture updated successfully!");
-        window.location.reload(); // Simple way to see the change
-
+        window.location.reload();
       } catch (error) {
         console.error("Error updating profile picture:", error);
       }
@@ -88,7 +100,7 @@ const ProfileHeader = ({ user, followerCount, followingCount, onFollow }) => {
   return (
     <HeaderContainer>
       <AvatarContainer onClick={handleAvatarClick}>
-        <Avatar src={user.profilePicture} sx={{ width: 120, height: 120, mb: 2 }} />
+        <Avatar src={user.profilePicture} sx={{ width: isMobile ? 90 : 120, height: isMobile ? 90 : 120, mb: 2 }} />
         <EditIconOverlay className="edit-icon">
           <EditIcon />
         </EditIconOverlay>
@@ -102,15 +114,17 @@ const ProfileHeader = ({ user, followerCount, followingCount, onFollow }) => {
         accept="image/png, image/jpeg, image/gif" 
       />
 
-      <Typography variant="h4">{user.displayName}</Typography>
+      <Typography variant={isMobile ? 'h5' : 'h4'}>{user.displayName}</Typography>
       <Typography variant="body1" color="text.secondary">@{user.handle}</Typography>
-      <RoleBadge>👑 {user.role}</RoleBadge>
-      <Tagline>{user.tagline}</Tagline>
-      <div>
-        <span>{followerCount} Followers</span>
-        <span>{followingCount} Following</span>
-      </div>
-      <FollowButtonGroup>
+      <RoleBadge variant="body1">👑 {user.role}</RoleBadge>
+      <Tagline variant="body2">{user.tagline}</Tagline>
+      
+      <StatsContainer theme={theme}>
+        <Typography><b>{followerCount}</b> Followers</Typography>
+        <Typography><b>{followingCount}</b> Following</Typography>
+      </StatsContainer>
+
+      <FollowButtonGroup theme={theme}>
         <Button variant="contained" color="success" onClick={() => onFollow('supporter')}>Follow as Supporter</Button>
         <Button variant="contained" color="warning" onClick={() => onFollow('amplifier')}>Follow as Amplifier</Button>
         <Button variant="contained" color="info" onClick={() => onFollow('learner')}>Follow as Learner</Button>
