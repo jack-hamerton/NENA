@@ -113,6 +113,10 @@ export const Sidebar = ({ isOpen, setOpen }) => {
 
   const handleTouchStart = (e) => {
     if (!isMobile) return;
+    // Only start swipe gesture if the touch is near the edge of the screen
+    if (e.targetTouches[0].clientX > 50 && e.targetTouches[0].clientX < window.innerWidth - 50) {
+        return;
+    }
     touchEndX.current = null;
     touchStartX.current = e.targetTouches[0].clientX;
   };

@@ -10,10 +10,10 @@ import {
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import styled from 'styled-components';
+import styled, { withTheme} from 'styled-components';
 
 const StyledContainer = styled(Container)`
-  background-color: #35424c;
+  background-color: ${props => props.theme.background};
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -21,41 +21,41 @@ const StyledContainer = styled(Container)`
 `;
 
 const StyledBox = styled(Box)`
-  background-color: #4a5969;
+  background-color: ${props => props.theme.surface};
   padding: 2rem;
   border-radius: 8px;
-  color: #ffffff;
+  color: ${props => props.theme.text.primary};
 `;
 
 const StyledTextField = styled(TextField)`
   .MuiInputBase-root {
-    color: #ffffff;
-    background-color: #35424c;
+    color: ${props => props.theme.text.primary};
+    background-color: ${props => props.theme.background};
   }
   .MuiInputLabel-root {
-    color: #a0a0a0;
+    color: ${props => props.theme.text.secondary};
   }
   .MuiOutlinedInput-root {
     fieldset {
-      border-color: #73beb0;
+      border-color: ${props => props.theme.accent};
     }
     &:hover fieldset {
-      border-color: #427973;
+      border-color: ${props => props.theme.accentHover};
     }
     &.Mui-focused fieldset {
-      border-color: #427973;
+      border-color: ${props => props.theme.accentHover};
     }
   }
 `;
 
 const StyledButton = styled(Button)`
-  background-color: #427973;
+  background-color: ${props => props.theme.accent};
   &:hover {
-    background-color: #73beb0;
+    background-color: ${props => props.theme.accentHover};
   }
 `;
 
-const LoginPage = () => {
+const LoginPage = ({ theme }) => {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -95,6 +95,11 @@ const LoginPage = () => {
               onChange={(e) => setUsername(e.target.value)}
               autoFocus
             />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <MuiLink component={Link} to='/forgot-password' variant='body2'>
+                Forgot Password?
+              </MuiLink>
+            </Box>
             <StyledTextField
               margin='normal'
               required
@@ -107,9 +112,6 @@ const LoginPage = () => {
             <StyledButton type='submit' fullWidth variant='contained' sx={{ mt: 3, mb: 2 }}>
               Sign In
             </StyledButton>
-            <MuiLink component={Link} to='/forgot-password' variant='body2'>
-              Forgot Password?
-            </MuiLink>
             <MuiLink component={Link} to='/signup' variant='body2'>
               {"Don\'t have an account? Sign Up"}
             </MuiLink>
@@ -119,4 +121,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default withTheme(LoginPage);
