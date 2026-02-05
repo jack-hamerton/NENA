@@ -1,29 +1,32 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import PostCard from './PostCard';
+// Correcting the import to the actual Post component we modified
+import { Post } from '../components/post/Post';
 
 const ActivityFeedContainer = styled.div`
   /* Add some spacing between posts */
+  padding: 0 1rem; // Add some horizontal padding for better spacing on mobile
   & > div {
     margin-bottom: 1rem;
   }
 `;
 
-const ActivityFeed = ({ posts, onReportPost, onUsernameLongPress, onHashtagClick }) => {
+const ActivityFeed = ({ posts, onReportPost, onUsernameLongPress, onHashtagClick, onCampaignClick }) => {
   if (!posts || posts.length === 0) {
-    return <div>No posts to display.</div>;
+    return <div style={{ textAlign: 'center', marginTop: '2rem' }}>No posts to display.</div>;
   }
 
   return (
     <ActivityFeedContainer>
       {posts.map(post => (
-        <PostCard 
+        <Post // Using the Post component that we updated
           key={post.id} 
           post={post} 
           onReportPost={onReportPost}
           onUsernameLongPress={onUsernameLongPress}
           onHashtagClick={onHashtagClick}
+          onCampaignClick={onCampaignClick} // Pass the prop down
         />
       ))}
     </ActivityFeedContainer>
