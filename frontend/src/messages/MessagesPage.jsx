@@ -1,6 +1,6 @@
-
 import { useState, useEffect, useContext } from 'react';
-import { Box, Grid, useMediaQuery, ThemeProvider } from '@mui/material';
+import { Box, Grid, useMediaQuery } from '@mui/material';
+import { ThemeProvider } from 'styled-components';
 import { theme as appTheme } from '../theme/theme';
 import ConversationList from './ConversationList';
 import Chat from './Chat';
@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 const MessagesPage = () => {
   const [conversations, setConversations] = useState([]);
   const [selectedConversationId, setSelectedConversationId] = useState(null);
-  const isMobile = useMediaQuery(appTheme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery('(max-width:600px)');
   const { user } = useContext(AuthContext);
 
   useEffect(() => {

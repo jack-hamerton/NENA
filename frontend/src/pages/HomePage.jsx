@@ -13,7 +13,7 @@ import { useAuth } from '../hooks/useAuth';
 const HomePageContainer = styled.div`
   display: flex;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   background-color: ${props => props.theme.palette.background.default};
   overflow: hidden; /* Hide scrollbars from the container */
 `;
@@ -23,6 +23,10 @@ const MainContent = styled.div`
   position: relative;
   height: 100vh;
   overflow-y: auto; /* Allow scrolling on the feed only */
+  overflow-x: hidden;
+  min-width: 0;
+  padding: 1rem 1.5rem;
+  box-sizing: border-box;
 `;
 
 const HashtagHeader = styled.div`

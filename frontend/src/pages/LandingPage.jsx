@@ -36,9 +36,16 @@ const Nav = styled.nav`
 `;
 
 const Logo = styled.div`
-  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
   font-weight: 700;
-  letter-spacing: 0.08em;
+`;
+
+const LogoMark = styled.img`
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
 `;
 
 const NavActions = styled.div`
@@ -205,7 +212,9 @@ const LandingPage = () => {
     <Page>
       <Shell>
         <Nav>
-          <Logo>NENA</Logo>
+          <Logo>
+            <LogoMark src="/nena-logo.png" alt="NenaSpace logo" />
+          </Logo>
           <NavActions>
             <GhostLink to="/login">Login</GhostLink>
             <SolidLink to="/signup">Get Started</SolidLink>

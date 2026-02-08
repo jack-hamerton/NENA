@@ -1,13 +1,12 @@
 
 import styled from 'styled-components';
-import { up } from 'styled-breakpoints';
 
 export const ProfilePageContainer = styled.div`
   padding: 1rem;
   background-color: ${props => props.theme.palette.dark};
   color: ${props => props.theme.text.primary};
 
-  ${up('md')} {
+  @media (min-width: 900px) {
     padding: 2rem;
   }
 `;
@@ -21,7 +20,7 @@ export const SpiderWebCanvasSection = styled.section`
   height: 300px;
   margin-bottom: 2rem;
 
-  ${up('md')} {
+  @media (min-width: 900px) {
     height: 400px;
   }
 `;
@@ -54,7 +53,7 @@ export const ProfileFooter = styled.footer`
   align-items: center;
   gap: 1rem;
 
-  ${up('sm')} {
+  @media (min-width: 600px) {
     flex-direction: row;
     justify-content: center;
   }

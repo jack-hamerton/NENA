@@ -9,23 +9,27 @@ import FeedPoll from './FeedPoll';
 import CommentModal from '../components/modals/CommentModal';
 
 const FullScreenCard = styled.div`
-  height: 100vh;
-  width: 100vw;
+  width: 100%;
   scroll-snap-align: start;
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 1rem;
-  color: #fff;
-  background-color: #000; /* Assuming a dark theme for the post background */
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 1.5rem;
+  color: ${props => props.theme.text?.primary || '#ffffff'};
+  background-color: ${props => props.theme.palette?.background?.paper || '#1f2428'};
+  border-radius: 12px;
+  min-height: 220px;
 `;
 
 const PostContent = styled.div`
-  position: absolute;
-  bottom: 80px; /* Above the actions */
-  left: 20px;
-  right: 80px; /* Space for the vertical actions */
+  padding-right: 64px; /* Space for the vertical actions */
+`;
+
+const PostHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 `;
 
 const PostText = styled.p`
@@ -44,8 +48,8 @@ const Hashtag = styled.span`
 
 const VerticalActions = styled.div`
   position: absolute;
-  right: 20px;
-  bottom: 80px;
+  right: 16px;
+  top: 64px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -110,16 +114,15 @@ const PostCard = ({ post, onUsernameLongPress, onHashtagClick }) => {
 
   return (
     <FullScreenCard>
-        <div 
-            onMouseDown={handlePressStart} 
-            onMouseUp={handlePressEnd} 
-            onMouseLeave={handlePressEnd}
-            onTouchStart={handlePressStart}
-            onTouchEnd={handlePressEnd}
-            style={{ position: 'absolute', top: '20px', left: '20px' }}
-        >
-            <UserAvatar user={post.author} />
-        </div>
+      <PostHeader
+        onMouseDown={handlePressStart}
+        onMouseUp={handlePressEnd}
+        onMouseLeave={handlePressEnd}
+        onTouchStart={handlePressStart}
+        onTouchEnd={handlePressEnd}
+      >
+        <UserAvatar user={post.author} />
+      </PostHeader>
       <PostContent>
         <PostText>{renderContentWithHashtags(post.content)}</PostText>
         {post.poll && <FeedPoll poll={post.poll} postId={post.id} />}

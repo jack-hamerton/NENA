@@ -1,6 +1,5 @@
 
 import styled from 'styled-components';
-import { up } from 'styled-breakpoints';
 
 export const RoomContainer = styled.div`
   display: flex;
@@ -9,7 +8,7 @@ export const RoomContainer = styled.div`
   background-color: ${props => props.theme.palette.dark};
   color: ${props => props.theme.text.primary};
 
-  ${up('md')} {
+  @media (min-width: 900px) {
     flex-direction: row;
   }
 `;
@@ -44,7 +43,7 @@ export const Sidebar = styled.div`
     transform: translateY(0);
   }
 
-  ${up('md')} {
+  @media (min-width: 900px) {
     width: 320px;
     flex-shrink: 0;
     position: static;
@@ -92,7 +91,7 @@ export const ToggleSidebarButton = styled.button`
   cursor: pointer;
   z-index: 1001;
 
-  ${up('md')} {
+  @media (min-width: 900px) {
     display: none; /* Hide on larger screens */
   }
 `;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { chatService } from '../services/chatService';
 import { roomService } from '../services/roomService';
 import { useAuth } from '../hooks/useAuth';
-import { useSnackbar } from '../context/SnackbarContext';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 export const ChatRoom = ({ roomId }) => {
   const [messages, setMessages] = useState([]);

@@ -1,13 +1,12 @@
 
 import styled from 'styled-components';
-import { up } from 'styled-breakpoints';
 
 export const StudioContainer = styled.div`
   padding: 1rem;
   background-color: #f0f2f5;
   min-height: 100vh;
 
-  ${up('md')} {
+  @media (min-width: 900px) {
     padding: 2rem;
   }
 `;
@@ -45,7 +44,7 @@ export const ContentContainer = styled.div`
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-  ${up('md')} {
+  @media (min-width: 900px) {
     padding: 2rem;
   }
 `;
@@ -55,11 +54,11 @@ export const ChartGrid = styled.div`
   grid-template-columns: 1fr;
   gap: 1.5rem;
 
-  ${up('md')} {
+  @media (min-width: 900px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  ${up('lg')} {
+  @media (min-width: 1200px) {
     grid-template-columns: repeat(3, 1fr);
   }
 `;
@@ -71,31 +70,31 @@ export const ChartCard = styled.div`
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   grid-column: span 1;
 
-  ${up('md')} {
+  @media (min-width: 900px) {
     /* Default to full width on medium screens */
     grid-column: span 2;
   }
 
-  ${up('lg')} {
+  @media (min-width: 1200px) {
       /* Default to 1/3 width on large screens */
       grid-column: span 1;
   }
 
   /* Specific overrides for larger cards */
   &:nth-of-type(5) { /* QualTable */
-    ${up('lg')} {
+    @media (min-width: 1200px) {
       grid-column: span 3;
     }
   }
 
   &:nth-of-type(6) { /* WordCloud */
-    ${up('lg')} {
+    @media (min-width: 1200px) {
       grid-column: span 2;
     }
   }
   
   &:nth-of-type(8) { /* Key Quotes */
-    ${up('lg')} {
+    @media (min-width: 1200px) {
       grid-column: span 3;
     }
   }

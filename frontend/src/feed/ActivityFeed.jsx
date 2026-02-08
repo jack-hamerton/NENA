@@ -10,9 +10,14 @@ const ActivityFeedContainer = styled.div`
   }
 `;
 
+const EmptyState = styled.div`
+  padding: 1rem;
+  color: ${props => props.theme.text?.primary || '#ffffff'};
+`;
+
 const ActivityFeed = ({ posts, onReportPost, onUsernameLongPress, onHashtagClick }) => {
   if (!posts || posts.length === 0) {
-    return <div>No posts to display.</div>;
+    return <EmptyState>No posts to display.</EmptyState>;
   }
 
   return (

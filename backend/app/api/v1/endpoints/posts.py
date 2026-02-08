@@ -28,7 +28,8 @@ def read_for_you_feed(
     """
     Retrieve the "For You" feed for the current user.
     """
-    posts = crud.post.get_multi_excluding_owner(db, user_id=current_user.id, limit=20)
+    # Include the current user's posts so "For You" isn't empty in small/dev datasets.
+    posts = crud.post.get_multi(db, limit=20)
     return crud.post.get_posts_with_follow_status(db, user_id=current_user.id, posts=posts)
 
 

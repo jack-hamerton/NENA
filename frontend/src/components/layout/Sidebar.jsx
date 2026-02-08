@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { FaHome, FaCompass, FaBook, FaPodcast, FaCalendarAlt, FaUsers, FaEnvelope, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
 
 const SidebarContainer = styled.aside`

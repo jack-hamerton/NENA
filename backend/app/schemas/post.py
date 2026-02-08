@@ -1,6 +1,6 @@
 
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, field_validator
+from typing import Optional, List, Any
 from datetime import datetime
 from enum import Enum
 from .user import User
@@ -29,11 +29,20 @@ class PostInDBBase(PostBase):
     audience: Audience
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Post(PostInDBBase):
     author: User
     likes: int
+
+    @field_validator("likes", mode="before")
+    @classmethod
+    def normalize_likes(cls, v: Any) -> int:
+        if isinstance(v, list):
+            return len(v)
+        if v is None:
+            return 0
+        return int(v)
 
 class PostInDB(PostInDBBase):
     pass

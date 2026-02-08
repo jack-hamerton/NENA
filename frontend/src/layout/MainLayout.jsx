@@ -23,7 +23,7 @@ import PrivateRoute from '../components/PrivateRoute';
 import TestPage from '../TestPage';
 import { Sidebar } from '../components/layout/Sidebar';
 import styled from 'styled-components';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const ContentContainer = styled.div`
   margin-left: ${props => props.sidebarOpen ? '120px' : '0'};

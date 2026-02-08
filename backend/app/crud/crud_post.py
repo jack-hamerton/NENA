@@ -43,6 +43,9 @@ class CRUDPost(CRUDBase[Post, PostCreate, PostUpdate]):
         self, db: Session, *, user_id: uuid.UUID, posts: List[Post]
     ) -> List[Post]:
         for post in posts:
+            # Normalize likes to an integer count for API responses.
+            if isinstance(post.likes, list):
+                post.likes = len(post.likes)
             post.is_following = crud.user.is_following(
                 db, follower_id=user_id, followed_id=post.user_id
             )

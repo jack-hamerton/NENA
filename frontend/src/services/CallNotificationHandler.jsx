@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { callService } from './callService';
-import { useSnackbar } from '../context/SnackbarContext';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 const CallNotificationHandler = () => {
   const { showSnackbar } = useSnackbar();
