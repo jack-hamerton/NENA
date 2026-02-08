@@ -1,12 +1,41 @@
 
 import { useState, useEffect } from 'react';
-import { Avatar, Card, CardHeader, CardContent, CardActions, IconButton, Typography } from '@mui/material';
+import { Avatar, Card, CardHeader, CardContent, CardActions, IconButton, Typography, Link } from '@mui/material';
 import { Favorite, Comment } from '@mui/icons-material';
 import { useUser } from '../../hooks/useUser';
 import { usePosts } from '../../hooks/usePosts';
 import { ThreadedCommentSection } from '../../comments/ThreadedCommentSection';
 
-export const Post = ({ post }) => {
+const PostContent = ({ content, onCampaignClick }) => {
+  const handleHashtagClick = (tag) => {
+    if (tag.startsWith('#campaign-')) {
+      const campaignName = tag.replace('#campaign-', '');
+      onCampaignClick(campaignName);
+    } else {
+      // Handle regular hashtag click if needed
+      console.log('Regular hashtag clicked:', tag);
+    }
+  };
+
+  const renderContent = () => {
+    const parts = content.split(/(\s+)/);
+    return parts.map((part, index) => {
+      if (part.startsWith('#')) {
+        const isCampaign = part.startsWith('#campaign-');
+        return (
+          <Link key={index} component="button" variant="body2" onClick={() => handleHashtagClick(part)} sx={{ color: isCampaign ? 'primary.main' : 'inherit', fontWeight: isCampaign ? 'bold' : 'normal' }}>
+            {part}
+          </Link>
+        );
+      }
+      return part;
+    });
+  };
+
+  return <Typography variant="body2" color="text.secondary">{renderContent()}</Typography>;
+};
+
+export const Post = ({ post, onCampaignClick }) => {
   const [author, setAuthor] = useState(null);
   const [showComments, setShowComments] = useState(false);
   const { getUser } = useUser();
@@ -53,9 +82,7 @@ export const Post = ({ post }) => {
         subheader={new Date(post.created_at).toLocaleDateString()}
       />
       <CardContent>
-        <Typography variant="body2" color="text.secondary">
-          {post.content}
-        </Typography>
+        <PostContent content={post.content} onCampaignClick={onCampaignClick} />
         {post.media_url && (
           <img src={post.media_url} alt="Post media" style={{ maxWidth: '100%', marginTop: '1rem' }} />
         )}

@@ -7,6 +7,7 @@ import * as postService from '../services/post.service';
 import { followUser } from '../services/user.service';
 import CreatePostModal from '../components/modals/CreatePostModal';
 import IntentModal from '../components/profile/IntentModal';
+import CampaignHubModal from '../components/modals/CampaignHubModal'; // Import the new modal
 import FeedControlNav from '../layout/FeedControlNav';
 import { useAuth } from '../hooks/useAuth';
 
@@ -63,6 +64,10 @@ const HomePage = () => {
   const [intentModalOpen, setIntentModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [isNavOpen, setNavOpen] = useState(false);
+
+  // State for the Campaign Hub
+  const [isCampaignHubOpen, setCampaignHubOpen] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
   
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -121,7 +126,6 @@ const HomePage = () => {
   }, [fetchPosts]);
 
   useEffect(() => {
-    // Control nav visibility based on screen size
     setNavOpen(!isMobile);
   }, [isMobile]);
   
@@ -129,6 +133,17 @@ const HomePage = () => {
       setHashtagFilter(hashtag.substring(1));
       if(isMobile) setNavOpen(false);
   }
+
+  // Handler to open the campaign hub
+  const handleCampaignClick = (campaignName) => {
+    setSelectedCampaign(campaignName);
+    setCampaignHubOpen(true);
+  };
+
+  const handleCloseCampaignHub = () => {
+    setCampaignHubOpen(false);
+    setSelectedCampaign(null);
+  };
 
   const handleRestart = () => {
     setHashtagFilter(null);
@@ -156,7 +171,10 @@ const HomePage = () => {
         const uploadResponse = await postService.uploadImage(media);
         imageUrl = uploadResponse.data.imageUrl;
       }
-      const response = await postService.createPost({ content, image_url: imageUrl });
+      // Example of how to add a campaign hashtag
+      // For a real implementation, this would come from the Create Post UI
+      const finalContent = content + ' #campaign-KiberaSafePassage';
+      const response = await postService.createPost({ content: finalContent, image_url: imageUrl });
       setPosts(prevPosts => [response.data, ...prevPosts]);
       setCreatePostModalOpen(false);
     } catch (error) {
@@ -210,7 +228,13 @@ const HomePage = () => {
                     Filtering by: #{hashtagFilter}
                 </HashtagHeader>
             )}
-            <ActivityFeed posts={posts} onReportPost={handleReportPost} onUsernameLongPress={handleOpenIntentModal} onHashtagClick={handleHashtagClick} />
+            <ActivityFeed 
+              posts={posts} 
+              onReportPost={handleReportPost} 
+              onUsernameLongPress={handleOpenIntentModal} 
+              onHashtagClick={handleHashtagClick}
+              onCampaignClick={handleCampaignClick} // Pass the new handler down
+            />
         </MainContent>
         <CreatePostModal
           open={isCreatePostModalOpen}
@@ -218,6 +242,12 @@ const HomePage = () => {
           onCreatePost={handleCreatePost}
         />
         <IntentModal open={intentModalOpen} onClose={handleCloseIntentModal} onFollow={handleFollow} />
+        {/* Render the Campaign Hub Modal */}
+        <CampaignHubModal 
+          open={isCampaignHubOpen} 
+          onClose={handleCloseCampaignHub} 
+          campaignName={selectedCampaign} 
+        />
       </HomePageContainer>
   );
 };

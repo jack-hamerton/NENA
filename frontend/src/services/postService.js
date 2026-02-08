@@ -1,9 +1,9 @@
 
-import { api } from './api';
+import api from './api';
 
 class PostService {
   async getForYouFeed() {
-    return await api.get('/posts/foryou');
+    return await api.get('/posts/for-you');
   }
 
   async getFollowingFeed() {
@@ -11,7 +11,7 @@ class PostService {
   }
 
   async createPost(postData) {
-    return await api.post('/posts', postData);
+    return await api.post('/posts/', postData);
   }
 
   async likePost(postId) {
