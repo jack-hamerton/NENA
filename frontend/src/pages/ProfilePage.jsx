@@ -9,7 +9,7 @@ import ProfileHeader from '../components/profile/ProfileHeader';
 import IntentModal from '../components/profile/IntentModal';
 import CreatePodcast from '../components/profile/CreatePodcast';
 import AnalyticsDashboard from '../analytics/AnalyticsDashboard'; // Import the main dashboard
-import Calendar from '../components/calendar/Calendar';
+import { Calendar } from '../components/calendar/Calendar';
 import ProfileMetrics from '../components/profile/ProfileMetrics';
 import profileService from '../services/profile.service';
 import {

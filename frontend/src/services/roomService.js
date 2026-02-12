@@ -1,5 +1,5 @@
 
-import { apiService } from './apiService';
+import apiService from './api';
 import { realtimeService } from './realtimeService';
 import { EventEmitter } from 'events';
 

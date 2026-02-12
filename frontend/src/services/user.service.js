@@ -3,22 +3,22 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/api/v1/users';
 
-const followUser = (userId, intent) => {
+export const followUser = (userId, intent) => {
   return axios.post(`${API_URL}/${userId}/follow`, { intent });
 };
 
-const getUserPosts = (userId) => {
+export const getUserPosts = (userId) => {
   return axios.get(`${API_URL}/${userId}/posts`);
 };
 
-const getUserPodcasts = (userId) => {
+export const getUserPodcasts = (userId) => {
   return axios.get(`${API_URL}/${userId}/podcasts`);
 };
 
-const userService = {
-  followUser,
-  getUserPosts,
-  getUserPodcasts,
-};
+export const getMe = () => {
+  return axios.get(`${API_URL}/me`);
+}
 
-export default userService;
+export const updateProfile = (userId, profileData) => {
+  return axios.put(`${API_URL}/${userId}/profile`, profileData);
+}

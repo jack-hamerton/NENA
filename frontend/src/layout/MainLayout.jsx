@@ -8,7 +8,7 @@ import StudyPage from '../pages/StudyPage';
 import PodcastPage from '../pages/PodcastPage';
 import ProfilePage from '../pages/ProfilePage';
 import RoomPage from '../pages/RoomPage';
-import RoomsPage from '../pages/RoomsPage'; // Import RoomsPage
+import Rooms from '../pages/Rooms'; // Import Rooms
 import MessagesPage from '../pages/MessagesPage';
 import DiscoverPage from '../pages/Discover';
 import SettingsPage from '../pages/SettingsPage';
@@ -45,7 +45,7 @@ const MainLayout = () => {
               <Route path="/study/*" element={<StudyPage />} />
               <Route path="/podcasts" element={<PodcastPage />} />
               <Route path="/profile/:userId" element={<ProfilePage />} />
-              <Route path="/rooms" element={<RoomsPage />} />
+              <Route path="/rooms" element={<Rooms />} />
               <Route path="/room/:roomId" element={<RoomPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/discover" element={<DiscoverPage />} />

@@ -4,7 +4,7 @@ import api from '../services/api';
 import { getMe } from '../services/user.service';
 import { socket } from '../services/socket';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
