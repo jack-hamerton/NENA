@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { getMe } from '../services/user.service';
 import { socket } from '../services/socket';
@@ -10,56 +10,65 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          try {
-            const response = await getMe();
-            setUser(response.data);
-            socket.auth = { userId: response.data.id };
-            socket.connect();
-          } catch (error) {
-            console.error("Failed to fetch user", error);
-            localStorage.removeItem('token');
-            delete api.defaults.headers.common['Authorization'];
-            setUser(null);
-          }
+  const fetchUser = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const response = await getMe();
+        setUser(response.data);
+        // Ensure socket auth is set before connecting
+        if (!socket.auth || socket.auth.userId !== response.data.id) {
+          socket.auth = { userId: response.data.id };
+          socket.connect();
         }
-      } catch (error) {
-        console.error("Error in AuthProvider:", error);
-      } finally {
+      } else {
         setLoading(false);
       }
-    };
-    
-    fetchUser();
-
-    return () => {
-      socket.disconnect();
+    } catch (error) {
+      console.error("Failed to fetch user", error);
+      localStorage.removeItem('token');
+      delete api.defaults.headers.common['Authorization'];
+      setUser(null);
+      setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    const onConnect = () => {
+      console.log('Socket connected, fetching user...');
+      fetchUser().finally(() => setLoading(false));
+    };
+
+    const onDisconnect = () => {
+      console.log('Socket disconnected.');
+      setUser(null);
+    };
+
+    // Initial check
+    fetchUser();
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+    };
+  }, [fetchUser]);
 
   const login = async (username, password) => {
     const response = await api.post('/auth/login', { username, password });
     localStorage.setItem('token', response.data.access_token);
     api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
-    const userResponse = await getMe();
-    setUser(userResponse.data);
-    socket.auth = { userId: userResponse.data.id };
-    socket.connect();
+    await fetchUser(); // fetchUser will connect the socket
   };
 
-  const register = async ({ firstName, lastName, username, password, email }) => {
-    const response = await api.post('/auth/register', { firstName, lastName, username, password, email });
+  const register = async (userData) => {
+    const response = await api.post('/auth/register', userData);
     localStorage.setItem('token', response.data.access_token);
     api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
-    const userResponse = await getMe();
-    setUser(userResponse.data);
-    socket.auth = { userId: userResponse.data.id };
-    socket.connect();
+    await fetchUser(); // fetchUser will connect the socket
   };
 
   const logout = () => {
@@ -75,7 +84,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ user, setUser, login, logout, register, resetPassword, loading }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
