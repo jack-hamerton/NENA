@@ -1,50 +1,24 @@
 
-import api from './api';
+import axios from 'axios';
 
-export const getMe = () => {
-    return api.get('/users/me');
+const API_URL = 'http://localhost:8000/api/v1/users';
+
+const followUser = (userId, intent) => {
+  return axios.post(`${API_URL}/${userId}/follow`, { intent });
 };
 
-export const getUserById = (id) => {
-    return api.get(`/users/${id}`);
+const getUserPosts = (userId) => {
+  return axios.get(`${API_URL}/${userId}/posts`);
 };
 
-export const getFollowers = (id) => {
-    return api.get(`/users/${id}/followers`);
+const getUserPodcasts = (userId) => {
+  return axios.get(`${API_URL}/${userId}/podcasts`);
 };
 
-export const getFollowersOfFollowers = (id) => {
-    return api.get(`/users/${id}/followers-of-followers`);
+const userService = {
+  followUser,
+  getUserPosts,
+  getUserPodcasts,
 };
 
-export const getFollowing = (id) => {
-    return api.get(`/users/${id}/following`);
-};
-
-export const followUser = (id, intent) => {
-    return api.post(`/users/${id}/follow`, { intent });
-};
-
-export const getUserPosts = (id) => {
-    return api.get(`/users/${id}/posts`);
-};
-
-export const getUserPodcasts = (id) => {
-    return api.get(`/users/${id}/podcasts`);
-};
-
-export const getFollowerIntentMetrics = (id) => {
-    return api.get(`/users/${id}/follower-intent-metrics`);
-};
-
-export const getUserHashtagMetrics = (id) => {
-    return api.get(`/users/${id}/hashtag-metrics`);
-};
-
-export const getUserBadges = (id) => {
-    return api.get(`/users/${id}/badges`);
-};
-
-export const updateProfile = (id, profileData) => {
-    return api.put(`/profile/${id}`, profileData);
-};
+export default userService;

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider, useTheme } from 'styled-components';
+import { useTheme } from 'styled-components';
 import { useMediaQuery, Grid, Button, CircularProgress, Typography, Modal } from '@mui/material';
 import PostsGrid from '../components/profile/PostsGrid';
 import PodcastsGrid from '../components/profile/PodcastsGrid';
@@ -8,19 +8,10 @@ import SpiderWebCanvas from '../components/profile/SpiderWebCanvas';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import IntentModal from '../components/profile/IntentModal';
 import CreatePodcast from '../components/profile/CreatePodcast';
-import { theme as appTheme } from '../theme/theme';
-import {
-  getUserById,
-  getFollowers,
-  getFollowing,
-  followUser,
-  getUserPosts,
-  getUserPodcasts,
-  getFollowerIntentMetrics,
-  getUserHashtagMetrics,
-  getUserBadges,
-  getFollowersOfFollowers
-} from '../services/user.service';
+import AdvocacyImpactMatrix from '../components/analytics/AdvocacyImpactMatrix';
+import Calendar from '../components/calendar/Calendar';
+import ProfileMetrics from '../components/profile/ProfileMetrics';
+import profileService from '../services/profile.service';
 import {
     ProfilePageContainer,
     SpiderWebCanvasSection,
@@ -29,13 +20,13 @@ import {
     ProfileFooter
 } from './ProfilePage.styled';
 import { useParams } from 'react-router-dom';
+import { followUser, getUserPosts, getUserPodcasts } from '../services/user.service';
 
 const ProfilePage = () => {
   const { id } = useParams();
   const [user, setUser] = useState(null);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
-  const [followersOfFollowers, setFollowersOfFollowers] = useState([]);
   const [posts, setPosts] = useState([]);
   const [podcasts, setPodcasts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,26 +45,17 @@ const ProfilePage = () => {
     const fetchUserData = async () => {
       setLoading(true);
       try {
-        const [userResponse, followersResponse, followingResponse, followersOfFollowersResponse, postsResponse, podcastsResponse, followerIntentMetricsResponse, hashtagMetricsResponse, badgesResponse] = await Promise.all([
-          getUserById(id),
-          getFollowers(id),
-          getFollowing(id),
-          getFollowersOfFollowers(id),
+        const [profileResponse, postsResponse, podcastsResponse] = await Promise.all([
+          profileService.getProfileData(id),
           getUserPosts(id),
           getUserPodcasts(id),
-          getFollowerIntentMetrics(id),
-          getUserHashtagMetrics(id),
-          getUserBadges(id),
         ]);
-        setUser(userResponse.data);
-        setFollowers(followersResponse.data);
-        setFollowing(followingResponse.data);
-        setFollowersOfFollowers(followersOfFollowersResponse);
+        setUser(profileResponse.data.user);
+        setFollowers(profileResponse.data.user.followers);
+        setFollowerIntentMetrics(profileResponse.data.followerIntentMetrics);
         setPosts(postsResponse.data);
         setPodcasts(podcastsResponse.data);
-        setFollowerIntentMetrics(followerIntentMetricsResponse.data);
-        setHashtagMetrics(hashtagMetricsResponse.data);
-        setBadges(badgesResponse.data);
+
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
@@ -87,8 +69,8 @@ const ProfilePage = () => {
   const handleFollow = async (intent) => {
     try {
       await followUser(id, intent);
-      const followersResponse = await getFollowers(id);
-      setFollowers(followersResponse.data);
+      const profileResponse = await profileService.getProfileData(id);
+      setFollowers(profileResponse.data.user.followers);
       setIntentModalOpen(false);
     } catch (error) {
       console.error("Error following user:", error);
@@ -107,7 +89,6 @@ const ProfilePage = () => {
   const podcastsToShow = isMobile ? 2 : 4;
 
   return (
-    <ThemeProvider theme={appTheme}>
       <ProfilePageContainer>
         <ProfileHeader user={user} followerCount={followers.length} followingCount={following.length} onFollow={() => setIntentModalOpen(true)} />
         <IntentModal open={intentModalOpen} onClose={() => setIntentModalOpen(false)} onFollow={handleFollow} />
@@ -115,21 +96,16 @@ const ProfilePage = () => {
         <Grid container spacing={isMobile ? 2 : 4}>
           <Grid item xs={12} md={6}>
             <SpiderWebCanvasSection>
-              <SpiderWebCanvas currentUser={user} follows={followers} followersOfFollowers={followersOfFollowers} followerIntentMetrics={followerIntentMetrics} />
+              <SpiderWebCanvas currentUser={user} follows={followers} followersOfFollowers={[]} followerIntentMetrics={followerIntentMetrics} />
             </SpiderWebCanvasSection>
           </Grid>
           <Grid item xs={12} md={6}>
             <MetricsSection>
               <Typography variant="h6" gutterBottom>Metrics & Impact</Typography>
-              {followerIntentMetrics && (
-                <Typography variant="body2">Followers by Intent: Supporters ({followerIntentMetrics.supporters}), Amplifiers ({followerIntentMetrics.amplifiers}), Learners ({followerIntentMetrics.learners})</Typography>
-              )}
-              {hashtagMetrics.length > 0 && (
-                <Typography variant="body2" sx={{ mt: 1 }}>Topics Engaged: {hashtagMetrics.map(metric => `${metric.tag} (${metric.count})`).join(', ')}</Typography>
-              )}
-              {badges.length > 0 && (
-                <Typography variant="body2" sx={{ mt: 1 }}>Community Impact Badge: {badges.map(badge => badge.name).join(', ')}</Typography>
-              )}
+              <ProfileMetrics followerIntentMetrics={followerIntentMetrics} hashtagMetrics={hashtagMetrics} badges={badges} />
+              <AdvocacyImpactMatrix userId={id} />
+              <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>Calendar</Typography>
+              <Calendar userId={id} />
             </MetricsSection>
           </Grid>
         </Grid>
@@ -171,7 +147,6 @@ const ProfilePage = () => {
           <Button variant="contained">Request to Collaborate</Button>
         </ProfileFooter>
       </ProfilePageContainer>
-    </ThemeProvider>
   );
 };
 

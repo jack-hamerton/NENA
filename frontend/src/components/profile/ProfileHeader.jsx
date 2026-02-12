@@ -5,6 +5,7 @@ import { Avatar, Button, Typography, useTheme, useMediaQuery } from '@mui/materi
 import EditIcon from '@mui/icons-material/Edit';
 import { uploadImage } from '../../services/image.service';
 import { updateProfile } from '../../services/user.service';
+import { useAuth } from '../../contexts/AuthContext';
 
 const HeaderContainer = styled.div`
   display: flex;
@@ -79,9 +80,12 @@ const ProfileHeader = ({ user, followerCount, followingCount, onFollow }) => {
   const fileInputRef = useRef(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { user: authUser, setUser: setAuthUser } = useAuth();
 
   const handleAvatarClick = () => {
-    fileInputRef.current.click();
+    if (authUser && authUser.id === user.id) {
+        fileInputRef.current.click();
+    }
   };
   
   const handleFileChange = async (event) => {
@@ -90,21 +94,30 @@ const ProfileHeader = ({ user, followerCount, followingCount, onFollow }) => {
       try {
         const imageUrl = await uploadImage(file);
         await updateProfile(user.id, { profile_picture_url: imageUrl });
-        window.location.reload();
+        
+        setAuthUser(prevUser => ({
+            ...prevUser,
+            profilePicture: imageUrl,
+        }));
+
       } catch (error) {
         console.error("Error updating profile picture:", error);
       }
     }
   };
 
+  const isOwnProfile = authUser && authUser.id === user.id;
+
   return (
     <HeaderContainer>
-      <AvatarContainer onClick={handleAvatarClick}>
-        <Avatar src={user.profilePicture} sx={{ width: isMobile ? 90 : 120, height: isMobile ? 90 : 120, mb: 2 }} />
-        <EditIconOverlay className="edit-icon">
-          <EditIcon />
-        </EditIconOverlay>
-      </AvatarContainer>
+        <AvatarContainer onClick={isOwnProfile ? handleAvatarClick : undefined}>
+            <Avatar src={user.profilePicture} sx={{ width: isMobile ? 90 : 120, height: isMobile ? 90 : 120, mb: 2 }} />
+            {isOwnProfile && (
+                <EditIconOverlay className="edit-icon">
+                    <EditIcon />
+                </EditIconOverlay>
+            )}
+        </AvatarContainer>
 
       <input 
         type="file"
@@ -124,11 +137,13 @@ const ProfileHeader = ({ user, followerCount, followingCount, onFollow }) => {
         <Typography><b>{followingCount}</b> Following</Typography>
       </StatsContainer>
 
-      <FollowButtonGroup theme={theme}>
-        <Button variant="contained" color="success" onClick={() => onFollow('supporter')}>Follow as Supporter</Button>
-        <Button variant="contained" color="warning" onClick={() => onFollow('amplifier')}>Follow as Amplifier</Button>
-        <Button variant="contained" color="info" onClick={() => onFollow('learner')}>Follow as Learner</Button>
-      </FollowButtonGroup>
+      {!isOwnProfile && (
+        <FollowButtonGroup theme={theme}>
+            <Button variant="contained" color="success" onClick={() => onFollow('supporter')}>Follow as Supporter</Button>
+            <Button variant="contained" color="warning" onClick={() => onFollow('amplifier')}>Follow as Amplifier</Button>
+            <Button variant="contained" color="info" onClick={() => onFollow('learner')}>Follow as Learner</Button>
+        </FollowButtonGroup>
+      )}
     </HeaderContainer>
   );
 };

@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import styled, { withTheme} from 'styled-components';
 
 const StyledContainer = styled(Container)`
-  background-color: ${props => props.theme.background};
+  background-color: ${props => props.theme.palette.background.default};
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -21,7 +21,7 @@ const StyledContainer = styled(Container)`
 `;
 
 const StyledBox = styled(Box)`
-  background-color: ${props => props.theme.surface};
+  background-color: ${props => props.theme.palette.background.paper};
   padding: 2rem;
   border-radius: 8px;
   color: ${props => props.theme.text.primary};
@@ -30,28 +30,28 @@ const StyledBox = styled(Box)`
 const StyledTextField = styled(TextField)`
   .MuiInputBase-root {
     color: ${props => props.theme.text.primary};
-    background-color: ${props => props.theme.background};
+    background-color: ${props => props.theme.palette.background.default};
   }
   .MuiInputLabel-root {
     color: ${props => props.theme.text.secondary};
   }
   .MuiOutlinedInput-root {
     fieldset {
-      border-color: ${props => props.theme.accent};
+      border-color: ${props => props.theme.palette.accent};
     }
     &:hover fieldset {
-      border-color: ${props => props.theme.accentHover};
+      border-color: ${props => props.theme.palette.highlight};
     }
     &.Mui-focused fieldset {
-      border-color: ${props => props.theme.accentHover};
+      border-color: ${props => props.theme.palette.highlight};
     }
   }
 `;
 
 const StyledButton = styled(Button)`
-  background-color: ${props => props.theme.accent};
+  background-color: ${props => props.theme.palette.accent};
   &:hover {
-    background-color: ${props => props.theme.accentHover};
+    background-color: ${props => props.theme.palette.highlight};
   }
 `;
 
@@ -113,7 +113,7 @@ const LoginPage = ({ theme }) => {
               Sign In
             </StyledButton>
             <MuiLink component={Link} to='/signup' variant='body2'>
-              {"Don\'t have an account? Sign Up"}
+              {"Don't have an account? Sign Up"}
             </MuiLink>
           </form>
         </StyledBox>

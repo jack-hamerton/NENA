@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme/theme';
+import { checkFollowStatus, followPodcast, unfollowPodcast } from '../../services/follow.service';
+import { CircularProgress, Typography } from '@mui/material';
 
 const FollowButtonContainer = styled.div`
   display: flex;
@@ -14,54 +16,64 @@ const FollowButton = styled.button`
   padding: 0.5rem 1rem;
   border-radius: 4px;
   border: none;
-  background: ${props => (props.isFollowing ? theme.palette.tertiary : theme.palette.accent)};
-  color: ${theme.text.primary};
+  background: ${props => (props.isFollowing ? theme.palette.tertiary.main : theme.palette.primary.main)};
+  color: ${theme.palette.text.primary};
   cursor: pointer;
 
   &:hover {
-    background: ${theme.palette.secondary};
+    background: ${props => (props.isFollowing ? theme.palette.tertiary.dark : theme.palette.primary.dark)};
   }
 `;
 
 const NotificationText = styled.p`
-  color: ${theme.text.secondary};
+  color: ${theme.palette.text.secondary};
   margin: 0;
 `;
 
 const FollowButtonAndNotifications = ({ podcast }) => {
   const [isFollowing, setIsFollowing] = useState(false);
-  const [intendToListen, setIntendToListen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const userId = 1; // Hardcoded user ID for now
 
   useEffect(() => {
-    if (podcast) {
-      const savedStatus = localStorage.getItem(`following_${podcast.id}`);
-      if (savedStatus) {
-        const status = JSON.parse(savedStatus);
-        setIsFollowing(status.isFollowing);
-        setIntendToListen(status.intendToListen);
-      }
+    if (podcast && userId) {
+      setLoading(true);
+      checkFollowStatus(podcast.id, userId)
+        .then(response => {
+          setIsFollowing(response.data.is_following);
+          setLoading(false);
+        })
+        .catch(err => {
+          setError('Error fetching follow status');
+          setLoading(false);
+          console.error(err);
+        });
     }
-  }, [podcast]);
+  }, [podcast, userId]);
 
   const handleFollow = () => {
-    if (podcast) {
-      const newFollowingStatus = !isFollowing;
-      const newIntendToListen = newFollowingStatus; // Set intend to listen when following
+    if (podcast && userId) {
+      setLoading(true);
+      const followAction = isFollowing
+        ? unfollowPodcast(podcast.id, userId)
+        : followPodcast(podcast.id, userId);
 
-      setIsFollowing(newFollowingStatus);
-      setIntendToListen(newIntendToListen);
-
-      localStorage.setItem(
-        `following_${podcast.id}`,
-        JSON.stringify({ isFollowing: newFollowingStatus, intendToListen: newIntendToListen })
-      );
-
-      if (newFollowingStatus) {
-        console.log(`User is now following ${podcast.title} and intends to listen.`);
-        // Here you can also trigger a notification
-      }
+      followAction
+        .then(() => {
+          setIsFollowing(!isFollowing);
+          setLoading(false);
+        })
+        .catch(err => {
+          setError('Error updating follow status');
+          setLoading(false);
+          console.error(err);
+        });
     }
   };
+
+  if (loading) return <CircularProgress size={24} />;
+  if (error) return <Typography color="error" variant="caption">{error}</Typography>;
 
   return (
     <FollowButtonContainer>
@@ -71,7 +83,6 @@ const FollowButtonAndNotifications = ({ podcast }) => {
         </FollowButton>
       )}
       {isFollowing && <NotificationText>You will be notified of new episodes.</NotificationText>}
-      {intendToListen && <NotificationText>You intend to listen to new episodes.</NotificationText>}
     </FollowButtonContainer>
   );
 };

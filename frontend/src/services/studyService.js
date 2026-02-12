@@ -23,12 +23,12 @@ const getStudy = (studyId) => {
   return axios.get(`${API_URL}/${studyId}`);
 };
 
-const submitAnswers = (studyId, answers) => {
-  return axios.post(`${API_URL}/${studyId}/answers`, { answers });
+const submitAnswers = (studyId, answers, userId) => {
+  return axios.post(`${API_URL}/${studyId}/answers`, { answers, user_id: userId });
 };
 
-const getStudyResults = (studyId) => {
-  return axios.get(`${API_URL}/${studyId}/results`);
+const getStudyAnswers = (studyId) => {
+  return axios.get(`${API_URL}/${studyId}/answers`);
 };
 
 const studyService = {
@@ -38,7 +38,7 @@ const studyService = {
   verifyStudyAccess,
   getStudy,
   submitAnswers,
-  getStudyResults,
+  getStudyAnswers,
 };
 
 export default studyService;

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useReducer, useCallback } from 'react';
+import React, { useState, useEffect, useReducer, useCallback, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { CircularProgress, Box, Typography } from '@mui/material';
@@ -14,64 +14,10 @@ import {
     RoomContainer, MainContent, VideoContainer, Sidebar, 
     TabContainer, TabButton, SidebarContent, ToggleSidebarButton 
 } from './RoomPage.styled';
+import { roomService } from '../services/roomService';
+import { AuthContext } from '../contexts/AuthContext';
+import { realtimeService } from '../services/realtimeService';
 
-// --- MOCK API & WebSocket Simulation ---
-const mockUsers = {
-    1: { id: 1, name: 'You', isHost: true, avatar: 'https://i.pravatar.cc/150?u=you' },
-    2: { id: 2, name: 'Sarah', isHost: false, avatar: 'https://i.pravatar.cc/150?u=sarah' },
-    3: { id: 3, name: 'David', isHost: false, avatar: 'https://i.pravatar.cc/150?u=david' },
-    4: { id: 4, name: 'Chen', isHost: false, avatar: 'https://i.pravatar.cc/150?u=chen' },
-};
-
-const roomApi = {
-    getRoomDetails: async (roomId) => {
-        console.log(`Fetching details for room: ${roomId}`);
-        await new Promise(res => setTimeout(res, 1000));
-        if (roomId === 'kibera-safe-passage-123') {
-            return {
-                name: "Kibera Safe Passage - Weekly Sync",
-                participants: [mockUsers[1], mockUsers[2], mockUsers[3]],
-                chatHistory: [{ id: 1, userId: 2, text: "Hey everyone, glad you could make it!" }],
-                polls: [{ id: 'poll1', question: "Confirm attendance for next week?", options: { Yes: [2], No: [3] }, createdBy: 2 }],
-                documentContent: "## Agenda\n1. Review petition signatures\n2. Plan for town hall meeting"
-            };
-        }
-        throw new Error("Room not found.");
-    },
-    sendMessage: async (roomId, text) => {
-        await new Promise(res => setTimeout(res, 200));
-        return { id: Date.now(), userId: 1, text }; // Return the sent message
-    },
-    createPoll: async (roomId, question) => {
-        await new Promise(res => setTimeout(res, 200));
-        return { id: `poll-${Date.now()}`, question, options: {}, createdBy: 1 };
-    },
-    castVote: async (roomId, pollId, option) => {
-        await new Promise(res => setTimeout(res, 200));
-        return { pollId, option, userId: 1 };
-    }
-};
-
-const createMockRoomSocket = (roomId, dispatch) => {
-    const events = [
-        () => dispatch({ type: 'USER_JOINED', payload: mockUsers[4] }),
-        () => dispatch({ type: 'NEW_MESSAGE', payload: { id: Date.now(), userId: 3, text: "I have an update on the petition drive." } }),
-        () => dispatch({ type: 'NEW_REACTION', payload: { id: Date.now(), emoji: '👍' } }),
-        () => dispatch({ type: 'USER_LEFT', payload: { userId: 2 } }),
-        () => dispatch({ type: 'POLL_VOTED', payload: { pollId: 'poll1', option: 'Yes', userId: 4 } }),
-    ];
-    let eventIndex = 0;
-    const interval = setInterval(() => {
-        if (eventIndex < events.length) {
-            events[eventIndex]();
-            eventIndex++;
-        }
-    }, 8000);
-
-    return { close: () => clearInterval(interval) };
-};
-
-// Reducer to manage the complex state of the room
 function roomReducer(state, action) {
     switch (action.type) {
         case 'SET_INITIAL_STATE': return { ...state, ...action.payload };
@@ -86,11 +32,9 @@ function roomReducer(state, action) {
                 polls: state.polls.map(poll => {
                     if (poll.id === action.payload.pollId) {
                         const newOptions = { ...poll.options };
-                        // Remove previous vote if any
                         Object.keys(newOptions).forEach(opt => {
                             newOptions[opt] = newOptions[opt].filter(uid => uid !== action.payload.userId);
                         });
-                        // Add new vote
                         if (!newOptions[action.payload.option]) newOptions[action.payload.option] = [];
                         newOptions[action.payload.option].push(action.payload.userId);
                         return { ...poll, options: newOptions };
@@ -105,6 +49,7 @@ function roomReducer(state, action) {
 const RoomPage = () => {
     const { roomId } = useParams();
     const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
     
     const [state, dispatch] = useReducer(roomReducer, { participants: [], chatHistory: [], polls: [], reactions: [], documentContent: '' });
     const [loading, setLoading] = useState(true);
@@ -113,19 +58,17 @@ const RoomPage = () => {
     const [isSidebarOpen, setSidebarOpen] = useState(true);
 
     useEffect(() => {
-        if (!roomId) {
-            setError("No Room ID provided.");
-            setLoading(false);
-            return;
-        }
+        if (!roomId || !user) return;
 
         const joinRoom = async () => {
             try {
                 setLoading(true);
-                const details = await roomApi.getRoomDetails(roomId);
+                const details = await roomService.getRoom(roomId);
                 dispatch({ type: 'SET_INITIAL_STATE', payload: details });
+                roomService.joinRoom(roomId, user.id);
             } catch (err) {
                 setError(err.message);
+                navigate('/rooms');
             } finally {
                 setLoading(false);
             }
@@ -133,32 +76,55 @@ const RoomPage = () => {
 
         joinRoom();
 
-        const socket = createMockRoomSocket(roomId, dispatch);
-        return () => socket.close();
-    }, [roomId]);
+        const onUserJoined = (data) => dispatch({ type: 'USER_JOINED', payload: data.user });
+        const onUserLeft = (data) => dispatch({ type: 'USER_LEFT', payload: { userId: data.userId } });
+        const onNewMessage = (data) => dispatch({ type: 'NEW_MESSAGE', payload: data.message });
+        const onNewPoll = (data) => dispatch({ type: 'ADD_POLL', payload: data.poll });
+        const onPollVoted = (data) => dispatch({ type: 'POLL_VOTED', payload: data.vote });
+        const onNewReaction = (data) => dispatch({ type: 'NEW_REACTION', payload: data.reaction });
 
-    const handleSendMessage = useCallback(async (text) => {
-        const message = await roomApi.sendMessage(roomId, text);
-        dispatch({ type: 'NEW_MESSAGE', payload: message });
-    }, [roomId]);
+        realtimeService.on('user-joined', onUserJoined);
+        realtimeService.on('user-left', onUserLeft);
+        realtimeService.on('new-message', onNewMessage);
+        realtimeService.on('new-poll', onNewPoll);
+        realtimeService.on('poll-voted', onPollVoted);
+        realtimeService.on('new-reaction', onNewReaction);
 
-    const handleCreatePoll = useCallback(async (question) => {
-        const poll = await roomApi.createPoll(roomId, question);
-        dispatch({ type: 'ADD_POLL', payload: poll });
-    }, [roomId]);
+        return () => {
+            roomService.leaveRoom(roomId, user.id);
+            realtimeService.off('user-joined', onUserJoined);
+            realtimeService.off('user-left', onUserLeft);
+            realtimeService.off('new-message', onNewMessage);
+            realtimeService.off('new-poll', onNewPoll);
+            realtimeService.off('poll-voted', onPollVoted);
+            realtimeService.off('new-reaction', onNewReaction);
+        };
+    }, [roomId, user, navigate]);
 
-    const handleVote = useCallback(async (pollId, option) => {
-        const vote = await roomApi.castVote(roomId, pollId, option);
-        dispatch({ type: 'POLL_VOTED', payload: vote });
-    }, [roomId]);
+    const handleSendMessage = useCallback((text) => {
+        realtimeService.send({ type: 'send-message', text });
+    }, []);
+
+    const handleCreatePoll = useCallback((question) => {
+        realtimeService.send({ type: 'create-poll', question });
+    }, []);
+
+    const handleVote = useCallback((pollId, option) => {
+        realtimeService.send({ type: 'cast-vote', pollId, option });
+    }, []);
     
-    const handleSendReaction = (emoji) => dispatch({ type: 'NEW_REACTION', payload: { id: Date.now(), emoji } });
-    const leaveRoom = () => navigate('/home');
+    const handleSendReaction = (emoji) => {
+        realtimeService.send({ type: 'send-reaction', emoji });
+    };
+    
+    const leaveRoom = () => {
+        navigate('/rooms');
+    };
 
     if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress /></Box>;
     if (error) return <Typography color="error" sx={{ textAlign: 'center', mt: 4 }}>Error: {error}</Typography>;
 
-    const currentUser = state.participants.find(p => p.id === 1) || { id: 1, isHost: false };
+    const currentUser = state.participants.find(p => p.id === user.id) || { id: user.id, isHost: false };
 
     return (
         <ThemeProvider theme={theme}>
@@ -177,7 +143,7 @@ const RoomPage = () => {
                         <TabButton active={sidebarTab === 'collaborate'} onClick={() => setSidebarTab('collaborate')}>Collaborate</TabButton>
                     </TabContainer>
                     <SidebarContent>
-                        {sidebarTab === 'chat' && <Chat messages={state.chatHistory} onSendMessage={handleSendMessage} users={mockUsers} />}
+                        {sidebarTab === 'chat' && <Chat messages={state.chatHistory} onSendMessage={handleSendMessage} users={Object.fromEntries(state.participants.map(p => [p.id, p]))} />}
                         {sidebarTab === 'polls' && <Polls polls={state.polls} onVote={handleVote} onCreatePoll={handleCreatePoll} currentUserId={currentUser.id} isHost={currentUser.isHost} />}
                         {sidebarTab === 'collaborate' && <Document document={{ id: `doc-${roomId}`, content: state.documentContent }} />}
                     </SidebarContent>

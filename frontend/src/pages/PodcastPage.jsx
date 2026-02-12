@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider, useTheme } from 'styled-components';
-import { useMediaQuery } from '@mui/material';
+import { useMediaQuery, CircularProgress, Typography } from '@mui/material';
 import { getPodcasts } from '../services/podcast.service';
 import PodcastCard from '../components/podcast/PodcastCard';
 import Discovery from '../components/podcast/Discovery';
@@ -25,26 +25,62 @@ import {
 const PodcastPage = () => {
   const [podcasts, setPodcasts] = useState([]);
   const [selectedPodcast, setSelectedPodcast] = useState(null);
+  const [selectedEpisode, setSelectedEpisode] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    getPodcasts().then((response) => {
-      setPodcasts(response.data);
-      if (response.data.length > 0) {
-        setSelectedPodcast(response.data[0]);
-      }
-    });
+    getPodcasts()
+      .then((response) => {
+        const podcastData = response.data;
+        setPodcasts(podcastData);
+        if (podcastData.length > 0) {
+          const firstPodcast = podcastData[0];
+          setSelectedPodcast(firstPodcast);
+          if (firstPodcast.episodes && firstPodcast.episodes.length > 0) {
+            setSelectedEpisode(firstPodcast.episodes[0]);
+          }
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError('There was an error fetching podcasts.');
+        setLoading(false);
+        console.error(err);
+      });
   }, []);
 
   const handlePodcastSelect = (podcast) => {
     setSelectedPodcast(podcast);
+    if (podcast.episodes && podcast.episodes.length > 0) {
+      setSelectedEpisode(podcast.episodes[0]);
+    } else {
+      setSelectedEpisode(null);
+    }
   };
+
+  if (loading) {
+    return (
+      <PodcastPageContainer>
+        <CircularProgress />
+      </PodcastPageContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <PodcastPageContainer>
+        <Typography color="error">{error}</Typography>
+      </PodcastPageContainer>
+    );
+  }
 
   return (
     <ThemeProvider theme={appTheme}>
       <PodcastPageContainer>
-        <h1 style={{ color: appTheme.palette.secondary, textAlign: 'center', marginBottom: '2rem' }}>Podcasts</h1>
+        <h1 style={{ color: appTheme.palette.secondary.main, textAlign: 'center', marginBottom: '2rem' }}>Podcasts</h1>
         
         <Discovery podcasts={podcasts} onPodcastSelect={handlePodcastSelect} />
         <BestPlaceToStart podcasts={podcasts} onPodcastSelect={handlePodcastSelect} />
@@ -55,21 +91,21 @@ const PodcastPage = () => {
           ))}
         </PodcastListContainer>
 
-        {selectedPodcast && (
+        {selectedPodcast && selectedEpisode && (
           <>
             <SocialFeaturesContainer>
-              <CommentsAndPolls />
-              <SocialSharing />
+              <CommentsAndPolls episodeId={selectedEpisode.id} />
+              <SocialSharing podcast={selectedPodcast} episode={selectedEpisode} />
               <FollowButtonAndNotifications podcast={selectedPodcast} />
             </SocialFeaturesContainer>
 
             <HostRecommendations recommendations={selectedPodcast.recommendations} />
-            <PodcastPlayer podcast={selectedPodcast} />
+            <PodcastPlayer episode={selectedEpisode} />
 
             <AdditionalFeaturesContainer>
-                <EpisodeFeatures notes={selectedPodcast.notes} />
-                <VideoPodcasts podcast={selectedPodcast} />
-                <Transcription transcription={selectedPodcast.transcription} />
+                <EpisodeFeatures notes={selectedEpisode.notes} />
+                <VideoPodcasts episode={selectedEpisode} />
+                <Transcription transcription={selectedEpisode.transcription} />
             </AdditionalFeaturesContainer>
           </>
         )}

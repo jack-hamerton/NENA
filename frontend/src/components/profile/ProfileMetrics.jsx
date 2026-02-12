@@ -1,66 +1,37 @@
 
 import React from 'react';
-import styled from 'styled-components';
+import { Typography, Paper, Grid, Box } from '@mui/material';
 
-const MetricsContainer = styled.div`
-  display: flex;
-  justify-content: space-around;
-  background-color: #222;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-`;
-
-const Metric = styled.div`
-  text-align: center;
-`;
-
-const MetricValue = styled.div`
-  font-size: 1.5rem;
-  font-weight: bold;
-`;
-
-const MetricLabel = styled.div`
-  font-size: 0.9rem;
-  color: #aaa;
-`;
-
-const Topics = styled.div`
-    margin-top: 1rem;
-    text-align: center;
-`;
-
-const TopicTag = styled.span`
-    background-color: #444;
-    color: #fff;
-    padding: 0.3rem 0.6rem;
-    border-radius: 1rem;
-    font-size: 0.8rem;
-    margin: 0 0.3rem;
-`;
-
-const ProfileMetrics = ({ metrics }) => {
+const ProfileMetrics = ({ followerIntentMetrics, hashtagMetrics, badges }) => {
   return (
-    <MetricsContainer>
-      <Metric>
-        <MetricValue>{metrics.supporters}</MetricValue>
-        <MetricLabel>Supporters</MetricLabel>
-      </Metric>
-      <Metric>
-        <MetricValue>{metrics.amplifiers}</MetricValue>
-        <MetricLabel>Amplifiers</MetricLabel>
-      </Metric>
-      <Metric>
-        <MetricValue>{metrics.learners}</MetricValue>
-        <MetricLabel>Learners</MetricLabel>
-      </Metric>
-      <Topics>
-        <MetricLabel>Topics Engaged</MetricLabel>
-        <div>
-            {metrics.topics.map(topic => <TopicTag key={topic}>{topic}</TopicTag>)}
-        </div>
-      </Topics>
-    </MetricsContainer>
+    <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
+      <Grid container spacing={2} textAlign="center">
+        <Grid item xs={4}>
+          <Typography variant="h6">{followerIntentMetrics?.supporters || 0}</Typography>
+          <Typography variant="body2">Supporters</Typography>
+        </Grid>
+        <Grid item xs={4}>
+          <Typography variant="h6">{followerIntentMetrics?.amplifiers || 0}</Typography>
+          <Typography variant="body2">Amplifiers</Typography>
+        </Grid>
+        <Grid item xs={4}>
+          <Typography variant="h6">{followerIntentMetrics?.learners || 0}</Typography>
+          <Typography variant="body2">Learners</Typography>
+        </Grid>
+      </Grid>
+      {hashtagMetrics.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Topics Engaged:</Typography>
+          <Typography variant="body2">{hashtagMetrics.map(metric => `${metric.tag} (${metric.count})`).join(', ')}</Typography>
+        </Box>
+      )}
+      {badges.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Community Impact Badge:</Typography>
+          <Typography variant="body2">{badges.map(badge => badge.name).join(', ')}</Typography>
+        </Box>
+      )}
+    </Paper>
   );
 };
 

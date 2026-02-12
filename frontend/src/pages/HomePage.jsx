@@ -50,8 +50,8 @@ const NavToggle = styled.button`
   padding: 8px 12px;
   border: none;
   border-radius: 8px;
-  background-color: ${props => props.theme.palette.secondary.main};
-  color: ${props => props.theme.palette.secondary.contrastText};
+  background-color: ${props => props.theme.palette.secondary};
+  color: ${props => props.theme.text.primary};
   cursor: pointer;
 `;
 

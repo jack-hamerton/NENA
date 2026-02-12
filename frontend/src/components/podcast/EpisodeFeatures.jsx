@@ -6,20 +6,23 @@ import { theme } from '../../theme/theme';
 const NotesContainer = styled.div`
   margin-top: 1rem;
   padding: 1rem;
-  background: ${theme.palette.dark};
+  background: ${theme.palette.background.paper};
   border-radius: 4px;
 
   h4 {
     margin-bottom: 0.5rem;
-    color: ${theme.text.primary};
+    color: ${theme.palette.text.primary};
   }
 
   p {
-    color: ${theme.text.secondary};
+    color: ${theme.palette.text.secondary};
+    white-space: pre-wrap; // To respect formatting in the notes
   }
 `;
 
-const EpisodeFeatures = ({ notes }) => {
+const EpisodeFeatures = ({ episode }) => {
+  const { notes } = episode || {};
+
   if (!notes) {
     return null;
   }
