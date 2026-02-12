@@ -11,7 +11,7 @@ import api from '../services/api';
 
 const MessagesContainer = styled.div`
   display: flex;
-  height: calc(100vh - 60px); // Adjust based on your header height
+  height: calc(100vh - 64px); // Adjust based on your header height
   background-color: ${props => props.theme.palette.background.default};
 `;
 
@@ -27,32 +27,43 @@ const MessagesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Centralized real-time listener setup
   useEffect(() => {
-    if (user) {
-      chatService.connect(user.id);
+    if (!user) return;
 
-      const handleNewMessage = (message) => {
-        if (message.conversationId === (selectedConversation?.id || conversationId)) {
-          setMessages(prev => [...prev, message]);
-        }
-      };
+    chatService.connect(user.id);
 
-      chatService.on('new-message', handleNewMessage);
+    const handleNewMessage = (message) => {
+      // Update the correct conversation in the list
+      setConversations(prev => 
+        prev.map(c => 
+          c.id === message.conversationId 
+          ? { ...c, lastMessage: message } 
+          : c
+        )
+      );
+      // If the message is for the currently selected conversation, add it to the view
+      if (message.conversationId === (selectedConversation?.id || conversationId)) {
+        setMessages(prev => [...prev, message]);
+      }
+    };
 
-      return () => {
-        chatService.off('new-message', handleNewMessage);
-      };
-    }
+    chatService.on('new-message', handleNewMessage);
+
+    return () => {
+      chatService.off('new-message', handleNewMessage);
+    };
   }, [user, selectedConversation, conversationId]);
 
+  // Fetch initial conversations
   useEffect(() => {
     const fetchConversations = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/conversations');
-        setConversations(response.data);
+        const { data } = await api.get('/conversations');
+        setConversations(data);
         if (conversationId) {
-          const initialConvo = response.data.find(c => c.id === conversationId);
+          const initialConvo = data.find(c => c.id === conversationId);
           if (initialConvo) {
             setSelectedConversation(initialConvo);
           } else {
@@ -65,20 +76,21 @@ const MessagesPage = () => {
         setLoading(false);
       }
     };
-    fetchConversations();
-  }, [conversationId, navigate]);
+    if(user) fetchConversations();
+  }, [conversationId, navigate, user]);
 
+  // Fetch messages for the selected conversation
   useEffect(() => {
     if (!selectedConversation) return;
 
     const fetchMessages = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/conversations/${selectedConversation.id}/messages`);
-        setMessages(response.data.messages);
-        setChatUsers(response.data.users);
+        const { data } = await api.get(`/conversations/${selectedConversation.id}/messages`);
+        setMessages(data.messages);
+        setChatUsers(data.users);
       } catch (err) {
-        setError(`Failed to load messages for ${selectedConversation.name}.`);
+        setError(`Failed to load messages.`);
       } finally {
         setLoading(false);
       }
@@ -87,31 +99,63 @@ const MessagesPage = () => {
 
   }, [selectedConversation]);
 
+  // Corrected function to send a message
   const handleSendMessage = useCallback(async (text) => {
-    if (!selectedConversation) return;
+    if (!selectedConversation || !user) return;
     
-    const recipientId = selectedConversation.users.find(u => u.id !== user.id).id;
+    const recipient = selectedConversation.users.find(u => u.id !== user.id);
+    if(!recipient) {
+        console.error("Cannot send message: recipient not found");
+        return;
+    }
 
     const messageData = {
         text,
         conversationId: selectedConversation.id,
-        recipientId: recipientId
+        recipientId: recipient.id
     };
-    chatService.sendMessage(messageData);
 
-  }, [selectedConversation, user.id]);
+    chatService.sendMessage(messageData);
+    
+    // Optimistically update the UI
+    const optimisticMessage = { 
+        ...messageData, 
+        id: Date.now(), // temporary ID
+        senderId: user.id, 
+        createdAt: new Date().toISOString() 
+    };
+    setMessages(prev => [...prev, optimisticMessage]);
+
+  }, [selectedConversation, user]);
+
+  // Function to create a new conversation
+  const handleCreateConversation = useCallback(async (recipientId, initialMessage) => {
+      if(!user) return;
+      try {
+          const { data: newConversation } = await api.post('/conversations', {
+              recipientId,
+              initialMessage
+          });
+          setConversations(prev => [newConversation, ...prev]);
+          setSelectedConversation(newConversation);
+          navigate(`/messages/${newConversation.id}`);
+      } catch (error) {
+          console.error("Failed to create conversation", error);
+          setError("Could not start a new conversation.");
+      }
+  }, [user, navigate]);
 
   const handleConversationSelect = (conversation) => {
     setSelectedConversation(conversation);
     navigate(`/messages/${conversation.id}`);
   };
 
-  if (loading && conversations.length === 0) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}><CircularProgress /></Box>;
+  if (!user) {
+      return <Typography>Please log in to see your messages.</Typography>
   }
 
-  if (error && conversations.length === 0) {
-    return <Typography color="error" sx={{ textAlign: 'center', mt: 4 }}>{error}</Typography>;
+  if (loading && conversations.length === 0) {
+    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}><CircularProgress /></Box>;
   }
 
   return (
@@ -120,6 +164,8 @@ const MessagesPage = () => {
           conversations={conversations}
           selectedConversation={selectedConversation}
           onConversationSelect={handleConversationSelect}
+          onCreateConversation={handleCreateConversation}
+          currentUserId={user.id}
         />
         <ChatWindow 
           conversation={selectedConversation} 

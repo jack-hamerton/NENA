@@ -1,7 +1,11 @@
+
 import React from 'react';
+import AnalyticsDashboard from './AnalyticsDashboard';
 
 const AnalyticsBar = () => {
-  return null;
+  return (
+    <AnalyticsDashboard />
+  );
 };
 
 export default AnalyticsBar;

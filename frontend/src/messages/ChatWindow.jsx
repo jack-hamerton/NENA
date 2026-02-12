@@ -1,22 +1,22 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { Document } from '../components/collaboration/Document';
-import { chatService } from '../services/chatService';
 
 const ChatWindowContainer = styled.div`
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  background-color: ${props => props.theme.palette.primary};
+  background-color: ${props => props.theme.palette.background.default};
 `;
 
 const Tabs = styled.div`
   display: flex;
-  border-bottom: 1px solid ${props => props.theme.palette.dark};
+  border-bottom: 1px solid ${props => props.theme.palette.divider};
 `;
 
 const Tab = styled.button`
@@ -24,14 +24,14 @@ const Tab = styled.button`
   padding: 1rem;
   background: none;
   border: none;
-  color: ${props => (props.active ? props.theme.text.primary : props.theme.text.secondary)};
+  color: ${props => (props.active ? props.theme.palette.text.primary : props.theme.palette.text.secondary)};
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  border-bottom: 2px solid ${props => (props.active ? props.theme.palette.accent : 'transparent')};
+  border-bottom: 2px solid ${props => (props.active ? props.theme.palette.primary.main : 'transparent')};
 
   &:hover {
-    background-color: ${props => props.theme.palette.dark};
+    background-color: ${props => props.theme.palette.action.hover};
   }
 `;
 
@@ -42,72 +42,33 @@ const ContentContainer = styled.div`
     overflow: hidden;
 `;
 
-const ChatWindow = ({ conversation, onStartCall }) => {
-  const [messages, setMessages] = useState([]);
+const NoConversationSelected = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: ${props => props.theme.palette.text.secondary};
+`;
+
+const ChatWindow = ({ conversation, messages, users, loading, error, onSendMessage, currentUser, onStartCall }) => {
   const [activeTab, setActiveTab] = useState('chat');
-  const userId = 'user123'; // This would be dynamically set in a real app
-
-  useEffect(() => {
-    if (!conversation) return;
-
-    // Connect to the chat service
-    chatService.connect(userId);
-
-    const handleNewMessage = (message) => {
-      if (message.conversationId === conversation.id) {
-        setMessages(prevMessages => [...prevMessages, message]);
-      }
-    };
-
-    const handleNewFile = (fileMessage) => {
-      if (fileMessage.conversationId === conversation.id) {
-        // For now, we'll just display a message with the file name
-        const fileInfo = {
-          ...fileMessage,
-          text: `File received: ${fileMessage.fileName}`,
-        };
-        setMessages(prevMessages => [...prevMessages, fileInfo]);
-      }
-    };
-
-    chatService.on('new-message', handleNewMessage);
-    chatService.on('new-file', handleNewFile);
-
-    // Fetch initial messages (optional, if you have message history)
-    // chatService.getMessages(conversation.id).then(setMessages);
-
-    return () => {
-      chatService.off('new-message', handleNewMessage);
-      chatService.off('new-file', handleNewFile);
-    };
-  }, [conversation, userId]);
-
-  const handleSendMessage = (textOrFile) => {
-    if (!conversation) return;
-
-    if (typeof textOrFile === 'string') {
-      chatService.sendMessage({
-        text: textOrFile,
-        conversationId: conversation.id,
-        recipientId: conversation.id, // Assuming conversation ID is the recipient ID
-      });
-    } else {
-      chatService.sendFile({
-        file: textOrFile,
-        conversationId: conversation.id,
-        recipientId: conversation.id,
-      });
-    }
-  };
-  
-  const handleStartCall = () => {
-    if (!conversation) return;
-    chatService.startCall(conversation.id);
-    onStartCall(); // Notify the parent component to show the call window
-  };
 
   if (!conversation) {
-    return <ChatWindowContainer>Select a conversation to start chatting.</ChatWindowContainer>;
+    return (
+        <ChatWindowContainer>
+            <NoConversationSelected>
+                <Typography>Select a conversation to start chatting.</Typography>
+            </NoConversationSelected>
+        </ChatWindowContainer>
+    );
+  }
+  
+  if (loading) {
+    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}><CircularProgress /></Box>;
+  }
+
+  if (error) {
+    return <Typography color="error" sx={{ textAlign: 'center', mt: 4 }}>{error}</Typography>;
   }
 
   const collaborationDocument = {
@@ -118,7 +79,7 @@ const ChatWindow = ({ conversation, onStartCall }) => {
 
   return (
     <ChatWindowContainer>
-      <ChatHeader conversation={conversation} onStartCall={handleStartCall} />
+      <ChatHeader conversation={conversation} onStartCall={onStartCall} />
       <Tabs>
         <Tab active={activeTab === 'chat'} onClick={() => setActiveTab('chat')}>
           Chat
@@ -130,8 +91,8 @@ const ChatWindow = ({ conversation, onStartCall }) => {
       <ContentContainer>
         {activeTab === 'chat' ? (
           <>
-            <MessageList messages={messages} />
-            <MessageInput onSendMessage={handleSendMessage} />
+            <MessageList messages={messages} users={users} currentUserId={currentUser.id} />
+            <MessageInput onSendMessage={onSendMessage} />
           </>
         ) : (
           <Document document={collaborationDocument} />

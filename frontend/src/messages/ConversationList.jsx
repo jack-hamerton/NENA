@@ -1,21 +1,23 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { FaPenSquare, FaTimes } from "react-icons/fa";
+import api from '../services/api';
 
-// --- Styled Components ---
+// --- Styled Components (no changes) ---
 const ConversationListContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-right: 1px solid ${props => props.theme.borderColor || '#333'};
-  background-color: ${props => props.theme.surface || '#4a5969'};
-  color: ${props => props.theme.text.primary || '#ffffff'};
+  width: 350px;
+  border-right: 1px solid ${props => props.theme.palette.divider};
+  background-color: ${props => props.theme.palette.background.paper};
+  color: ${props => props.theme.palette.text.primary};
 `;
 
 const ConversationListHeader = styled.div`
   padding: 1rem;
-  border-bottom: 1px solid ${props => props.theme.borderColor || '#333'};
+  border-bottom: 1px solid ${props => props.theme.palette.divider};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -26,7 +28,7 @@ const NewMessageButton = styled(FaPenSquare)`
   cursor: pointer;
   font-size: 1.5rem;
   &:hover {
-    color: ${props => props.theme.accent || '#73beb0'};
+    color: ${props => props.theme.palette.primary.main};
   }
 `;
 
@@ -40,10 +42,10 @@ const ConversationItem = styled.div`
   align-items: center;
   padding: 1rem;
   cursor: pointer;
-  background-color: ${props => props.active ? (props.theme.accentHover || '#427973') : 'transparent'};
+  background-color: ${props => props.active ? props.theme.palette.action.selected : 'transparent'};
 
   &:hover {
-    background-color: ${props => props.theme.accentHover || '#427973'};
+    background-color: ${props => props.theme.palette.action.hover};
   }
 `;
 
@@ -66,7 +68,7 @@ const ConversationName = styled.h4`
 
 const LastMessage = styled.p`
   margin: 0;
-  color: ${props => props.theme.text.secondary || '#a0a0a0'};
+  color: ${props => props.theme.palette.text.secondary};
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -74,14 +76,14 @@ const LastMessage = styled.p`
 
 const Timestamp = styled.span`
   font-size: 0.8rem;
-  color: ${props => props.theme.text.secondary || '#a0a0a0'};
+  color: ${props => props.theme.palette.text.secondary};
 `;
 
 const UnreadBadge = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background-color: ${props => props.theme.accent || '#73beb0'};
+  background-color: ${props => props.theme.palette.primary.main};
   color: white;
   display: flex;
   justify-content: center;
@@ -90,7 +92,7 @@ const UnreadBadge = styled.div`
   margin-left: 0.5rem;
 `;
 
-// --- Modal Components (Integrated) ---
+// --- Modal Components ---
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -105,12 +107,12 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background-color: ${props => props.theme.surface || '#4a5969'};
+  background-color: ${props => props.theme.palette.background.paper};
   padding: 2rem;
   border-radius: 8px;
   width: 450px;
   max-width: 90%;
-  color: ${props => props.theme.text.primary || '#ffffff'};
+  color: ${props => props.theme.palette.text.primary};
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 `;
 
@@ -130,9 +132,9 @@ const SearchInput = styled.input`
   width: 100%;
   padding: 0.75rem;
   border-radius: 4px;
-  border: 1px solid ${props => props.theme.borderColor || '#333'};
-  background-color: ${props => props.theme.background || '#35424c'};
-  color: ${props => props.theme.text.primary || '#ffffff'};
+  border: 1px solid ${props => props.theme.palette.divider};
+  background-color: ${props => props.theme.palette.background.default};
+  color: ${props => props.theme.palette.text.primary};
   margin-bottom: 1rem;
 `;
 
@@ -152,7 +154,7 @@ const UserListItem = styled.li`
   border-radius: 4px;
 
   &:hover {
-    background-color: ${props => props.theme.accentHover || '#427973'};
+    background-color: ${props => props.theme.palette.action.hover};
   }
 `;
 
@@ -160,9 +162,9 @@ const MessageTextarea = styled.textarea`
   width: 100%;
   padding: 0.75rem;
   border-radius: 4px;
-  border: 1px solid ${props => props.theme.borderColor || '#333'};
-  background-color: ${props => props.theme.background || '#35424c'};
-  color: ${props => props.theme.text.primary || '#ffffff'};
+  border: 1px solid ${props => props.theme.palette.divider};
+  background-color: ${props => props.theme.palette.background.default};
+  color: ${props => props.theme.palette.text.primary};
   margin-bottom: 1rem;
   min-height: 120px;
   resize: vertical;
@@ -173,54 +175,53 @@ const SendButton = styled.button`
   padding: 0.75rem;
   border-radius: 4px;
   border: none;
-  background-color: ${props => props.theme.accent || '#73beb0'};
+  background-color: ${props => props.theme.palette.primary.main};
   color: white;
   cursor: pointer;
   font-size: 1rem;
   font-weight: bold;
 
   &:hover {
-    background-color: ${props => props.theme.accentHover || '#427973'};
+    background-color: ${props => props.theme.palette.primary.dark};
   }
 `;
 
-// --- New Message Modal Component ---
-const NewMessageModal = ({ isOpen, onClose, onCreateConversation, currentUserId, theme }) => {
+// --- New Message Modal Component (Corrected) ---
+const NewMessageModal = ({ isOpen, onClose, onCreateConversation, currentUserId }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [message, setMessage] = useState('');
-  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // In a real app, you'd fetch this user list from your API.
-  useEffect(() => {
-    const mockUsers = [
-        { id: '2', name: 'John Doe', avatar: 'https://i.pravatar.cc/150?u=john' },
-        { id: '3', name: 'Jane Smith', avatar: 'https://i.pravatar.cc/150?u=jane' },
-        { id: '4', name: 'Peter Jones', avatar: 'https://i.pravatar.cc/150?u=peter' },
-    ];
-    setUsers(mockUsers.filter(u => u.id !== currentUserId));
-  }, [currentUserId]);
-
-  const handleSearch = (e) => {
+  const handleSearch = useCallback(async (e) => {
     const term = e.target.value;
     setSearchTerm(term);
-    if (term.length > 0) {
-      setSearchResults(users.filter(user => user.name.toLowerCase().includes(term.toLowerCase())));
+    if (term.length > 1) {
+        setLoading(true);
+        try {
+            const { data } = await api.get(`/users/search?q=${term}`);
+            setSearchResults(data.filter(u => u.id !== currentUserId));
+        } catch (error) {
+            console.error("Failed to search for users", error);
+            setSearchResults([]);
+        } finally {
+            setLoading(false);
+        }
     } else {
       setSearchResults([]);
     }
-  };
+  }, [currentUserId]);
 
   const handleSelectUser = (user) => {
     setSelectedUser(user);
-    setSearchTerm(user.name);
+    setSearchTerm(user.username); // Show the selected user's name
     setSearchResults([]);
   };
   
   const handleCreate = () => {
     if(selectedUser && message) {
-        onCreateConversation(selectedUser, message);
+        onCreateConversation(selectedUser.id, message);
         // Reset state and close modal
         setSelectedUser(null);
         setSearchTerm('');
@@ -229,11 +230,21 @@ const NewMessageModal = ({ isOpen, onClose, onCreateConversation, currentUserId,
     }
   }
 
+  useEffect(() => {
+    // Reset state when modal is opened/closed
+    if (!isOpen) {
+      setSearchTerm('');
+      setSearchResults([]);
+      setSelectedUser(null);
+      setMessage('');
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <ModalOverlay>
-      <ModalContent theme={theme}>
+      <ModalContent>
         <ModalHeader>
           <h3>New Message</h3>
           <CloseButton onClick={onClose} />
@@ -246,12 +257,13 @@ const NewMessageModal = ({ isOpen, onClose, onCreateConversation, currentUserId,
           onChange={handleSearch}
           disabled={!!selectedUser}
         />
+        {loading && <p>Loading...</p>}
         {searchResults.length > 0 && (
             <UserList>
             {searchResults.map(user => (
                 <UserListItem key={user.id} onClick={() => handleSelectUser(user)}>
-                <Avatar src={user.avatar} alt={user.name} />
-                <span>{user.name}</span>
+                <Avatar src={user.avatar || 'https://i.pravatar.cc/150'} alt={user.username} />
+                <span>{user.username}</span>
                 </UserListItem>
             ))}
             </UserList>
@@ -260,7 +272,7 @@ const NewMessageModal = ({ isOpen, onClose, onCreateConversation, currentUserId,
         {selectedUser && (
             <>
             <MessageTextarea
-                placeholder={`Your message to ${selectedUser.name}...`}
+                placeholder={`Your message to ${selectedUser.username}...`}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
             />
@@ -274,8 +286,18 @@ const NewMessageModal = ({ isOpen, onClose, onCreateConversation, currentUserId,
 
 
 // --- Main ConversationList Component ---
-const ConversationList = ({ conversations, selectedConversation, onSelectConversation, onCreateConversation, currentUserId, theme }) => {
+const ConversationList = ({ conversations, selectedConversation, onConversationSelect, onCreateConversation, currentUserId }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Memoize the create conversation handler
+  const handleCreateConversation = useCallback((recipientId, initialMessage) => {
+      onCreateConversation(recipientId, initialMessage);
+      setIsModalOpen(false); // Close the modal on creation
+  }, [onCreateConversation]);
+
+  const getRecipient = (participants) => {
+      return participants.find(p => p.id !== currentUserId);
+  };
 
   return (
     <ConversationListContainer>
@@ -285,20 +307,22 @@ const ConversationList = ({ conversations, selectedConversation, onSelectConvers
       </ConversationListHeader>
       <List>
         {conversations.map(convo => {
-            const recipient = convo.participants.find(p => p.id !== currentUserId) || {};
+            const recipient = getRecipient(convo.users);
+            if (!recipient) return null; // Or some placeholder for group chats etc.
+
             return (
                 <ConversationItem 
                     key={convo.id} 
-                    active={selectedConversation && selectedConversation.id === convo.id} 
-                    onClick={() => onSelectConversation(convo)}
+                    active={selectedConversation?.id === convo.id} 
+                    onClick={() => onConversationSelect(convo)}
                 >
-                <Avatar src={recipient.avatar} alt={recipient.name} />
+                <Avatar src={recipient.avatar || 'https://i.pravatar.cc/150'} alt={recipient.username} />
                 <ConversationInfo>
-                    <ConversationName>{recipient.name}</ConversationName>
-                    <LastMessage>{convo.lastMessage}</LastMessage>
+                    <ConversationName>{recipient.username}</ConversationName>
+                    <LastMessage>{convo.lastMessage?.text || 'No messages yet'}</LastMessage>
                 </ConversationInfo>
-                <Timestamp>{convo.timestamp}</Timestamp>
-                {convo.unread > 0 && <UnreadBadge>{convo.unread}</UnreadBadge>}
+                {convo.lastMessage && <Timestamp>{new Date(convo.lastMessage.createdAt).toLocaleTimeString()}</Timestamp>}
+                {/* Unread badge logic needs to be implemented on the backend */}
                 </ConversationItem>
             )
         })}
@@ -306,9 +330,8 @@ const ConversationList = ({ conversations, selectedConversation, onSelectConvers
       <NewMessageModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        onCreateConversation={onCreateConversation}
+        onCreateConversation={handleCreateConversation}
         currentUserId={currentUserId}
-        theme={theme}
       />
     </ConversationListContainer>
   );

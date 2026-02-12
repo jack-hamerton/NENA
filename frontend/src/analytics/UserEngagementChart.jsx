@@ -1,51 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+
+import React, { useState, useEffect, useContext } from 'react';
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
+  Typography, CircularProgress, Alert, Box
+} from '@mui/material';
+import { apiClient } from '../services/apiClient';
+import { AuthContext } from '../contexts/AuthContext';
 
 const UserEngagementChart = () => {
-  const [userEngagement, setUserEngagement] = useState([]);
+  const { user } = useContext(AuthContext);
+  const [engagementData, setEngagementData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch data from the API
     const fetchData = async () => {
+      if (!user) {
+        setError("You must be logged in to view your engagement metrics.");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await fetch('/api/v1/analytics/user-engagement');
-        const data = await response.json();
-        setUserEngagement(data);
+        setLoading(true);
+        // This secure endpoint should return an object with the current user's engagement stats.
+        const response = await apiClient.get('/api/v1/analytics/me/engagement');
+        setEngagementData(response.data);
+        setError(null);
       } catch (error) {
+        setError("Failed to load your engagement data. This feature may still be in development.");
         console.error('Error fetching user engagement data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [user]);
+
+  if (loading) {
+    return <CircularProgress />;
+  }
+
+  if (error) {
+    return <Alert severity="error">{error}</Alert>;
+  }
 
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>User</TableCell>
-            <TableCell align="right">Posts</TableCell>
-            <TableCell align="right">Comments</TableCell>
-            <TableCell align="right">Following</TableCell>
-            <TableCell align="right">Followers</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {userEngagement.map((user) => (
-            <TableRow key={user.user_id}>
-              <TableCell component="th" scope="row">
-                {user.full_name}
-              </TableCell>
-              <TableCell align="right">{user.posts_count}</TableCell>
-              <TableCell align="right">{user.comments_count}</TableCell>
-              <TableCell align="right">{user.following_count}</TableCell>
-              <TableCell align="right">{user.followers_count}</TableCell>
+    <Box component={Paper} sx={{ p: 2 }}>
+      <Typography variant="h6" gutterBottom sx={{ pl: 2 }}>
+        My Engagement
+      </Typography>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Metric</TableCell>
+              <TableCell align="right">Count</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {engagementData ? (
+              <>
+                <TableRow>
+                  <TableCell>Posts Created</TableCell>
+                  <TableCell align="right">{engagementData.posts_count}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Comments Made</TableCell>
+                  <TableCell align="right">{engagementData.comments_count}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Following</TableCell>
+                  <TableCell align="right">{engagementData.following_count}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Followers</TableCell>
+                  <TableCell align="right">{engagementData.followers_count}</TableCell>
+                </TableRow>
+              </>
+            ) : (
+              <TableRow>
+                <TableCell colSpan={2}>No engagement data available.</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 

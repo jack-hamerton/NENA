@@ -8,7 +8,7 @@ import SpiderWebCanvas from '../components/profile/SpiderWebCanvas';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import IntentModal from '../components/profile/IntentModal';
 import CreatePodcast from '../components/profile/CreatePodcast';
-import AdvocacyImpactMatrix from '../components/analytics/AdvocacyImpactMatrix';
+import AnalyticsDashboard from '../analytics/AnalyticsDashboard'; // Import the main dashboard
 import Calendar from '../components/calendar/Calendar';
 import ProfileMetrics from '../components/profile/ProfileMetrics';
 import profileService from '../services/profile.service';
@@ -103,7 +103,8 @@ const ProfilePage = () => {
             <MetricsSection>
               <Typography variant="h6" gutterBottom>Metrics & Impact</Typography>
               <ProfileMetrics followerIntentMetrics={followerIntentMetrics} hashtagMetrics={hashtagMetrics} badges={badges} />
-              <AdvocacyImpactMatrix userId={id} />
+              {/* The entire Analytics Dashboard is now embedded here without a title */}
+              <AnalyticsDashboard showTitle={false} />
               <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>Calendar</Typography>
               <Calendar userId={id} />
             </MetricsSection>

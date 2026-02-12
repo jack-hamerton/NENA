@@ -5,30 +5,28 @@ import UserEngagementChart from './UserEngagementChart';
 import PostEngagementChart from './PostEngagementChart';
 import AdvocacyImpactMatrix from './AdvocacyImpactMatrix';
 
-const AnalyticsDashboard = ({ userId }) => {
+// The component now accepts a `showTitle` prop to make it embeddable.
+const AnalyticsDashboard = ({ showTitle = true }) => {
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Analytics Dashboard
-      </Typography>
+      {showTitle && (
+        <Typography variant="h4" gutterBottom>
+          Analytics Dashboard
+        </Typography>
+      )}
       
-      {/* New Advocacy Impact Matrix */}
+      {/* The AdvocacyImpactMatrix now securely gets the user from AuthContext. */}
       <Box sx={{ mb: 4 }}>
-        <AdvocacyImpactMatrix userId={userId} />
+        <AdvocacyImpactMatrix />
       </Box>
 
-      {/* Existing Charts */}
+      {/* The UserEngagementChart now securely gets the user from AuthContext. */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          User Engagement
-        </Typography>
         <UserEngagementChart />
       </Box>
 
+      {/* The PostEngagementChart now securely gets the user from AuthContext. */}
       <Box>
-        <Typography variant="h5" gutterBottom>
-          Post Engagement
-        </Typography>
         <PostEngagementChart />
       </Box>
     </Box>
