@@ -17,6 +17,10 @@ const ModalContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+
+  @media (max-width: 600px) {
+    width: 90%;
+  }
 `;
 
 const Title = styled.h2`
