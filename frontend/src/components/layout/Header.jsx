@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Button, Menu, MenuItem, ListItemIcon, ListItemText, useMediaQuery, IconButton } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import UserAvatar from '../UserAvatar';
 import NotificationMenu from './NotificationMenu';
@@ -11,6 +12,7 @@ import NotificationMenu from './NotificationMenu';
 import ExploreIcon from '@mui/icons-material/Explore';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import SchoolIcon from '@mui/icons-material/School';
 import PodcastsIcon from '@mui/icons-material/Podcasts';
@@ -27,8 +29,12 @@ const HeaderContainer = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 1rem;
   z-index: 100;
+
+  @media (min-width: ${props => props.theme.breakpoints.values.sm}px) {
+    padding: 0 24px;
+  }
 `;
 
 const Logo = styled(Link)`
@@ -40,7 +46,11 @@ const Logo = styled(Link)`
 const Nav = styled.nav`
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
+
+  @media (min-width: ${props => props.theme.breakpoints.values.sm}px) {
+    gap: 16px;
+  }
 `;
 
 const NavLink = styled(Link)`
@@ -48,16 +58,25 @@ const NavLink = styled(Link)`
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 8px; /* space between icon and text */
+  gap: 8px; 
 
   &:hover {
     color: ${props => props.theme.palette.primary.main};
+  }
+
+  & .nav-text {
+    display: none;
+    @media (min-width: ${props => props.theme.breakpoints.values.md}px) {
+      display: inline;
+    }
   }
 `;
 
 const Header = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [notifications, setNotifications] = useState([
         { id: 1, message: 'New follower: @john_doe', read: false },
         { id: 2, message: 'Your post was liked by @jane_doe', read: false },
@@ -91,30 +110,29 @@ const Header = () => {
     }
 
     return (
-        <HeaderContainer>
+        <HeaderContainer theme={theme}>
             <Logo to="/home">
-                <img src="/nena-logo.png" alt="NenaSpace Logo" style={{ height: '40px' }} />
+                <img src="/nena-logo.png" alt="NenaSpace Logo" style={{ height: isMobile ? '35px' : '40px' }} />
             </Logo>
-            <Nav>
-                <NavLink to="/discover">
+            <Nav theme={theme}>
+                <NavLink to="/discover" theme={theme}>
                     <ExploreIcon />
-                    Discover
+                    <span className="nav-text">Discover</span>
                 </NavLink>
-                <NavLink to="/messages">
+                <NavLink to="/messages" theme={theme}>
                     <MailOutlineIcon />
-                    Messages
+                    <span className="nav-text">Messages</span>
                 </NavLink>
-                <Button
+                <IconButton
                     id="more-button"
                     aria-controls={open ? 'more-menu' : undefined}
                     aria-haspopup="true"
                     aria-expanded={open ? 'true' : undefined}
                     onClick={handleMoreClick}
-                    sx={{ color: 'text.secondary', textTransform: 'none', fontSize: '1rem' }}
-                    startIcon={<MoreHorizIcon />}
+                    sx={{ color: 'text.secondary' }}
                 >
-                    More
-                </Button>
+                    {isMobile ? <MoreVertIcon /> : <MoreHorizIcon />}
+                </IconButton>
                 <Menu
                     id="more-menu"
                     anchorEl={anchorEl}
@@ -144,10 +162,12 @@ const Header = () => {
                     </MenuItem>
                 </Menu>
                 <NotificationMenu notifications={notifications} onMarkAsRead={handleMarkAsRead} />
-                <NavLink to={`/profile/${user.id}`}>
+                <NavLink to={`/profile/${user.id}`} theme={theme}>
                     <UserAvatar user={user} size="small" />
                 </NavLink>
-                <Button variant="outlined" onClick={handleLogout} startIcon={<LogoutIcon />}>Logout</Button>
+                {!isMobile && (
+                    <Button variant="outlined" onClick={handleLogout} startIcon={<LogoutIcon />}>Logout</Button>
+                )}
             </Nav>
         </HeaderContainer>
     );

@@ -1,58 +1,43 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styled from 'styled-components';
-import { useMediaQuery, useTheme } from '@mui/material';
+import { useMediaQuery, useTheme, Grid } from '@mui/material';
 import ActivityFeed from '../feed/ActivityFeed';
 import * as postService from '../services/post.service';
 import { followUser } from '../services/user.service';
 import CreatePostModal from '../components/modals/CreatePostModal';
 import IntentModal from '../components/profile/IntentModal';
-import CampaignHubModal from '../components/modals/CampaignHubModal'; // Import the new modal
+import CampaignHubModal from '../components/modals/CampaignHubModal';
 import FeedControlNav from '../layout/FeedControlNav';
 import { useAuth } from '../hooks/useAuth';
 
 const HomePageContainer = styled.div`
-  display: flex;
-  height: 100vh;
-  width: 100%;
   background-color: ${props => props.theme.palette.background.default};
-  overflow: hidden; /* Hide scrollbars from the container */
+  min-height: 100vh;
 `;
 
 const MainContent = styled.div`
-  flex-grow: 1;
-  position: relative;
   height: 100vh;
-  overflow-y: auto; /* Allow scrolling on the feed only */
-  overflow-x: hidden;
-  min-width: 0;
-  padding: 1rem 1.5rem;
-  box-sizing: border-box;
+  overflow-y: auto;
+  border-left: 1px solid ${props => props.theme.palette.divider};
+  border-right: 1px solid ${props => props.theme.palette.divider};
+`;
+
+const RightSidebar = styled.div`
+  height: 100vh;
+  overflow-y: auto;
+  padding: 1.5rem;
 `;
 
 const HashtagHeader = styled.div`
-    position: absolute;
+    position: sticky;
     top: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(0,0,0,0.7);
+    background-color: rgba(0,0,0,0.85);
     padding: 1rem;
-    z-index: 100;
+    z-index: 10;
     text-align: center;
     color: #fff;
-`;
-
-const NavToggle = styled.button`
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 1001;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 8px;
-  background-color: ${props => props.theme.palette.secondary};
-  color: ${props => props.theme.text.primary};
-  cursor: pointer;
+    width: 100%;
 `;
 
 const HomePage = () => {
@@ -63,44 +48,11 @@ const HomePage = () => {
   const [isCreatePostModalOpen, setCreatePostModalOpen] = useState(false);
   const [intentModalOpen, setIntentModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [isNavOpen, setNavOpen] = useState(false);
-
-  // State for the Campaign Hub
   const [isCampaignHubOpen, setCampaignHubOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
-  const minSwipeDistance = 50;
-
-  const handleTouchStart = (e) => {
-    if (!isMobile) return;
-    touchStartX.current = e.targetTouches[0].clientX;
-    touchEndX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchMove = (e) => {
-    if (!isMobile) return;
-    touchEndX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (!isMobile) return;
-    const distance = touchStartX.current - touchEndX.current;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (touchStartX.current < 50 && isRightSwipe) {
-      setNavOpen(true);
-    }
-
-    if (isNavOpen && isLeftSwipe) {
-      setNavOpen(false);
-    }
-  };
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -124,17 +76,11 @@ const HomePage = () => {
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
-
-  useEffect(() => {
-    setNavOpen(!isMobile);
-  }, [isMobile]);
   
   const handleHashtagClick = (hashtag) => {
       setHashtagFilter(hashtag.substring(1));
-      if(isMobile) setNavOpen(false);
   }
 
-  // Handler to open the campaign hub
   const handleCampaignClick = (campaignName) => {
     setSelectedCampaign(campaignName);
     setCampaignHubOpen(true);
@@ -148,7 +94,6 @@ const HomePage = () => {
   const handleRestart = () => {
     setHashtagFilter(null);
     fetchPosts();
-    if(isMobile) setNavOpen(false);
   };
 
   const handleReportPost = async (postId) => {
@@ -171,10 +116,7 @@ const HomePage = () => {
         const uploadResponse = await postService.uploadImage(media);
         imageUrl = uploadResponse.data.imageUrl;
       }
-      // Example of how to add a campaign hashtag
-      // For a real implementation, this would come from the Create Post UI
-      const finalContent = content + ' #campaign-KiberaSafePassage';
-      const response = await postService.createPost({ content: finalContent, image_url: imageUrl });
+      const response = await postService.createPost({ content, image_url: imageUrl });
       setPosts(prevPosts => [response.data, ...prevPosts]);
       setCreatePostModalOpen(false);
     } catch (error) {
@@ -205,44 +147,52 @@ const HomePage = () => {
   const handleSetFeedType = (type) => {
     setFeedType(type);
     setHashtagFilter(null);
-    if(isMobile) setNavOpen(false);
   }
 
   return (
-      <HomePageContainer theme={theme} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-        {isMobile && (
-          <NavToggle onClick={() => setNavOpen(open => !open)} theme={theme}>
-            {isNavOpen ? 'Close' : 'Menu'}
-          </NavToggle>
-        )}
-        <FeedControlNav 
-          isOpen={isNavOpen}
-          feedType={feedType}
-          setFeedType={handleSetFeedType}
-          handleRestart={handleRestart}
-          setCreatePostModalOpen={setCreatePostModalOpen}
-        />
-        <MainContent>
-            {hashtagFilter && (
-                <HashtagHeader>
-                    Filtering by: #{hashtagFilter}
-                </HashtagHeader>
+      <HomePageContainer theme={theme}>
+        <Grid container>
+            <Grid item lg={3}>
+                <FeedControlNav 
+                    isOpen={true} // Always open on large screens
+                    feedType={feedType}
+                    setFeedType={handleSetFeedType}
+                    handleRestart={handleRestart}
+                    setCreatePostModalOpen={setCreatePostModalOpen}
+                />
+            </Grid>
+            <Grid item xs={12} lg={6}>
+                <MainContent theme={theme}>
+                    {hashtagFilter && (
+                        <HashtagHeader>
+                            Filtering by: #{hashtagFilter}
+                        </HashtagHeader>
+                    )}
+                    <ActivityFeed 
+                      posts={posts} 
+                      onReportPost={handleReportPost} 
+                      onUsernameLongPress={handleOpenIntentModal} 
+                      onHashtagClick={handleHashtagClick}
+                      onCampaignClick={handleCampaignClick}
+                    />
+                </MainContent>
+            </Grid>
+            {isLargeScreen && (
+                <Grid item lg={3}>
+                    <RightSidebar>
+                        {/* Placeholder for Trends, Who to Follow, etc. */}
+                        <Typography variant="h6">Trends for you</Typography>
+                        {/* Add content here */}
+                    </RightSidebar>
+                </Grid>
             )}
-            <ActivityFeed 
-              posts={posts} 
-              onReportPost={handleReportPost} 
-              onUsernameLongPress={handleOpenIntentModal} 
-              onHashtagClick={handleHashtagClick}
-              onCampaignClick={handleCampaignClick} // Pass the new handler down
-            />
-        </MainContent>
+        </Grid>
         <CreatePostModal
           open={isCreatePostModalOpen}
           onClose={() => setCreatePostModalOpen(false)}
           onCreatePost={handleCreatePost}
         />
         <IntentModal open={intentModalOpen} onClose={handleCloseIntentModal} onFollow={handleFollow} />
-        {/* Render the Campaign Hub Modal */}
         <CampaignHubModal 
           open={isCampaignHubOpen} 
           onClose={handleCloseCampaignHub} 

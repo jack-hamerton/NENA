@@ -4,9 +4,10 @@ import styled from 'styled-components';
 import UserAvatar from '../components/UserAvatar';
 import { likePost } from '../services/post.service';
 import { IconButton, Typography } from '@mui/material';
-import { FavoriteBorder, Favorite, Comment as CommentIcon } from '@mui/icons-material';
+import { FavoriteBorder, Favorite, Comment as CommentIcon, Campaign as CampaignIcon } from '@mui/icons-material';
 import FeedPoll from './FeedPoll';
 import CommentModal from '../components/modals/CommentModal';
+import CampaignHubModal from '../components/modals/CampaignHubModal';
 
 const FullScreenCard = styled.div`
   width: 100%;
@@ -75,6 +76,7 @@ const PostCard = ({ post, onUsernameLongPress, onHashtagClick }) => {
   const [likes, setLikes] = useState(post.likes || 0);
   const [hasLiked, setHasLiked] = useState(post.hasLiked || false);
   const [isCommentModalOpen, setCommentModalOpen] = useState(false);
+  const [isCampaignModalOpen, setCampaignModalOpen] = useState(false);
   const pressTimer = useRef();
 
   const handleLike = async () => {
@@ -111,7 +113,6 @@ const PostCard = ({ post, onUsernameLongPress, onHashtagClick }) => {
     });
   };
 
-
   return (
     <FullScreenCard>
       <PostHeader
@@ -141,14 +142,26 @@ const PostCard = ({ post, onUsernameLongPress, onHashtagClick }) => {
             <CommentIcon />
           </IconButton>
         </Action>
+
+        <Action onClick={() => setCampaignModalOpen(true)}>
+          <IconButton>
+            <CampaignIcon />
+          </IconButton>
+        </Action>
       </VerticalActions>
 
       <CommentModal 
         open={isCommentModalOpen} 
         onClose={() => setCommentModalOpen(false)} 
-        post={post} 
+        post={post}
+        // TODO: Implement the new comment display logic
       />
 
+      <CampaignHubModal
+        open={isCampaignModalOpen}
+        onClose={() => setCampaignModalOpen(false)}
+        post={post}
+      />
     </FullScreenCard>
   );
 };

@@ -1,84 +1,82 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Button } from '@mui/material';
-import { useMediaQuery } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Button, useMediaQuery, useTheme, BottomNavigation, BottomNavigationAction } from '@mui/material';
+import ForYouIcon from '@mui/icons-material/Home';
+import FollowingIcon from '@mui/icons-material/People';
+import CreateIcon from '@mui/icons-material/AddCircleOutline';
 
 const NavContainer = styled.nav`
-  background-color: ${props => props.theme.palette.background.paper};
-  padding: 20px 10px;
-  border-radius: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
-
-  @media (max-width: ${props => props.theme.breakpoints.values.sm}px) {
-    position: fixed;
-    top: 50%;
-    left: 20px;
-    transform: translateY(-50%) translateX(${props => props.isOpen ? '0' : '-150%'});
-  }
-
-  @media (min-width: ${props => props.theme.breakpoints.values.sm}px) {
-    position: static;
-    transform: none;
-    height: 100%;
-    border-radius: 0;
-    box-shadow: none;
-    border-right: 1px solid ${props => props.theme.palette.divider};
-  }
-`;
-
-const NavLinks = styled.div`
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1rem;
+  border-right: 1px solid ${props => props.theme.palette.divider};
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
+  gap: 1rem;
 `;
 
-const FeedControlButton = styled(Button)`
-  &.active {
-    background-color: ${props => props.theme.palette.accent.main};
-    color: ${props => props.theme.palette.accent.contrastText};
-    &:hover {
-      background-color: ${props => props.theme.palette.accent.dark};
-    }
-  }
+const MobileNav = styled(BottomNavigation)`
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  border-top: 1px solid ${props => props.theme.palette.divider};
+  background-color: ${props => props.theme.palette.background.paper};
+  z-index: 100;
 `;
 
 const FeedControlNav = ({
-  isOpen,
   feedType,
   setFeedType,
-  handleRestart,
   setCreatePostModalOpen,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+
+  if (isMobile) {
+    return (
+        <MobileNav
+            value={feedType}
+            onChange={(event, newValue) => {
+                setFeedType(newValue);
+            }}
+            showLabels
+        >
+            <BottomNavigationAction label="For You" value="for-you" icon={<ForYouIcon />} />
+            <BottomNavigationAction label="Following" value="following" icon={<FollowingIcon />} />
+            <BottomNavigationAction label="Post" icon={<CreateIcon />} onClick={() => setCreatePostModalOpen(true)} />
+        </MobileNav>
+    );
+  }
 
   return (
-    <NavContainer isOpen={isOpen} theme={theme}>
-      <NavLinks>
-        <FeedControlButton
-          onClick={() => setFeedType('for-you')}
-          className={feedType === 'for-you' ? 'active' : ''}
-          variant={feedType === 'for-you' ? 'contained' : 'text'}
+    <NavContainer theme={theme}>
+        <img src="/nena-logo.png" alt="NenaSpace Logo" style={{ width: '50px', marginBottom: '1rem' }} />
+        <Button
+            onClick={() => setFeedType('for-you')}
+            variant={feedType === 'for-you' ? 'contained' : 'text'}
+            startIcon={<ForYouIcon />}
+            sx={{ justifyContent: 'flex-start' }}
         >
-          For You
-        </FeedControlButton>
-        <FeedControlButton
-          onClick={() => setFeedType('following')}
-          className={feedType === 'following' ? 'active' : ''}
-          variant={feedType === 'following' ? 'contained' : 'text'}
+            For You
+        </Button>
+        <Button
+            onClick={() => setFeedType('following')}
+            variant={feedType === 'following' ? 'contained' : 'text'}
+            startIcon={<FollowingIcon />}
+            sx={{ justifyContent: 'flex-start' }}
         >
-          Following
-        </FeedControlButton>
-        <FeedControlButton onClick={handleRestart}>Restart</FeedControlButton>
-        <FeedControlButton onClick={() => setCreatePostModalOpen(true)} variant="outlined">
-          Create Post
-        </FeedControlButton>
-      </NavLinks>
+            Following
+        </Button>
+        <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={() => setCreatePostModalOpen(true)} 
+            sx={{ mt: 2, borderRadius: '9999px' }}
+        >
+            Post
+        </Button>
     </NavContainer>
   );
 };
