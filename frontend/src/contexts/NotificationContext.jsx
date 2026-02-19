@@ -1,109 +1,50 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { api } from '../utils/api';
+
+import React, { createContext, useState, useContext, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { useSnackbar } from 'notistack';
-import { Button } from '@mui/material';
 
-const NotificationContext = createContext(null);
+const NotificationContext = createContext();
 
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
-  if (!context) {
-    throw new Error("useNotifications must be used within a NotificationProvider");
-  }
-  return context;
-};
+export const useNotifications = () => useContext(NotificationContext);
 
 export const NotificationProvider = ({ children }) => {
-  const [notifications, setNotifications] = useState([]);
+  // State will now be an object where keys are user IDs
+  const [userNotifications, setUserNotifications] = useState({});
   const { user } = useAuth();
-  const { enqueueSnackbar } = useSnackbar();
 
-  useEffect(() => {
-    if (user) {
-      const fetchNotifications = async () => {
-        const { data } = await api.get("/notifications");
-        setNotifications(data);
-      };
+  const addNotification = useCallback((message) => {
+    if (!user) return; // Do nothing if no user is logged in
 
-      fetchNotifications();
+    const newNotification = {
+      id: new Date().getTime(),
+      message,
+      read: false,
+    };
 
-      const ws = new WebSocket(`ws://localhost:8000/notifications/ws/${user.id}`);
-
-      ws.onmessage = (event) => {
-        const notificationData = JSON.parse(event.data);
-        const newNotification = {
-          ...notificationData,
-          id: new Date().getTime(), // Add a unique ID
-          read: false,
-        };
-        setNotifications(prev => [...prev, newNotification]);
-      };
-
-      return () => {
-        ws.close();
-      };
-    }
+    setUserNotifications(prev => ({
+      ...prev,
+      [user.id]: [newNotification, ...(prev[user.id] || [])],
+    }));
   }, [user]);
 
-  const markAsRead = useCallback(async (notificationId) => {
-    await api.post(`/notifications/${notificationId}/read`);
-    setNotifications(prev =>
-      prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
-    );
-  }, []);
+  const markAsRead = useCallback((notificationId) => {
+    if (!user) return;
 
-  const clearReadNotifications = useCallback(async () => {
-    await api.delete("/notifications/read");
-    setNotifications(prev => prev.filter(n => !n.read));
-  }, []);
+    setUserNotifications(prev => {
+      const currentUserNotifications = prev[user.id] || [];
+      return {
+        ...prev,
+        [user.id]: currentUserNotifications.map(n => 
+          n.id === notificationId ? { ...n, read: true } : n
+        ),
+      };
+    });
+  }, [user]);
 
-  useEffect(() => {
-    const unreadNotifications = notifications.filter(n => !n.read);
-    const latestNotification = unreadNotifications[unreadNotifications.length - 1];
-
-    if (latestNotification) {
-      if (latestNotification.type === 'event_invitation') {
-        const { event, message } = latestNotification.payload;
-        enqueueSnackbar(message, {
-          action: (
-            <Button
-              onClick={async () => {
-                await api.post(`/calendar/events/${event.id}/respond?accept=true`, {}, {});
-                markAsRead(latestNotification.id);
-              }}
-            >
-              Accept
-            </Button>
-          ),
-        });
-      } else if (latestNotification.type === 'event_reminder') {
-        const { message } = latestNotification.payload;
-        enqueueSnackbar(message, {
-          action: (
-            <Button
-              onClick={() => {
-                window.location.href = '/calendar';
-                markAsRead(latestNotification.id);
-              }}
-            >
-              View
-            </Button>
-          ),
-        });
-      }
-    }
-  }, [notifications, enqueueSnackbar, markAsRead]);
-
-
-  const contextValue = {
-    notifications,
-    clearReadNotifications,
-    markAsRead
-  };
+  // The hook will now return only the notifications for the logged-in user
+  const notifications = user ? userNotifications[user.id] || [] : [];
 
   return (
-    <NotificationContext.Provider value={contextValue}>
+    <NotificationContext.Provider value={{ notifications, addNotification, markAsRead }}>
       {children}
     </NotificationContext.Provider>
   );

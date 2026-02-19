@@ -1,49 +1,37 @@
-import apiClient from './api';
 
-export const handlePrompt = async (prompt) => {
-  const response = await apiClient.post('/ai/assist', { 
-    prompt: prompt,
-    context: {
-      type: 'prompt'
-    }
-  });
-  return response.data.response || response.data;
-};
+import axios from 'axios';
 
-export const chatWithAI = async (message) => {
-  const response = await apiClient.post('/ai/chat', { 
-    message: message
-  });
-  return response.data.response || response.data;
-};
+const API_URL = 'http://localhost:3002/api/ai';
 
 export const rewriteText = async (text, tone) => {
-  const response = await apiClient.post('/ai/assist', { 
-    prompt: text, 
-    context: {
-      type: 'rewrite',
-      tone: tone
-    }
-  });
-  return response.data.rewritten_text;
+  try {
+    const response = await axios.post(`${API_URL}/rewrite`, {
+      text,
+      tone,
+    });
+    return response.data.rewrittenText;
+  } catch (error) {
+    console.error('Error rewriting text:', error);
+    throw error;
+  }
 };
 
-export const summarizeText = async (text) => {
-  const response = await apiClient.post('/ai/assist', { 
-    prompt: text, 
-    context: {
-      type: 'summarize'
+export const chatWithAI = async (messages) => {
+    try {
+        const response = await axios.post(`${API_URL}/chat`, { messages });
+        return response.data;
+    } catch (error) {
+        console.error('Error chatting with AI:', error);
+        throw error;
     }
-  });
-  return response.data.response;
 };
 
-export const suggestNextSteps = async (text) => {
-  const response = await apiClient.post('/ai/assist', { 
-    prompt: text, 
-    context: {
-      type: 'suggest_next_steps'
+export const handlePrompt = async (prompt) => {
+    try {
+        const response = await axios.post(`${API_URL}/prompt`, { prompt });
+        return response.data;
+    } catch (error) {
+        console.error('Error handling prompt:', error);
+        throw error;
     }
-  });
-  return response.data;
 };

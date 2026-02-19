@@ -5,11 +5,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button, Menu, MenuItem, ListItemIcon, ListItemText, useMediaQuery, IconButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import UserAvatar from '../UserAvatar';
 import NotificationMenu from './NotificationMenu';
 
 // Import icons
-import ExploreIcon from '@mui/icons-material/Explore';
+import SearchIcon from '@mui/icons-material/Search';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -17,6 +18,7 @@ import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import SchoolIcon from '@mui/icons-material/School';
 import PodcastsIcon from '@mui/icons-material/Podcasts';
 import LogoutIcon from '@mui/icons-material/Logout';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 const HeaderContainer = styled.header`
   position: fixed;
@@ -72,17 +74,13 @@ const NavLink = styled(Link)`
   }
 `;
 
-const Header = () => {
+const Header = ({ onSearchClick, onAICompanionClick }) => {
     const { user, logout } = useAuth();
+    const { notifications, markAsRead } = useNotifications();
     const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const [notifications, setNotifications] = useState([
-        { id: 1, message: 'New follower: @john_doe', read: false },
-        { id: 2, message: 'Your post was liked by @jane_doe', read: false },
-        { id: 3, message: 'New comment on your podcast', read: true },
-    ]);
-
+    
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
 
@@ -99,12 +97,6 @@ const Header = () => {
         navigate('/login');
     }
 
-    const handleMarkAsRead = (notificationId) => {
-        setNotifications(notifications.map(n => 
-            n.id === notificationId ? { ...n, read: true } : n
-        ));
-    }
-
     if (!user) {
         return null;
     }
@@ -115,10 +107,9 @@ const Header = () => {
                 <img src="/nena-logo.png" alt="NenaSpace Logo" style={{ height: isMobile ? '35px' : '40px' }} />
             </Logo>
             <Nav theme={theme}>
-                <NavLink to="/discover" theme={theme}>
-                    <ExploreIcon />
-                    <span className="nav-text">Discover</span>
-                </NavLink>
+                <IconButton onClick={onSearchClick} sx={{ color: 'text.secondary' }}>
+                    <SearchIcon />
+                </IconButton>
                 <NavLink to="/messages" theme={theme}>
                     <MailOutlineIcon />
                     <span className="nav-text">Messages</span>
@@ -142,6 +133,12 @@ const Header = () => {
                         'aria-labelledby': 'more-button',
                     }}
                 >
+                    <MenuItem onClick={() => { onAICompanionClick(); handleMoreClose(); }}>
+                        <ListItemIcon>
+                            <SmartToyIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>AI Companion</ListItemText>
+                    </MenuItem>
                     <MenuItem onClick={handleMoreClose} component={Link} to="/rooms">
                         <ListItemIcon>
                             <MeetingRoomIcon fontSize="small" />
@@ -160,8 +157,16 @@ const Header = () => {
                         </ListItemIcon>
                         <ListItemText>Podcast</ListItemText>
                     </MenuItem>
+                    {isMobile && (
+                        <MenuItem onClick={handleLogout}>
+                            <ListItemIcon>
+                                <LogoutIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText>Logout</ListItemText>
+                        </MenuItem>
+                    )}
                 </Menu>
-                <NotificationMenu notifications={notifications} onMarkAsRead={handleMarkAsRead} />
+                <NotificationMenu notifications={notifications} onMarkAsRead={markAsRead} />
                 <NavLink to={`/profile/${user.id}`} theme={theme}>
                     <UserAvatar user={user} size="small" />
                 </NavLink>

@@ -16,15 +16,33 @@ const ParticipantContainer = styled.div`
   background-color: #000;
   border-radius: 8px;
   overflow: hidden;
+  width: 100%;
+  padding-bottom: 75%; // 4:3 aspect ratio
 `;
 
 const Video = styled.video`
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 `;
 
-const UserIdLabel = styled.div`
+const NoVideoPlaceholder = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #2c2c2c;
+  color: #fff;
+`;
+
+const NameLabel = styled.div`
   position: absolute;
   bottom: 8px;
   left: 8px;
@@ -46,8 +64,14 @@ const ParticipantVideo = ({ participant }) => {
 
     return (
         <ParticipantContainer>
-            <Video ref={videoRef} autoPlay playsInline />
-            <UserIdLabel>{participant.userId}</UserIdLabel>
+            {participant.stream ? (
+                <Video ref={videoRef} autoPlay playsInline muted />
+            ) : (
+                <NoVideoPlaceholder>
+                    <p>{participant.name}'s video is off</p>
+                </NoVideoPlaceholder>
+            )}
+            <NameLabel>{participant.name || participant.userId}</NameLabel>
         </ParticipantContainer>
     );
 };
@@ -56,7 +80,7 @@ export const RoomVideoGrid = ({ participants }) => {
   return (
     <GridContainer>
       {participants.map((participant) => (
-        <ParticipantVideo key={participant.userId} participant={participant} />
+        <ParticipantVideo key={participant.id || participant.userId} participant={participant} />
       ))}
     </GridContainer>
   );

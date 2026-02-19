@@ -2,6 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import Message from './Message';
+import DisappearingMessage from './DisappearingMessage';
 
 const MessageListContainer = styled.div`
   flex-grow: 1;
@@ -24,12 +25,16 @@ const MessageList = ({ messages, e2eeManager, sessionId }) => {
   return (
     <MessageListContainer>
       {visibleMessages.map((msg, index) => (
-        <Message 
-          key={index} 
-          message={msg} 
-          e2eeManager={e2eeManager} 
-          sessionId={sessionId}
-        />
+        msg.disappearingTimer ? (
+          <DisappearingMessage key={index} message={msg} />
+        ) : (
+          <Message 
+            key={index} 
+            message={msg} 
+            e2eeManager={e2eeManager} 
+            sessionId={sessionId}
+          />
+        )
       ))}
     </MessageListContainer>
   );

@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { Document } from '../components/collaboration/Document';
+import { chatService } from '../services/chatService.js';
 
 const ChatWindowContainer = styled.div`
   flex-grow: 1;
@@ -50,8 +51,25 @@ const NoConversationSelected = styled.div`
     color: ${props => props.theme.palette.text.secondary};
 `;
 
-const ChatWindow = ({ conversation, messages, users, loading, error, onSendMessage, currentUser, onStartCall }) => {
+const ChatWindow = ({ conversation, messages: initialMessages, users, loading, error, onSendMessage, currentUser, onStartCall }) => {
   const [activeTab, setActiveTab] = useState('chat');
+  const [messages, setMessages] = useState(initialMessages || []);
+
+  useEffect(() => {
+    setMessages(initialMessages || []);
+  }, [initialMessages]);
+
+  useEffect(() => {
+    const handleMessageDeleted = ({ messageId }) => {
+      setMessages(prevMessages => prevMessages.filter(msg => msg.id !== messageId));
+    };
+
+    chatService.on('message-deleted', handleMessageDeleted);
+
+    return () => {
+      chatService.off('message-deleted', handleMessageDeleted);
+    };
+  }, []);
 
   if (!conversation) {
     return (

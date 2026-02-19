@@ -1,182 +1,124 @@
 
-import React, { useState, useEffect, useCallback, useContext } from 'react';
-import styled from 'styled-components';
-import { useParams, useNavigate } from 'react-router-dom';
-import { CircularProgress, Typography, Box } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Grid, useTheme, useMediaQuery } from '@mui/material';
 import ConversationList from '../messages/ConversationList';
 import ChatWindow from '../messages/ChatWindow';
-import { AuthContext } from '../contexts/AuthContext';
-import { chatService } from '../services/chatService';
-import api from '../services/api';
+import AIChat from '../components/AIChat';
+import CallPopup from '../components/call/CallPopup';
+import CallWindow from '../components/call/CallWindow';
+import { chatService } from '../services/chatService.js'; 
 
-const MessagesContainer = styled.div`
-  display: flex;
-  height: calc(100vh - 64px); // Adjust based on your header height
-  background-color: ${props => props.theme.palette.background.default};
-`;
+const mockConversations = [
+    {
+      id: 1,
+      name: 'John Doe',
+      lastMessage: 'See you tomorrow!',
+      timestamp: '10:30 AM',
+      unread: 2,
+      online: true,
+      avatar: 'https://i.pravatar.cc/150?u=johndoe',
+      participants: [{ id: 'user2', name: 'John Doe'}]
+    },
+    {
+        id: 2,
+        name: 'Jane Smith',
+        lastMessage: 'Just finished the report.',
+        timestamp: 'Yesterday',
+        unread: 0,
+        online: false,
+        avatar: 'https://i.pravatar.cc/150?u=janesmith',
+        participants: [{ id: 'user3', name: 'Jane Smith'}]
+    }
+];
 
 const MessagesPage = () => {
-  const { conversationId } = useParams();
-  const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const [selectedConversation, setSelectedConversation] = useState(mockConversations[0]);
+  const [showCallPopup, setShowCallPopup] = useState(false);
+  const [activeCall, setActiveCall] = useState(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [conversations, setConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [chatUsers, setChatUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Centralized real-time listener setup
   useEffect(() => {
-    if (!user) return;
-
-    chatService.connect(user.id);
-
-    const handleNewMessage = (message) => {
-      // Update the correct conversation in the list
-      setConversations(prev => 
-        prev.map(c => 
-          c.id === message.conversationId 
-          ? { ...c, lastMessage: message } 
-          : c
-        )
-      );
-      // If the message is for the currently selected conversation, add it to the view
-      if (message.conversationId === (selectedConversation?.id || conversationId)) {
-        setMessages(prev => [...prev, message]);
-      }
+    const handleIncomingCall = (data) => {
+      // Automatically accept incoming calls for simplicity in this example
+      setActiveCall({
+        to: data.from,
+        from: chatService.getCurrentUser().id,
+        type: 'incoming',
+        callType: data.callType,
+        offer: data.offer
+      });
     };
 
-    chatService.on('new-message', handleNewMessage);
+    chatService.on('signaling-message', (message) => {
+        if(message.type === 'call-offer'){
+            handleIncomingCall(message)
+        }
+    });
 
     return () => {
-      chatService.off('new-message', handleNewMessage);
+      chatService.off('signaling-message');
     };
-  }, [user, selectedConversation, conversationId]);
-
-  // Fetch initial conversations
-  useEffect(() => {
-    const fetchConversations = async () => {
-      try {
-        setLoading(true);
-        const { data } = await api.get('/conversations');
-        setConversations(data);
-        if (conversationId) {
-          const initialConvo = data.find(c => c.id === conversationId);
-          if (initialConvo) {
-            setSelectedConversation(initialConvo);
-          } else {
-            navigate('/messages');
-          }
-        }
-      } catch (err) {
-        setError("Failed to load conversations.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    if(user) fetchConversations();
-  }, [conversationId, navigate, user]);
-
-  // Fetch messages for the selected conversation
-  useEffect(() => {
-    if (!selectedConversation) return;
-
-    const fetchMessages = async () => {
-      try {
-        setLoading(true);
-        const { data } = await api.get(`/conversations/${selectedConversation.id}/messages`);
-        setMessages(data.messages);
-        setChatUsers(data.users);
-      } catch (err) {
-        setError(`Failed to load messages.`);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMessages();
-
-  }, [selectedConversation]);
-
-  // Corrected function to send a message
-  const handleSendMessage = useCallback(async (text) => {
-    if (!selectedConversation || !user) return;
-    
-    const recipient = selectedConversation.users.find(u => u.id !== user.id);
-    if(!recipient) {
-        console.error("Cannot send message: recipient not found");
-        return;
-    }
-
-    const messageData = {
-        text,
-        conversationId: selectedConversation.id,
-        recipientId: recipient.id
-    };
-
-    chatService.sendMessage(messageData);
-    
-    // Optimistically update the UI
-    const optimisticMessage = { 
-        ...messageData, 
-        id: Date.now(), // temporary ID
-        senderId: user.id, 
-        createdAt: new Date().toISOString() 
-    };
-    setMessages(prev => [...prev, optimisticMessage]);
-
-  }, [selectedConversation, user]);
-
-  // Function to create a new conversation
-  const handleCreateConversation = useCallback(async (recipientId, initialMessage) => {
-      if(!user) return;
-      try {
-          const { data: newConversation } = await api.post('/conversations', {
-              recipientId,
-              initialMessage
-          });
-          setConversations(prev => [newConversation, ...prev]);
-          setSelectedConversation(newConversation);
-          navigate(`/messages/${newConversation.id}`);
-      } catch (error) {
-          console.error("Failed to create conversation", error);
-          setError("Could not start a new conversation.");
-      }
-  }, [user, navigate]);
+  }, []);
 
   const handleConversationSelect = (conversation) => {
     setSelectedConversation(conversation);
-    navigate(`/messages/${conversation.id}`);
   };
 
-  if (!user) {
-      return <Typography>Please log in to see your messages.</Typography>
-  }
+  const handleStartCall = (callType) => {
+    setShowCallPopup(false);
+    setActiveCall({
+      to: selectedConversation.participants[0].id,
+      from: chatService.getCurrentUser().id,
+      type: 'outgoing',
+      callType,
+    });
+  };
 
-  if (loading && conversations.length === 0) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}><CircularProgress /></Box>;
+  const handleHangUp = () => {
+    setActiveCall(null);
+  };
+
+  if (isMobile) {
+    return (
+      <Grid container style={{ height: '100vh' }}>
+        {!selectedConversation ? (
+          <ConversationList
+            conversations={mockConversations}
+            selectedConversation={selectedConversation}
+            onConversationSelect={handleConversationSelect}
+          />
+        ) : (
+          <ChatWindow
+            conversation={selectedConversation}
+            onStartCall={() => setShowCallPopup(true)}
+          />
+        )}
+        {showCallPopup && <CallPopup open={showCallPopup} onClose={() => setShowCallPopup(false)} onStartCall={handleStartCall} user={selectedConversation.participants[0]}/>}
+        {activeCall && <CallWindow activeCall={activeCall} onHangUp={handleHangUp} />}
+      </Grid>
+    );
   }
 
   return (
-      <MessagesContainer>
+    <Grid container style={{ height: 'calc(100vh - 64px)' }}>
+      <Grid item sm={4} md={3} style={{ height: '100%' }}>
         <ConversationList
-          conversations={conversations}
+          conversations={mockConversations}
           selectedConversation={selectedConversation}
           onConversationSelect={handleConversationSelect}
-          onCreateConversation={handleCreateConversation}
-          currentUserId={user.id}
         />
-        <ChatWindow 
-          conversation={selectedConversation} 
-          messages={messages}
-          users={chatUsers}
-          loading={loading}
-          error={error}
-          onSendMessage={handleSendMessage}
-          currentUser={user}
-        />
-      </MessagesContainer>
+      </Grid>
+      <Grid item sm={8} md={9} style={{ height: '100%' }}>
+        {selectedConversation ? (
+          <ChatWindow conversation={selectedConversation} onStartCall={() => setShowCallPopup(true)}/>
+        ) : (
+          <AIChat />
+        )}
+      </Grid>
+      {showCallPopup && <CallPopup open={showCallPopup} onClose={() => setShowCallPopup(false)} onStartCall={handleStartCall} user={selectedConversation.participants[0]}/>}
+      {activeCall && <CallWindow activeCall={activeCall} onHangUp={handleHangUp} />}
+    </Grid>
   );
 };
 

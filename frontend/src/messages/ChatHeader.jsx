@@ -1,14 +1,12 @@
 
 import React from 'react';
+import { AppBar, Toolbar, Avatar, Typography, IconButton } from '@mui/material';
+import { Call } from '@mui/icons-material';
 import styled from 'styled-components';
 
-const Header = styled.div`
+const StyledToolbar = styled(Toolbar)`
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid ${props => props.theme.palette.highlight};
-  background-color: ${props => props.theme.palette.primary};
 `;
 
 const UserInfo = styled.div`
@@ -16,37 +14,21 @@ const UserInfo = styled.div`
   align-items: center;
 `;
 
-const Avatar = styled.img`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-right: 1rem;
-`;
-
-const CallButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: ${props => props.theme.palette.secondary};
-  color: ${props => props.theme.text.primary};
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  &:disabled {
-    background-color: #a5d6a7;
-    cursor: not-allowed;
-  }
-`;
-
 const ChatHeader = ({ conversation, onStartCall, sessionId }) => {
+  if (!conversation) return null;
+
   return (
-    <Header>
-      <UserInfo>
-        <Avatar src={conversation.avatar} alt={conversation.name} />
-        <h3>{conversation.name}</h3>
-      </UserInfo>
-      <CallButton onClick={onStartCall} disabled={!sessionId}>
-        Start Call
-      </CallButton>
-    </Header>
+    <AppBar position="static" color="default">
+      <StyledToolbar>
+        <UserInfo>
+          <Avatar src={conversation.avatar} alt={conversation.name} style={{ marginRight: '15px' }} />
+          <Typography variant="h6">{conversation.name}</Typography>
+        </UserInfo>
+        <IconButton onClick={onStartCall} disabled={!sessionId}>
+          <Call />
+        </IconButton>
+      </StyledToolbar>
+    </AppBar>
   );
 };
 

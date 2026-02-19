@@ -1,57 +1,39 @@
+
 import React from 'react';
-import styled from 'styled-components';
-import { Phone, Videocam } from '@mui/icons-material';
-import { IconButton } from '../common/IconButton';
-import { Button } from '../common/Button';
+import { Dialog, DialogTitle, DialogContent, Button, Grid } from '@mui/material';
+import { Videocam, Mic } from '@mui/icons-material';
 
-const PopupContainer = styled.div`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: ${props => props.theme.background.secondary};
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  z-index: 1000;
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  gap: 16px;
-`;
-
-const CallButton = styled(IconButton)`
-  background-color: ${props => props.theme.palette.primary};
-  color: white;
-
-  &:hover {
-    background-color: ${props => props.theme.palette.primaryDark};
-  }
-`;
-
-const CallPopup = ({ user, onStartCall, onClose }) => {
-  if (!user) {
-    return null;
-  }
+const CallPopup = ({ open, onClose, onStartCall, user }) => {
+  if (!user) return null;
 
   return (
-    <PopupContainer>
-      <h3>Call {user.name}</h3>
-      <ButtonContainer>
-        <CallButton onClick={() => onStartCall('voice')}>
-          <Phone />
-        </CallButton>
-        <CallButton onClick={() => onStartCall('video')}>
-          <Videocam />
-        </CallButton>
-      </ButtonContainer>
-      <Button onClick={onClose} variant="outlined">Close</Button>
-    </PopupContainer>
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Start a call with {user.name}</DialogTitle>
+      <DialogContent>
+        <Grid container spacing={2} justifyContent="center">
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Videocam />}
+              onClick={() => onStartCall('video')}
+            >
+              Video Call
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<Mic />}
+              onClick={() => onStartCall('voice')}
+            >
+              Voice Call
+            </Button>
+          </Grid>
+        </Grid>
+      </DialogContent>
+    </Dialog>
   );
 };
 

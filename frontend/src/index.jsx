@@ -15,6 +15,3 @@ root.render(
 );
 
 console.log('App rendered');
-
-
-

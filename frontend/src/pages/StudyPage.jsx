@@ -26,6 +26,7 @@ import FindingsPanel from '../study/findings/FindingsPanel';
 import CreatorQuestionBuilder from '../study/CreatorQuestionBuilder';
 import studyService from '../services/studyService';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { theme as styledTheme } from '../theme/theme';
 import {
   StudioContainer,
@@ -57,7 +58,6 @@ const StudyPage = () => {
   }
 
   if (isQuestionnaire) {
-    // Pass the user to the questionnaire
     return <ParticipantQuestionnaireWrapper studyId={studyId} theme={theme} user={user} />;
   }
 
@@ -65,7 +65,7 @@ const StudyPage = () => {
 };
 
 const StudyDashboard = ({ theme }) => {
-  const [studyId, setStudyId] = useState('');
+  const [accessCode, setAccessCode] = useState('');
   const [userStudies, setUserStudies] = useState([]);
   const navigate = useNavigate();
 
@@ -82,10 +82,17 @@ const StudyDashboard = ({ theme }) => {
     fetchUserStudies();
   }, []);
 
-  const handleAccessSubmit = (e) => {
+  const handleAccessSubmit = async (e) => {
     e.preventDefault();
-    if (studyId.trim()) {
-      navigate(`/study/${studyId}/questionnaire`);
+    if (accessCode.trim()) {
+      try {
+        const response = await studyService.getStudyByCode(accessCode.trim());
+        const study = response.data;
+        navigate(`/study/${study.id}/questionnaire`);
+      } catch (error) {
+        console.error('Error finding study by code:', error);
+        alert('Invalid access code. Please try again.');
+      }
     }
   };
 
@@ -111,10 +118,10 @@ const StudyDashboard = ({ theme }) => {
           </Typography>
           <TextField
             fullWidth
-            label="Study ID"
+            label="Enter 8-Digit Access Code"
             variant="outlined"
-            value={studyId}
-            onChange={(e) => setStudyId(e.target.value)}
+            value={accessCode}
+            onChange={(e) => setAccessCode(e.target.value)}
             sx={{
               mb: 2,
               '& .MuiOutlinedInput-root': {
@@ -158,6 +165,8 @@ const CreatorStudioWrapper = ({ studyId }) => {
   const [analysisData, setAnalysisData] = useState(null);
   const [study, setStudy] = useState(null);
   const [answers, setAnswers] = useState([]);
+  const { addNotification } = useNotifications();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (studyId) {
@@ -189,8 +198,9 @@ const CreatorStudioWrapper = ({ studyId }) => {
 
   const handleSaveStudy = async (studyData) => {
     try {
-      const response = await studyService.createStudy(studyData);
+      const response = await studyService.createStudy({ ...studyData, creator_id: user.id });
       const newStudy = response.data;
+      addNotification(`New study created! Access code: ${newStudy.access_code}`);
       window.location.href = `/study/${newStudy.id}`;
     } catch (error) {
       console.error('Error saving study:', error);
@@ -263,7 +273,8 @@ const ParticipantQuestionnaireWrapper = ({ studyId, user }) => {
 
   const handleSubmit = async () => {
     try {
-      await studyService.submitAnswers(studyId, answers, user.id);
+      const userId = user ? user.id : null; // Handle case where user may not be logged in
+      await studyService.submitAnswers(studyId, answers, userId);
       navigate('/home'); // Redirect to home on success
     } catch (err) {
       setError('Failed to submit answers.');

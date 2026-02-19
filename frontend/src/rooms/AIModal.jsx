@@ -1,70 +1,55 @@
+
 import { useState } from 'react';
-import { Modal, Box, Button, Typography } from '@mui/material';
-import { summarize, suggestNextSteps } from '../services/aiService';
+import { Modal, Box, Typography, Button, CircularProgress } from '@mui/material';
+import { aiService } from '../../services/aiService';
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 const AIModal = ({ open, onClose, roomTranscript }) => {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [aiContent, setAiContent] = useState('');
 
-  const handleSummarize = async () => {
-    setLoading(true);
-    setResult('');
+  const handleAiRequest = async (type) => {
+    setIsLoading(true);
+    setAiContent('');
     try {
-      const res = await summarize(roomTranscript);
-      setResult(res.data.summary);
+      let response;
+      if (type === 'summary') {
+        response = await aiService.getSummary(roomTranscript);
+      } else if (type === 'keyPoints') {
+        response = await aiService.getKeyPoints(roomTranscript);
+      } else if (type === 'actionItems') {
+        response = await aiService.getActionItems(roomTranscript);
+      } else if (type === 'nextSteps') {
+        response = await aiService.suggestNextSteps(roomTranscript);
+      }
+      setAiContent(response);
     } catch (error) {
-      console.error('Error summarizing:', error);
-      setResult('Error: Could not summarize the discussion.');
-    } finally {
-      setLoading(false);
+      setAiContent(`Error: ${error.message}` || 'Error: Could not process the request.');
     }
-  };
-
-  const handleSuggestNextSteps = async () => {
-    setLoading(true);
-    setResult('');
-    try {
-      const res = await suggestNextSteps(roomTranscript);
-      setResult(res.data.nextSteps);
-    } catch (error) {
-      console.error('Error suggesting next steps:', error);
-      setResult('Error: Could not suggest next steps.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
+    setIsLoading(false);
   };
 
   return (
     <Modal open={open} onClose={onClose}>
       <Box sx={style}>
-        <Typography variant="h6" component="h2">
-          AI Assistant
-        </Typography>
-        <Box sx={{ mt: 2 }}>
-          <Button onClick={handleSummarize} disabled={loading}>
-            {loading ? 'Summarizing...' : 'Summarize Discussion'}
-          </Button>
-          <Button onClick={handleSuggestNextSteps} disabled={loading} sx={{ ml: 2 }}>
-            {loading ? 'Suggesting...' : 'Suggest Next Steps'}
-          </Button>
-        </Box>
-        {result && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="body1">{result}</Typography>
-          </Box>
-        )}
+        <Typography variant="h6">AI Assistant</Typography>
+        <Button onClick={() => handleAiRequest('summary')}>Summarize</Button>
+        <Button onClick={() => handleAiRequest('keyPoints')}>Key Points</Button>
+        <Button onClick={() => handleAiRequest('actionItems')}>Action Items</Button>
+        <Button onClick={() => handleAiRequest('nextSteps')}>Next Steps</Button>
+        {isLoading && <CircularProgress />}
+        {aiContent && <Typography mt={2}>{aiContent}</Typography>}
       </Box>
     </Modal>
   );

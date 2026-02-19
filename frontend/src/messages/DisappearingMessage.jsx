@@ -1,47 +1,38 @@
+
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import { Box, Typography } from '@mui/material';
+import { chatService } from '../services/chatService.js';
 
-const DisappearingWrapper = styled.div`
-  position: relative;
-  padding: 0.8rem;
-`;
-
-const Timer = styled.div`
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  font-size: 0.7rem;
-  color: #888;
-`;
-
-const DisappearingMessage = ({ message, children }) => {
-  const [timeLeft, setTimeLeft] = useState(message.disappearingTimer);
+const DisappearingMessage = ({ message }) => {
+  const [timeLeft, setTimeLeft] = useState(message.disappearingTimer || 0);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prevTime => {
-        if (prevTime <= 1) {
-          clearInterval(timer);
-          // Here you would typically call a function to delete the message
-          // from your data store. For now, we'll just return 0.
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
+    if (timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft(prevTime => {
+          if (prevTime <= 1) {
+            clearInterval(timer);
+            chatService.deleteMessage(message.id);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [timeLeft, message.id]);
 
-    return () => clearInterval(timer);
-  }, []);
-
-  if (timeLeft === 0) {
-    return null; // Or some indication that the message has disappeared
+  if (timeLeft <= 0) {
+    return null;
   }
 
   return (
-    <DisappearingWrapper>
-      {children}
-      <Timer>{timeLeft}s</Timer>
-    </DisappearingWrapper>
+    <Box sx={{ position: 'relative', display:'inline-block' }}>
+        {message.text}
+        <Typography variant="caption" sx={{ position: 'absolute', bottom: 0, right: 0 }}>
+            {timeLeft}s
+        </Typography>
+    </Box>
   );
 };
 
