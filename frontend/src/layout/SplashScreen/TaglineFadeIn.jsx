@@ -2,7 +2,7 @@ import { Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 
 const TaglineFadeIn = () => {
-  const tagline = "Dialogue spark change";
+  const tagline = "Dialogue spark change when ideas meet.";
   const words = tagline.split(" ");
 
   const container = {

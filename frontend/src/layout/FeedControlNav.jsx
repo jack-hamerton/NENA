@@ -52,7 +52,7 @@ const FeedControlNav = ({
 
   return (
     <NavContainer theme={theme}>
-        <img src="/nena-logo.png" alt="NenaSpace Logo" style={{ width: '50px', marginBottom: '1rem' }} />
+        <img src="/nena-log.png" alt="NenaSpace Logo" style={{ width: '50px', marginBottom: '1rem' }} />
         <Button
             onClick={() => setFeedType('for-you')}
             variant={feedType === 'for-you' ? 'contained' : 'text'}

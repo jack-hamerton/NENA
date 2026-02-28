@@ -1,9 +1,10 @@
-name: Deploy to VPS (deploy-fixes)
+name: Deploy to VPS (main)
 
 on:
   push:
     branches:
       - deploy-fixes
+      - main
 
 jobs:
   deploy:
@@ -19,6 +20,6 @@ jobs:
             set -e
             cd /root/nena
             git fetch
-            git checkout deploy-fixes
-            git pull origin deploy-fixes
+            git checkout main
+            git pull origin main
             docker compose -f docker-compose.prod.yml up -d --build

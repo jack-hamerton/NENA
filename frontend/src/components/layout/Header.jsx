@@ -104,7 +104,7 @@ const Header = ({ onSearchClick, onAICompanionClick }) => {
     return (
         <HeaderContainer theme={theme}>
             <Logo to="/home">
-                <img src="/nena-logo.png" alt="NenaSpace Logo" style={{ height: isMobile ? '35px' : '40px' }} />
+                <img src="/nena-log.png" alt="NenaSpace Logo" style={{ height: isMobile ? '35px' : '40px' }} />
             </Logo>
             <Nav theme={theme}>
                 <IconButton onClick={onSearchClick} sx={{ color: 'text.secondary' }}>

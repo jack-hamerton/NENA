@@ -16,9 +16,9 @@ const LogoCentered = () => {
         height: '100vh',
       }}
     >
-      <img src="/logo.png" alt="Nena Logo" width={120} />
+      <img src="/nena-log.png" alt="NenaSpace Logo" width={120} />
       <Typography variant="h4" sx={{ mt: 2, color: 'text.primary' }}>
-        Nena
+        NenaSpace
       </Typography>
     </Box>
   );

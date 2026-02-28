@@ -35,7 +35,7 @@ const Nav = styled.nav`
   gap: 16px;
 `;
 
-const Logo = styled.div`
+const Logo = styled(Link)`
   display: flex;
   align-items: center;
   font-weight: 700;
@@ -212,8 +212,8 @@ const LandingPage = () => {
     <Page>
       <Shell>
         <Nav>
-          <Logo>
-            <LogoMark src="/nena-logo.png" alt="NenaSpace logo" />
+          <Logo to="/home">
+            <LogoMark src="/nena-log.png" alt="NenaSpace logo" />
           </Logo>
           <NavActions>
             <GhostLink to="/login">Login</GhostLink>
@@ -310,7 +310,7 @@ const LandingPage = () => {
         </Section>
 
         <Footer>
-          <span>© 2026 NENA. All rights reserved. Built by Jack Hamerton</span>
+          <span>© 2026 NENA. All rights reserved. </span>
           <div>
             <FooterLink to="/login">Login</FooterLink> ·{' '}
             <FooterLink to="/signup">Sign Up</FooterLink>
