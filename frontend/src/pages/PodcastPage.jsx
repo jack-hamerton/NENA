@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider, useTheme } from 'styled-components';
 import { useMediaQuery, CircularProgress, Typography } from '@mui/material';
 import { getPodcasts } from '../services/podcast.service';
 import PodcastCard from '../components/podcast/PodcastCard';
@@ -28,13 +27,14 @@ const PodcastPage = () => {
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = window.innerWidth <= 600;
 
   useEffect(() => {
-    getPodcasts()
-      .then((response) => {
-        const podcastData = response.data;
+    const fetchPodcasts = async () => {
+      try {
+        setLoading(true);
+        const response = await getPodcasts();
+        const podcastData = response.data || [];
         setPodcasts(podcastData);
         if (podcastData.length > 0) {
           const firstPodcast = podcastData[0];
@@ -44,12 +44,36 @@ const PodcastPage = () => {
           }
         }
         setLoading(false);
-      })
-      .catch((err) => {
-        setError('There was an error fetching podcasts.');
+      } catch (err) {
+        console.error('Error fetching podcasts:', err);
+        setError('Failed to load podcasts. Please check your connection and try again.');
         setLoading(false);
-        console.error(err);
-      });
+        // Set some mock data for development
+        const mockPodcasts = [
+          {
+            id: 1,
+            title: 'Sample Podcast',
+            author: 'Sample Author',
+            imageUrl: 'https://via.placeholder.com/300x300?text=Podcast',
+            episodes: [
+              {
+                id: 1,
+                title: 'Sample Episode',
+                notes: 'Sample notes',
+                transcription: 'Sample transcription'
+              }
+            ],
+            recommendations: []
+          }
+        ];
+        setPodcasts(mockPodcasts);
+        setSelectedPodcast(mockPodcasts[0]);
+        setSelectedEpisode(mockPodcasts[0].episodes[0]);
+        setLoading(false);
+      }
+    };
+
+    fetchPodcasts();
   }, []);
 
   const handlePodcastSelect = (podcast) => {
@@ -72,45 +96,55 @@ const PodcastPage = () => {
   if (error) {
     return (
       <PodcastPageContainer>
-        <Typography color="error">{error}</Typography>
+        <Typography color="error" style={{ textAlign: 'center', marginTop: '2rem' }}>
+          {error}
+        </Typography>
+        <Typography style={{ textAlign: 'center', marginTop: '1rem', color: appTheme.palette.text.secondary }}>
+          Please try refreshing the page or check back later.
+        </Typography>
       </PodcastPageContainer>
     );
   }
 
   return (
-    <ThemeProvider theme={appTheme}>
-      <PodcastPageContainer>
-        <h1 style={{ color: appTheme.palette.secondary.main, textAlign: 'center', marginBottom: '2rem' }}>Podcasts</h1>
-        
-        <Discovery podcasts={podcasts} onPodcastSelect={handlePodcastSelect} />
-        <BestPlaceToStart podcasts={podcasts} onPodcastSelect={handlePodcastSelect} />
+    <PodcastPageContainer>
+      <h1 style={{ color: appTheme.palette.secondary.main, textAlign: 'center', marginBottom: '2rem' }}>Podcasts</h1>
+      
+      <Discovery podcasts={podcasts} onPodcastSelect={handlePodcastSelect} />
+      <BestPlaceToStart onPodcastSelect={handlePodcastSelect} />
 
-        <PodcastListContainer>
-          {podcasts.map(podcast => (
+      <PodcastListContainer>
+        {podcasts.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '2rem', color: appTheme.palette.text.secondary }}>
+            <h3>No podcasts available</h3>
+            <p>Check back later for new content!</p>
+          </div>
+        ) : (
+          podcasts.map(podcast => (
             <PodcastCard key={podcast.id} podcast={podcast} onPodcastSelect={handlePodcastSelect} />
-          ))}
-        </PodcastListContainer>
-
-        {selectedPodcast && selectedEpisode && (
-          <>
-            <SocialFeaturesContainer>
-              <CommentsAndPolls episodeId={selectedEpisode.id} />
-              <SocialSharing podcast={selectedPodcast} episode={selectedEpisode} />
-              <FollowButtonAndNotifications podcast={selectedPodcast} />
-            </SocialFeaturesContainer>
-
-            <HostRecommendations recommendations={selectedPodcast.recommendations} />
-            <PodcastPlayer episode={selectedEpisode} />
-
-            <AdditionalFeaturesContainer>
-                <EpisodeFeatures notes={selectedEpisode.notes} />
-                <VideoPodcasts episode={selectedEpisode} />
-                <Transcription transcription={selectedEpisode.transcription} />
-            </AdditionalFeaturesContainer>
-          </>
+          ))
         )}
-      </PodcastPageContainer>
-    </ThemeProvider>
+      </PodcastListContainer>
+
+      {selectedPodcast && selectedEpisode && (
+        <>
+          <SocialFeaturesContainer>
+            <CommentsAndPolls episodeId={selectedEpisode.id} />
+            <SocialSharing podcast={selectedPodcast} episode={selectedEpisode} />
+            <FollowButtonAndNotifications podcast={selectedPodcast} />
+          </SocialFeaturesContainer>
+
+          <HostRecommendations recommendations={selectedPodcast.recommendations} />
+          <PodcastPlayer episode={selectedEpisode} />
+
+          <AdditionalFeaturesContainer>
+              <EpisodeFeatures notes={selectedEpisode.notes} />
+              <VideoPodcasts episode={selectedEpisode} />
+              <Transcription transcription={selectedEpisode.transcription} />
+          </AdditionalFeaturesContainer>
+        </>
+      )}
+    </PodcastPageContainer>
   );
 };
 

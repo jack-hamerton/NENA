@@ -31,12 +31,17 @@ const getStudyAnswers = (studyId) => {
   return axios.get(`${API_URL}/${studyId}/answers`);
 };
 
+const getStudyByCode = (code) => {
+  return axios.get(`${API_URL}/search?q=${code}`);
+};
+
 const studyService = {
   createStudy,
   getStudies,
   searchStudies,
   verifyStudyAccess,
   getStudy,
+  getStudyByCode,
   submitAnswers,
   getStudyAnswers,
 };

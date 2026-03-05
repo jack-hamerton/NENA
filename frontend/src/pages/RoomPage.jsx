@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { CircularProgress, Box, Typography, Paper } from '@mui/material';
@@ -7,20 +7,19 @@ import { RoomVideoGrid } from '../rooms/RoomVideoGrid';
 import { Chat } from '../rooms/Chat';
 import { Polls } from '../rooms/Polls';
 import { ControlsBar } from '../rooms/ControlsBar';
-import { Document } from '../components/collaboration/Document';
 import { theme } from '../theme/theme';
 import { 
     RoomContainer, MainContent, VideoContainer, Sidebar, 
     TabContainer, TabButton, SidebarContent, ToggleSidebarButton 
 } from './RoomPage.styled';
 import { meetingService } from '../services/meetingService';
-import { AuthContext } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { realtimeService } from '../services/realtimeService';
 
 const RoomPage = () => {
     const { roomId } = useParams();
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     
     const [meeting, setMeeting] = useState(null);
     const [participants, setParticipants] = useState([]);
@@ -94,7 +93,7 @@ const RoomPage = () => {
                         <RoomVideoGrid participants={participants} />
                         {/* Reactions would be here */}
                     </VideoContainer>
-                    <ControlsBar onLeave={leaveRoom} />
+                    <ControlsBar onLeave={leaveRoom} onSendReaction={() => {}} localStream={null} />
                 </MainContent>
                 <Sidebar className={isSidebarOpen ? 'open' : ''}>
                     <TabContainer>
@@ -103,8 +102,8 @@ const RoomPage = () => {
                         <TabButton active={sidebarTab === 'agenda'} onClick={() => setSidebarTab('agenda')}>Agenda</TabButton>
                     </TabContainer>
                     <SidebarContent>
-                        {sidebarTab === 'chat' && <Chat messages={[]} onSendMessage={() => {}} users={{}} />}
-                        {sidebarTab === 'polls' && <Polls polls={[]} onVote={() => {}} onCreatePoll={() => {}} currentUserId={user.id} isHost={false} />}
+                        {sidebarTab === 'chat' && <Chat roomId={roomId} />}
+                        {sidebarTab === 'polls' && <Polls polls={[]} onVote={() => {}} onCreatePoll={() => {}} />}
                         {sidebarTab === 'agenda' && meeting && (
                             <Paper sx={{p: 2}}>
                                 <Typography variant="h6">Agenda</Typography>

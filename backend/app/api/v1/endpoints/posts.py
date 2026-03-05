@@ -20,6 +20,30 @@ def upload_image(file: UploadFile = File(...)):
     return {"imageUrl": f"/static/images/{file.filename}"}
 
 
+@router.post("/upload-video")
+def upload_video(file: UploadFile = File(...)):
+    """
+    Upload a video and return its URL.
+    """
+    # Check file size (limit to ~100MB for 3-minute video)
+    file_size = 0
+    content = file.file.read()
+    file_size = len(content)
+
+    if file_size > 100 * 1024 * 1024:  # 100MB limit
+        raise HTTPException(status_code=413, detail="Video file too large. Maximum size is 100MB.")
+
+    # Check video duration (this is a basic check, real implementation would use ffmpeg)
+    # For now, we'll just check file extension and size
+    if not file.filename.lower().endswith(('.mp4', '.mov', '.avi', '.mkv', '.webm')):
+        raise HTTPException(status_code=400, detail="Unsupported video format. Use MP4, MOV, AVI, MKV, or WebM.")
+
+    with open(f"static/videos/{file.filename}", "wb") as buffer:
+        buffer.write(content)
+
+    return {"videoUrl": f"/static/videos/{file.filename}"}
+
+
 @router.get("/for-you", response_model=List[schemas.Post])
 def read_for_you_feed(
     db: Session = Depends(deps.get_db),

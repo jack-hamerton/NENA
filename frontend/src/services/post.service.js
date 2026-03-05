@@ -11,6 +11,16 @@ export const uploadImage = (image) => {
   });
 };
 
+export const uploadVideo = (video) => {
+  const formData = new FormData();
+  formData.append('file', video);
+  return apiClient.post('/posts/upload-video', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
 export const getForYouFeed = () => {
   return apiClient.get('/posts/for-you');
 };

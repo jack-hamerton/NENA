@@ -1,13 +1,12 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Card } from './PodcastCard.styled';
 
-const PodcastCard = ({ podcast }) => {
-  const navigate = useNavigate();
-
+const PodcastCard = ({ podcast, onPodcastSelect }) => {
   const handleClick = () => {
-    navigate(`/player?id=${podcast.id}`);
+    if (onPodcastSelect) {
+      onPodcastSelect(podcast);
+    }
   };
 
   return (

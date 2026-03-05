@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Modal, TextField, Button, IconButton } from '@mui/material';
-import { PhotoCamera } from '@mui/icons-material';
+import { PhotoCamera, Videocam } from '@mui/icons-material';
 
 const ModalContainer = styled.div`
   position: absolute;
@@ -65,16 +65,48 @@ const MediaUploadContainer = styled.div`
 const CreatePostModal = ({ open, onClose, onCreatePost }) => {
   const [postContent, setPostContent] = useState('');
   const [media, setMedia] = useState(null);
+  const [mediaType, setMediaType] = useState(null); // 'image' or 'video'
 
   const handleCreatePost = () => {
-    onCreatePost({ content: postContent, media });
+    onCreatePost({ content: postContent, media, mediaType });
     setPostContent('');
     setMedia(null);
+    setMediaType(null);
     onClose();
   };
 
-  const handleMediaUpload = (event) => {
-    setMedia(event.target.files[0]);
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setMedia(file);
+      setMediaType('image');
+    }
+  };
+
+  const handleVideoUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Check file size (rough estimate for 3-minute video)
+      if (file.size > 100 * 1024 * 1024) { // 100MB limit
+        alert('Video file is too large. Please choose a video under 100MB.');
+        return;
+      }
+
+      // Check video duration (basic check)
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        if (video.duration > 180) { // 3 minutes
+          alert('Video is too long. Please choose a video under 3 minutes.');
+          setMedia(null);
+          setMediaType(null);
+        } else {
+          setMedia(file);
+          setMediaType('video');
+        }
+      };
+      video.src = URL.createObjectURL(file);
+    }
   };
 
   return (
@@ -93,8 +125,12 @@ const CreatePostModal = ({ open, onClose, onCreatePost }) => {
         />
         <MediaUploadContainer>
           <IconButton color="primary" aria-label="upload picture" component="label">
-            <input hidden accept="image/*" type="file" onChange={handleMediaUpload} />
+            <input hidden accept="image/*" type="file" onChange={handleImageUpload} />
             <PhotoCamera />
+          </IconButton>
+          <IconButton color="primary" aria-label="upload video" component="label">
+            <input hidden accept="video/*" type="file" onChange={handleVideoUpload} />
+            <Videocam />
           </IconButton>
         </MediaUploadContainer>
         <PostButton onClick={handleCreatePost} variant="contained">

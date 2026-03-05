@@ -86,9 +86,17 @@ export const Post = ({ post, onCampaignClick }) => {
           </Typography>
         </Box>
         <PostContent content={post.content} onCampaignClick={onCampaignClick} />
-        {post.media_url && (
+        {post.image_url && (
           <Box sx={{ mt: 2, borderRadius: '16px', overflow: 'hidden', border: '1px solid #444' }}>
-            <img src={post.media_url} alt="Post media" style={{ width: '100%', height: 'auto', display: 'block' }} />
+            <img src={post.image_url} alt="Post media" style={{ width: '100%', height: 'auto', display: 'block' }} />
+          </Box>
+        )}
+        {post.video_url && (
+          <Box sx={{ mt: 2, borderRadius: '16px', overflow: 'hidden', border: '1px solid #444' }}>
+            <video controls style={{ width: '100%', height: 'auto', display: 'block' }}>
+              <source src={post.video_url} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           </Box>
         )}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1, color: 'text.secondary' }}>

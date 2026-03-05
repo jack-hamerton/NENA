@@ -15,6 +15,7 @@ class Audience(str, Enum):
 class PostBase(BaseModel):
     content: str
     image_url: Optional[str] = None
+    video_url: Optional[str] = None
 
 class PostCreate(PostBase):
     audience: Optional[Audience] = Audience.PUBLIC

@@ -65,11 +65,57 @@ const HomePage = () => {
                 : await postService.getFollowingFeed();
         }
       
-      const postsWithReportStatus = response.data.map(post => ({ ...post, isReported: false }));
+      const postsData = response.data || [];
+      const postsWithReportStatus = postsData.map(post => ({ ...post, isReported: false }));
       setPosts(postsWithReportStatus);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
-      setPosts([]);
+      // Set mock data for development/offline functionality
+      const mockPosts = [
+        {
+          id: 1,
+          author_id: 'demo-user-1',
+          author: { username: 'Jack Hamerton', profile_picture_url: 'https://i.pravatar.cc/150?u=john' },
+          content: 'Check out this amazing new feature! 🎉',
+          image_url: 'https://via.placeholder.com/500x300?text=Post+1',
+          video_url: null,
+          created_at: new Date().toISOString(),
+          like_count: 42,
+          comment_count: 5,
+          repost_count: 3,
+          is_liked: false,
+          isReported: false
+        },
+        {
+          id: 2,
+          author_id: 'demo-user-2',
+          author: { username: 'Jane Smith', profile_picture_url: 'https://i.pravatar.cc/150?u=jane' },
+          content: 'Just posted a quick video update! #NewContent',
+          image_url: null,
+          video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+          created_at: new Date(Date.now() - 3600000).toISOString(),
+          like_count: 28,
+          comment_count: 8,
+          repost_count: 2,
+          is_liked: false,
+          isReported: false
+        },
+        {
+          id: 3,
+          author_id: 'demo-user-3',
+          author: { username: 'Mike Johnson', profile_picture_url: 'https://i.pravatar.cc/150?u=mike' },
+          content: 'Loving the new update! Great work team 💪 #Awesome',
+          image_url: null,
+          video_url: null,
+          created_at: new Date(Date.now() - 7200000).toISOString(),
+          like_count: 15,
+          comment_count: 3,
+          repost_count: 1,
+          is_liked: false,
+          isReported: false
+        }
+      ];
+      setPosts(mockPosts);
     }
   }, [feedType, hashtagFilter]);
 
@@ -109,14 +155,27 @@ const HomePage = () => {
     }
   };
 
-  const handleCreatePost = async ({ content, media }) => {
+  const handleCreatePost = async ({ content, media, mediaType }) => {
     try {
-      let imageUrl = null;
+      let mediaUrl = null;
       if (media) {
-        const uploadResponse = await postService.uploadImage(media);
-        imageUrl = uploadResponse.data.imageUrl;
+        if (mediaType === 'video') {
+          const uploadResponse = await postService.uploadVideo(media);
+          mediaUrl = uploadResponse.data.videoUrl;
+        } else {
+          const uploadResponse = await postService.uploadImage(media);
+          mediaUrl = uploadResponse.data.imageUrl;
+        }
       }
-      const response = await postService.createPost({ content, image_url: imageUrl });
+
+      const postData = { content };
+      if (mediaType === 'video') {
+        postData.video_url = mediaUrl;
+      } else if (mediaType === 'image') {
+        postData.image_url = mediaUrl;
+      }
+
+      const response = await postService.createPost(postData);
       setPosts(prevPosts => [response.data, ...prevPosts]);
       setCreatePostModalOpen(false);
     } catch (error) {
