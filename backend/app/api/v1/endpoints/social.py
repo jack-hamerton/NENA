@@ -4,7 +4,7 @@ from app.api import deps
 from app.models.user import User
 from app.models.follower import Follower
 from app.schemas.follower import FollowerCreate
-from app.services.notification import NotificationService
+from app.services.notification_service import NotificationService
 from app.schemas.notification import NotificationCreate
 
 router = APIRouter()

@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react';
 import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { api } from '../../utils/api';
+import api from '../../services/api';
 import { Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { meetingService } from '../../services/meetingService'; // Import meeting service
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 const localizer = momentLocalizer(moment);
 
@@ -27,7 +27,7 @@ export const Calendar = () => {
 
   const fetchEventsAndMeetings = async () => {
     // Fetch calendar events
-    const eventResponse = await api.get('/calendar/events', {});
+    const eventResponse = await api.get('/calendar/', {});
     const calendarEvents = eventResponse.data.map(event => ({
       ...event,
       start: new Date(event.start_time),

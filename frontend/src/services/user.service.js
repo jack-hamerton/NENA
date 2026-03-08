@@ -1,12 +1,9 @@
 
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8000/api/v1/users';
-const SOCIAL_URL = 'http://localhost:8000/api/v1/social';
+import api from './api';
 
 export const followUser = async (currentUserId, targetUserId, intent) => {
   try {
-    return await axios.post(`${SOCIAL_URL}/follow`, { 
+    return await api.post(`/social/follow`, { 
       follower_id: currentUserId,
       followed_id: targetUserId,
       intent 
@@ -19,7 +16,7 @@ export const followUser = async (currentUserId, targetUserId, intent) => {
 
 export const getUserPosts = async (userId) => {
   try {
-    const response = await axios.get(`${API_URL}/${userId}/posts`);
+    const response = await api.get(`/users/${userId}/posts`);
     return response.data || [];
   } catch (error) {
     console.error('Error fetching user posts:', error);
@@ -29,7 +26,7 @@ export const getUserPosts = async (userId) => {
 
 export const getUserPodcasts = async (userId) => {
   try {
-    const response = await axios.get(`${API_URL}/${userId}/podcasts`);
+    const response = await api.get(`/users/${userId}/podcasts`);
     return response.data || [];
   } catch (error) {
     console.error('Error fetching user podcasts:', error);
@@ -39,7 +36,7 @@ export const getUserPodcasts = async (userId) => {
 
 export const getMe = async () => {
   try {
-    return await axios.get(`${API_URL}/me`);
+    return await api.get(`/users/me`);
   } catch (error) {
     console.error('Error fetching current user:', error);
     throw error;
@@ -48,7 +45,7 @@ export const getMe = async () => {
 
 export const updateProfile = async (userId, profileData) => {
   try {
-    return await axios.put(`${API_URL}/${userId}`, profileData);
+    return await api.put(`/users/${userId}`, profileData);
   } catch (error) {
     console.error('Error updating profile:', error);
     throw error;

@@ -23,6 +23,7 @@ class Post(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     content = Column(String, index=True)
     image_url = Column(String, nullable=True)
+    video_url = Column(String, nullable=True)
     author_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
     created_at = Column(DateTime, server_default=func.now())
     audience = Column(SQLAlchemyEnum(Audience), default=Audience.PUBLIC, nullable=False)

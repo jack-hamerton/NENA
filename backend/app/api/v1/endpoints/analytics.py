@@ -27,13 +27,13 @@ def get_advocacy_impact_matrix(
 
         if isinstance(activity, models.Post):
             return "awareness", audience
-        
+
         if isinstance(activity, models.Document):
             return "will", audience
-        
+
         if isinstance(activity, models.Poll):
             return "awareness", audience
-            
+
         if isinstance(activity, models.Study):
             return "will", audience
 
@@ -53,7 +53,7 @@ def get_advocacy_impact_matrix(
     studies = db.query(models.Study).filter(models.Study.author_id == user_id).all()
     events = db.query(models.Event).filter(models.Event.owner_id == user_id).all()
     challenges = db.query(models.Challenge).filter(models.Challenge.author_id == user_id).all()
-    
+
     all_activities = posts + documents + polls + studies + events + challenges
 
     # 3. Build the Matrix
@@ -97,3 +97,60 @@ def get_advocacy_impact_matrix(
         "matrix": response_matrix,
         "recommendation": recommendation
     }
+
+
+@router.get("/me/engagement")
+def get_user_engagement(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_db),
+):
+    """
+    Get engagement metrics for the current user.
+    """
+    # Get user's post count
+    posts_count = db.query(models.Post).filter(models.Post.author_id == current_user.id).count()
+
+    # Get user's comment count (assuming comments are stored in a separate table)
+    comments_count = 0  # Placeholder - implement when comments table exists
+
+    # Get following count
+    following_count = db.query(models.Follower).filter(models.Follower.follower_id == current_user.id).count()
+
+    # Get followers count
+    followers_count = db.query(models.Follower).filter(models.Follower.followed_id == current_user.id).count()
+
+    return {
+        "posts_count": posts_count,
+        "comments_count": comments_count,
+        "following_count": following_count,
+        "followers_count": followers_count
+    }
+
+
+@router.get("/me/post-engagement")
+def get_user_post_engagement(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_db),
+):
+    """
+    Get post engagement metrics for the current user.
+    """
+    # Get user's posts with engagement data
+    posts = db.query(models.Post).filter(models.Post.author_id == current_user.id).all()
+
+    post_engagement = []
+    for post in posts:
+        # Get comments count (placeholder - implement when comments exist)
+        comments_count = 0
+
+        # Get likes count (placeholder - implement when likes exist)
+        likes_count = 0
+
+        post_engagement.append({
+            "post_id": post.id,
+            "text": post.content[:100] if post.content else "",
+            "comments_count": comments_count,
+            "likes_count": likes_count
+        })
+
+    return post_engagement

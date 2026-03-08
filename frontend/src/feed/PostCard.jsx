@@ -39,6 +39,30 @@ const PostText = styled.p`
   white-space: pre-wrap; /* To respect newlines in post content */
 `;
 
+const MediaContainer = styled.div`
+  margin-top: 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.3);
+  max-height: 400px;
+`;
+
+const ImageMedia = styled.img`
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
+  display: block;
+`;
+
+const VideoMedia = styled.video`
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
+  display: block;
+`;
+
 const Hashtag = styled.span`
   color: ${props => props.theme.palette.accent};
   cursor: pointer;
@@ -127,6 +151,19 @@ const PostCard = ({ post, onUsernameLongPress, onHashtagClick }) => {
       <PostContent>
         <PostText>{renderContentWithHashtags(post.content)}</PostText>
         {post.poll && <FeedPoll poll={post.poll} postId={post.id} />}
+        {post.image_url && (
+          <MediaContainer>
+            <ImageMedia src={post.image_url} alt="Post media" />
+          </MediaContainer>
+        )}
+        {post.video_url && (
+          <MediaContainer>
+            <VideoMedia controls>
+              <source src={post.video_url} type="video/mp4" />
+              Your browser does not support the video tag.
+            </VideoMedia>
+          </MediaContainer>
+        )}
       </PostContent>
       
       <VerticalActions>

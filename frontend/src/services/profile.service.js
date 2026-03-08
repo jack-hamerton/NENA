@@ -1,11 +1,9 @@
 
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8000/api/v1/profile';
+import api from './api';
 
 const getProfileData = async (userId) => {
   try {
-    const response = await axios.get(`${API_URL}/${userId}/follower-web`);
+    const response = await api.get(`/profile/${userId}/follower-web`);
     return {
       data: {
         user: response.data.user || { id: userId, name: 'Unknown', followers: [] },

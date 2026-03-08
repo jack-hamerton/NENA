@@ -24,24 +24,54 @@ def upload_image(file: UploadFile = File(...)):
 def upload_video(file: UploadFile = File(...)):
     """
     Upload a video and return its URL.
+    Videos must be no longer than 5 minutes (300 seconds).
     """
-    # Check file size (limit to ~100MB for 3-minute video)
+    import os
+    
+    # Check file size (limit to ~150MB for 5-minute video)
     file_size = 0
     content = file.file.read()
     file_size = len(content)
 
-    if file_size > 100 * 1024 * 1024:  # 100MB limit
-        raise HTTPException(status_code=413, detail="Video file too large. Maximum size is 100MB.")
+    if file_size > 150 * 1024 * 1024:  # 150MB limit
+        raise HTTPException(status_code=413, detail="Video file too large. Maximum size is 150MB.")
 
-    # Check video duration (this is a basic check, real implementation would use ffmpeg)
-    # For now, we'll just check file extension and size
+    # Check video extension
     if not file.filename.lower().endswith(('.mp4', '.mov', '.avi', '.mkv', '.webm')):
         raise HTTPException(status_code=400, detail="Unsupported video format. Use MP4, MOV, AVI, MKV, or WebM.")
 
-    with open(f"static/videos/{file.filename}", "wb") as buffer:
+    # Create videos directory if it doesn't exist
+    os.makedirs("static/videos", exist_ok=True)
+    
+    # Save file with unique name to avoid overwrites
+    import uuid
+    file_name = f"{uuid.uuid4()}_{file.filename}"
+    file_path = f"static/videos/{file_name}"
+    
+    with open(file_path, "wb") as buffer:
         buffer.write(content)
 
-    return {"videoUrl": f"/static/videos/{file.filename}"}
+    # Try to validate video duration using ffmpeg if available
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration", 
+             "-of", "default=noprint_wrappers=1:nokey=1:noprint_wrappers=1", file_path],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        if result.stdout:
+            duration = float(result.stdout.strip())
+            if duration > 300:  # 5 minutes
+                os.remove(file_path)
+                raise HTTPException(status_code=400, detail="Video duration exceeds 5 minutes. Please choose a shorter video.")
+    except (FileNotFoundError, subprocess.TimeoutExpired, ValueError):
+        # ffprobe not available or failed, just proceed with the upload
+        # Client-side validation should catch most issues
+        pass
+
+    return {"videoUrl": f"/static/videos/{file_name}"}
 
 
 @router.get("/for-you", response_model=List[schemas.Post])

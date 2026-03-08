@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL DB for Python/FastAPI backend
+  postgres:
+    image: postgres:15-alpine
+    container_name: nena-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: nena_user
+      POSTGRES_PASSWORD: nena_password
+      POSTGRES_DB: nena_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nena_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nena-network
+
+  # MongoDB for Node.js backend
+  mongodb:
+    image: mongo:7
+    container_name: nena-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: nena_user
+      MONGO_INITDB_ROOT_PASSWORD: nena_password
+      MONGO_INITDB_DATABASE: nena
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nena-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: nena-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nena-network
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
+
+networks:
+  nena-network:
+    driver: bridge

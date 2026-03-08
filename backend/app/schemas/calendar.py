@@ -23,19 +23,7 @@ class EventUpdate(BaseModel):
 class Event(EventBase):
     id: uuid.UUID
     owner_id: uuid.UUID
-    collaborators: List["UserSchema"] = [] # You might need a User schema
+    collaborators: List[dict] = []  # Simplified to avoid circular imports
 
     class Config:
         from_attributes = True
-
-# You might need to create a User schema to avoid circular dependencies
-from .user import User
-
-class UserSchema(BaseModel):
-    id: uuid.UUID
-    username: str
-
-    class Config:
-        from_attributes = True
-
-Event.update_forward_refs()

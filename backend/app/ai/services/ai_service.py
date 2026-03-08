@@ -155,3 +155,62 @@ def rewrite_text(db: Session, text: str, user_id: int, context: dict = None):
         rewritten_text = f"I understand your perspective, and I'd like to add that {text}"
 
     return {"response": rewritten_text, "rewritten_text": rewritten_text}
+
+
+# Additional AI service functions for the extended API
+
+def generate_response(prompt: str, conversation_history: list = None):
+    """Generate a natural language response to a prompt."""
+    return f"Response to: {prompt[:50]}..."
+
+def generate_content(prompt: str, mode: str):
+    """Generate, rewrite, or summarize content."""
+    if mode == "generate":
+        return f"Generated content based on: {prompt[:50]}..."
+    elif mode == "rewrite":
+        return f"Rewritten version of: {prompt[:50]}..."
+    elif mode == "summarize":
+        return f"Summary of: {prompt[:50]}..."
+    return "Content processed."
+
+def assist_with_code(code: str, language: str, task: str):
+    """Provide code assistance."""
+    tasks = {
+        "explain": f"This {language} code does the following...",
+        "debug": f"Potential issues in this {language} code...",
+        "optimize": f"Optimized version of this {language} code...",
+        "generate": f"Generated {language} code for: {code[:50]}..."
+    }
+    return tasks.get(task, f"Code assistance for {language}")
+
+def translate_text(text: str, target_language: str):
+    """Translate text to target language."""
+    return f"Translation to {target_language}: {text[:50]}..."
+
+def solve_problem(problem: str):
+    """Solve a problem using reasoning."""
+    return f"Solution to '{problem[:50]}...': Step-by-step approach..."
+
+def web_browse(query: str):
+    """Browse the web for information."""
+    return f"Web search results for: {query[:50]}..."
+
+def analyze_image(image_path: str, prompt: str):
+    """Analyze an image."""
+    return f"Image analysis for: {prompt[:50]}..."
+
+def generate_image(prompt: str):
+    """Generate an image based on prompt."""
+    return f"Generated image for: {prompt[:50]}... [Image placeholder]"
+
+def analyze_data(file_path: str, analysis_prompt: str):
+    """Analyze data from a file."""
+    return f"Data analysis: {analysis_prompt[:50]}..."
+
+def voice_conversation(audio_bytes: bytes):
+    """Handle voice conversation."""
+    return "Voice transcription and response..."
+
+def run_agent(task: str, parameters: dict = None):
+    """Run an AI agent for multi-step tasks."""
+    return f"Agent executing task: {task[:50]}..."

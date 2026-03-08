@@ -35,16 +35,61 @@ const ErrorMessage = styled.div`
   text-align: center;
 `;
 
+const Divider = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  gap: 1rem;
+  
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: ${props => props.theme.text.secondary};
+  }
+`;
+
+const GoogleButton = styled(Button)`
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ddd;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+`;
+
+const UsernamePreview = styled.div`
+  color: ${props => props.theme.text.secondary};
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: ${props => props.theme.background};
+  border-radius: 4px;
+  border-left: 3px solid ${props => props.theme.palette.accent};
+`;
+
+const SuccessMessage = styled.div`
+  color: #37c978;
+  margin-top: 1rem;
+  text-align: center;
+`;
+
 export const RegisterForm = ({ onSubmit }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const [passwordCriteria, setPasswordCriteria] = useState({
     length: false,
     uppercase: false,
@@ -52,6 +97,15 @@ export const RegisterForm = ({ onSubmit }) => {
     number: false,
     specialChar: false,
   });
+
+  // Generate username from first and last name
+  const generateUsername = (first, last) => {
+    if (!first || !last) return '';
+    const base = `${first.toLowerCase()}.${last.toLowerCase()}`.replace(/\s+/g, '');
+    return base.replace(/[^a-z0-9.]/g, '');
+  };
+
+  const username = generateUsername(firstName, lastName);
 
   useEffect(() => {
     setPasswordCriteria({
@@ -91,8 +145,32 @@ export const RegisterForm = ({ onSubmit }) => {
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await loginWithGoogle();
+      setSuccess('Google registration successful. You are now signed in.');
+    } catch (err) {
+      setError(err.message || 'Failed to register with Google. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit}>
+      <GoogleButton 
+        type="button" 
+        onClick={handleGoogleSignUp} 
+        disabled={loading}
+      >
+        <span>🔵</span>
+        Sign up with Google
+      </GoogleButton>
+
+      <Divider>or continue with email</Divider>
+
       <Input
         type="text"
         placeholder="First Name"
@@ -109,14 +187,13 @@ export const RegisterForm = ({ onSubmit }) => {
         required
         disabled={loading}
       />
-      <Input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        required
-        disabled={loading}
-      />
+      
+      {username && (
+        <UsernamePreview>
+          <strong>Username will be:</strong> {username}
+        </UsernamePreview>
+      )}
+
       <Input
         type="email"
         placeholder="Email"
@@ -154,8 +231,8 @@ export const RegisterForm = ({ onSubmit }) => {
           </ul>
       </PasswordReqs>
       {error && <ErrorMessage>{error}</ErrorMessage>}
-      {success && <ErrorMessage style={{ color: '#37c978' }}>{success}</ErrorMessage>}
-      <Button type="submit" disabled={loading || !firstName || !lastName || !username || !email || !isPasswordValid}>
+      {success && <SuccessMessage>{success}</SuccessMessage>}
+      <Button type="submit" disabled={loading || !firstName || !lastName || !email || !isPasswordValid}>
         {loading ? 'Registering...' : 'Register'}
       </Button>
     </form>

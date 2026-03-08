@@ -12,4 +12,5 @@ from .podcast import Podcast, PodcastCreate, PodcastUpdate, Episode, EpisodeCrea
 from .study import Study, StudyCreate, Question, QuestionCreate, Answer, AnswerCreate, AnswerSubmission
 from .feed_poll import FeedPoll, FeedPollCreate, FeedPollOption, FeedPollOptionCreate, FeedPollVote, FeedPollVoteCreate
 from .token import Token, TokenPayload
+from .calendar import Event, EventCreate, EventUpdate
 from . import analytics

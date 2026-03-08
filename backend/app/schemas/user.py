@@ -13,9 +13,14 @@ class UserCreate(UserBase):
     first_name: str | None = None
     last_name: str | None = None
     password: str
+    isGoogleAuth: bool = False
 
     @field_validator('password')
-    def password_complexity(cls, v):
+    def password_complexity(cls, v, info):
+        # Skip validation if Google Auth
+        if info.data.get('isGoogleAuth'):
+            return v
+            
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
         if not re.search(r"[A-Z]", v):

@@ -1,8 +1,8 @@
 
 from fastapi import APIRouter, Body, UploadFile, File
 from typing import Any, Dict
-from backend.app.ai.services import ai_service
-from backend.app.ai import schemas
+from app.ai.services import ai_service
+from app.ai import schemas
 
 router = APIRouter()
 

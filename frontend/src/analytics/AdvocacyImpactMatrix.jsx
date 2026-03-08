@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Paper, Typography, Box, Grid, CircularProgress, Alert } from '@mui/material';
-import { apiClient } from '../services/apiClient'; // Assuming you have a pre-configured axios instance
+import api from '../services/api'; // Use the centralized API client
 
 const AdvocacyImpactMatrix = ({ userId }) => {
   const [matrixData, setMatrixData] = useState(null);
@@ -14,7 +14,7 @@ const AdvocacyImpactMatrix = ({ userId }) => {
         setLoading(true);
         // This endpoint needs to be created on your backend.
         // It should return a 3x3 matrix and a recommendation.
-        const response = await apiClient.get(`/api/v1/analytics/advocacy-matrix/${userId}`);
+        const response = await api.get(`/analytics/advocacy-matrix/${userId}`);
         setMatrixData(response.data);
         setError(null);
       } catch (err) {

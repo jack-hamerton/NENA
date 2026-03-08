@@ -3,6 +3,7 @@ import random
 import string
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from app.db.session import get_db
 from app.core.security import create_access_token, create_password_reset_token, verify_password_reset_token
 from app.schemas.user import UserCreate, UserLogin, UserUpdate
@@ -10,6 +11,30 @@ from app.crud import user as crud_user
 from app.services.email_service import send_password_reset_email
 
 router = APIRouter()
+
+class GoogleLoginRequest(BaseModel):
+    email: str
+    idToken: str
+
+@router.post("/login-google")
+def login_google(request: GoogleLoginRequest, db: Session = Depends(get_db)):
+    """Handles Google OAuth login/authentication."""
+    # Find user by email
+    db_user = crud_user.get_by_email(db, email=request.email)
+    if not db_user:
+        raise HTTPException(status_code=401, detail="User not found. Please register first.")
+
+    access_token = create_access_token(subject=db_user.id)
+
+    return {
+        "message": "Login successful",
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "username": db_user.username,
+            "email": db_user.email
+        }
+    }
 
 @router.post("/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):

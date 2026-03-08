@@ -23,6 +23,21 @@ class PostCreate(PostBase):
 class PostUpdate(PostBase):
     audience: Optional[Audience] = None
 
+class CommentBase(BaseModel):
+    text: str
+
+class Comment(CommentBase):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    created_at: datetime
+    parent_comment_id: Optional[uuid.UUID] = None
+    replies: List["Comment"] = []
+
+    class Config:
+        from_attributes = True
+
+Comment.model_rebuild()
+
 class PostInDBBase(PostBase):
     id: uuid.UUID
     author_id: uuid.UUID
@@ -35,6 +50,7 @@ class PostInDBBase(PostBase):
 class Post(PostInDBBase):
     author: User
     likes: int
+    comments: List[Comment] = []
 
     @field_validator("likes", mode="before")
     @classmethod

@@ -1,17 +1,16 @@
 
 from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
-from app import get_db
+from app.core.deps import get_db, get_current_active_user
 from app.ai.services.ai_service import assist_user
 from app.models.user import User
-from app.auth.dependencies import get_current_user
-from app.schemas.ai import AIRequest, AIResponse
+from app.ai.schemas import AIRequest, AIResponse
 from app.ai.services.ai_knowledge_base import run_self_improvement_cycle
 
 router = APIRouter()
 
 @router.post("/assist", response_model=AIResponse)
-def post_assistance(request: AIRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def post_assistance(request: AIRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
     """
     Endpoint for receiving user prompts and returning AI assistance.
     """

@@ -4,7 +4,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
   Typography, CircularProgress, Alert, Box
 } from '@mui/material';
-import { apiClient } from '../services/apiClient';
+import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';
 
 const PostEngagementChart = () => {
@@ -24,7 +24,7 @@ const PostEngagementChart = () => {
       try {
         setLoading(true);
         // This secure endpoint should return an array of the current user's posts with engagement stats.
-        const response = await apiClient.get('/api/v1/analytics/me/post-engagement');
+        const response = await api.get('/analytics/me/post-engagement');
         setPostEngagement(response.data);
         setError(null);
       } catch (error) {
