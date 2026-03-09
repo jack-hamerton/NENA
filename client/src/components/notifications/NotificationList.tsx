@@ -1,7 +1,7 @@
 "use client";
 
 import { Heart, UserPlus, MessageCircle, Mic, Star } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatTimeAgo } from "@/lib/utils";
 
 const mockNotifications = [
   { id: "1", type: "like" as const, message: "Alice liked your post", read: false, createdAt: "2024-03-09T11:58:00Z" },

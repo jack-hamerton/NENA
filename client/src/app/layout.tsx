@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { AppProviders } from "@/context";
-
-const inter = Inter({ subsets: ["latin"] });
+import "./globals.css";import { AppProviders } from "@/context";
 
 export const metadata: Metadata = {
   title: "NENA | Empowerment & Connectivity",

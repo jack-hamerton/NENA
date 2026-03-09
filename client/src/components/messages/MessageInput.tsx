@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Send, Image as ImageIcon, Smile } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function MessageInput({ conversationId }: { conversationId: string }) {
   const [message, setMessage] = useState("");
