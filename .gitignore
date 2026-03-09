@@ -17,8 +17,11 @@ node_modules/
 
 # next.js
 .next/
-frontend (Copy)/
 /out/
+
+# Backup copies
+frontend (Copy)/
+NENA (Copy)/
 
 # production
 /build
