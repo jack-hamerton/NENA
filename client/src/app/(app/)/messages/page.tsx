@@ -1,3 +1,4 @@
+import { MessageCircle } from "lucide-react";
 import { ConversationList } from "@/components/messages/ConversationList";
 
 export default function MessagesPage() {
@@ -21,5 +22,3 @@ export default function MessagesPage() {
     </div>
   );
 }
-
-import { MessageCircle } from "lucide-react";

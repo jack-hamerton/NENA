@@ -11,7 +11,6 @@ export default function ProfilePage({ params }: { params: { username: string } }
       <div className="space-y-4">
         <h2 className="text-lg font-bold px-4">Recent Posts</h2>
         <div className="space-y-4">
-          {/* Mock post for profile */}
           <PostCard 
             post={{
               id: "p-profile-1",
