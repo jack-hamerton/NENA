@@ -5,6 +5,13 @@ export interface User {
   displayName: string;
   avatarUrl?: string;
   bio?: string;
+  location?: string;
+  website?: string;
+  role?: string;
+  tagline?: string;
+  followersCount?: number;
+  followingCount?: number;
+  postsCount?: number;
   isVerified: boolean;
   createdAt: string;
 }
