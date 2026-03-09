@@ -1,6 +1,8 @@
 # Prompt / planning documents
 NENA_REBUILD_PROMPT.md
 prompt.txt
+message.txt
+
 
 # dependencies
 node_modules/
@@ -18,6 +20,7 @@ node_modules/
 # next.js
 .next/
 frontend (Copy)/
+NENA (Copy)/
 /out/
 
 # production

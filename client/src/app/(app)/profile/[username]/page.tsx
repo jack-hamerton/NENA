@@ -2,8 +2,8 @@
 import React from 'react';
 
 // Using a type compatible with Next.js 15 page props
-export default function ProfilePage({ params }: { params: Promise<{ username: string }> } | { params: { username: string } }) {
-  const resolvedParams = React.use(params as Promise<{ username: string }>);
+export default function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
+  const resolvedParams = React.use(params);
   
   return (
     <div className="flex h-full items-center justify-center p-8">

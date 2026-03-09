@@ -10,9 +10,12 @@ export interface Room {
 
 export interface Participant {
   id: string;
-  userId: string;
+  userId?: string;
   username: string;
+  displayName?: string;
+  avatarUrl?: string;
   role: "host" | "speaker" | "listener";
-  isMuted: boolean;
-  isVideoOff: boolean;
+  isMuted?: boolean;
+  isVideoOff?: boolean;
+  isHandRaised?: boolean;
 }
