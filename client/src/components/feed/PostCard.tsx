@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Heart, MessageCircle, Share2, MoreHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import { formatTimeAgo } from "@/lib/utils";
 interface PostCardProps {
   post: Post;
   onReportPost?: () => void;
-  onUsernameLongPress?: () => void;
   onHashtagClick?: (hashtag: string) => void;
   onCampaignClick?: (campaignName: string) => void;
 }
@@ -19,7 +19,6 @@ interface PostCardProps {
 export function PostCard({ 
   post, 
   onReportPost, 
-  onUsernameLongPress, 
   onHashtagClick, 
   onCampaignClick 
 }: PostCardProps) {
@@ -51,35 +50,22 @@ export function PostCard({
   return (
     <Card className="hover:shadow-nena transition-shadow">
       <CardHeader className="flex flex-row items-center gap-3 p-4">
-        <div 
-          className="cursor-pointer"
-          onContextMenu={(e) => {
-            e.preventDefault();
-            onUsernameLongPress?.();
-          }}
-          onClick={() => {
-            // Simplified long press for desktop/mobile consistency in this context
-            if (window.innerWidth < 768) {
-               // For mobile we might want a real long press, but click works for stubs
-            }
-          }}
-        >
-          <Avatar size="sm">
+        <Link href={`/profile/${post.authorUsername}`} className="flex-shrink-0">
+          <Avatar size="sm" className="cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all">
             <AvatarImage src={post.authorAvatar} />
             <AvatarFallback fallback={post.authorUsername} />
           </Avatar>
-        </div>
-        <div 
-          className="flex flex-col cursor-pointer"
-          onClick={() => onUsernameLongPress?.()}
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">{post.authorName}</span>
-            <span className="text-xs text-muted-foreground">@{post.authorUsername}</span>
-          </div>
+        </Link>
+        <div className="flex flex-col min-w-0">
+          <Link href={`/profile/${post.authorUsername}`} className="hover:opacity-80 transition-opacity">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold truncate">{post.authorName}</span>
+              <span className="text-xs text-muted-foreground truncate">@{post.authorUsername}</span>
+            </div>
+          </Link>
           <span className="text-xs text-muted-foreground">{formatTimeAgo(post.createdAt)}</span>
         </div>
-        <Button variant="ghost" size="icon" className="ml-auto" onClick={() => onReportPost?.()}>
+        <Button variant="ghost" size="icon" className="ml-auto flex-shrink-0" onClick={() => onReportPost?.()}>
           <MoreHorizontal className="h-4 w-4" />
           {post.isReported && <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-destructive" />}
         </Button>
