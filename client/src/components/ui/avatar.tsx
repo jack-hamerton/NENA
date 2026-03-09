@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 
 interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
   size?: "sm" | "md" | "lg";
+  children?: React.ReactNode;
 }
 
 const Avatar = React.forwardRef<
