@@ -2,6 +2,7 @@
 
 import { TrendingUp, Eye, Heart, Users, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 const stats = [
   { icon: Eye, label: "Views", value: "12.4K", change: "+12%", trend: "up" },
