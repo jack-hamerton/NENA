@@ -44,8 +44,9 @@ export function SignupForm() {
       
       login(mockResponse);
       router.push("/home");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Something went wrong. Please try again.");
+    } catch (err: unknown) {
+      const errorMsg = (err as { response?: { data?: { message?: string } } }).response?.data?.message || "Something went wrong. Please try again.";
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }
