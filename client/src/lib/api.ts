@@ -23,7 +23,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
         localStorage.removeItem("nena-token");
-        window.location.href = "/login";
+        const isAuthPage = window.location.pathname === "/login" || window.location.pathname === "/signup";
+        if (!isAuthPage) {
+          window.location.href = "/login";
+        }
       }
     }
     return Promise.reject(error);
