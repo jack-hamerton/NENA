@@ -12,9 +12,11 @@ import {
   BookOpen, 
   BarChart3, 
   Settings,
-  Bell
+  Bell,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
   { label: "Home", href: "/home", icon: Home },
@@ -25,10 +27,19 @@ const navItems = [
   { label: "Calendar", href: "/calendar", icon: Calendar },
   { label: "Study Room", href: "/study", icon: BookOpen },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
+  { label: "Profile", href: "/profile", icon: User },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  // Dynamic profile link if user is logged in
+  const items = navItems.map(item =>
+    item.label === "Profile" && user
+      ? { ...item, href: `/profile/${user.username}` }
+      : item
+  );
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-sidebar p-4 lg:block hidden">
@@ -40,12 +51,12 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 space-y-1">
-          {navItems.map((item) => {
+          {items.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <Link
-                key={item.href}
+                key={item.label}
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
