@@ -14,4 +14,10 @@ export interface Message {
   content: string;
   createdAt: string;
   isRead: boolean;
+  messageType?: "text" | "system" | "image" | "file";
+  mediaUrl?: string;
+  isViewOnce?: boolean;
+  isDisappearing?: boolean;
+  disappearingTimer?: number; // seconds
+  isEncrypted?: boolean;
 }

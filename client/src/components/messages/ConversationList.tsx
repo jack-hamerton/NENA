@@ -1,40 +1,83 @@
 "use client";
 
-import Link from "next/link";
+import { useEffect } from "react";
+import { useChat } from "@/context/ChatContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { formatTimeAgo } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
-const mockConversations = [
-  { id: "c1", name: "Alice", lastMessage: "See you at the room!", time: "2024-03-09T10:00:00Z", unread: 2 },
-  { id: "c2", name: "Bob", lastMessage: "Great podcast episode!", time: "2024-03-09T09:00:00Z", unread: 0 },
-  { id: "c3", name: "Carol", lastMessage: "Thanks for the follow!", time: "2024-03-09T07:00:00Z", unread: 0 },
-];
+interface ConversationListProps {
+  onSelectConversation?: () => void;
+}
 
-export function ConversationList() {
+export function ConversationList({ onSelectConversation }: ConversationListProps) {
+  const { conversations, selectedConversation, isLoading, selectConversation, fetchConversations } = useChat();
+
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
+
+  const handleSelect = (conversation: typeof conversations[0]) => {
+    selectConversation(conversation);
+    onSelectConversation?.();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-3 animate-pulse">
+            <div className="h-10 w-10 rounded-full bg-muted" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-24 bg-muted rounded" />
+              <div className="h-3 w-32 bg-muted rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (conversations.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center p-4">
+          <p className="text-sm text-muted-foreground">No conversations yet</p>
+          <p className="text-xs text-muted-foreground mt-1">Start a conversation to see it here</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-1">
-      {mockConversations.map((conv) => (
-        <Link
+    <div className="space-y-1 overflow-y-auto h-[calc(100vh-8rem)]">
+      {conversations.map((conv) => (
+        <button
           key={conv.id}
-          href={`/messages/${conv.id}`}
-          className="flex items-center gap-3 rounded-lg p-3 hover:bg-accent transition-colors"
+          onClick={() => handleSelect(conv)}
+          className={cn(
+            "w-full flex items-center gap-3 rounded-lg p-3 hover:bg-accent transition-colors text-left",
+            selectedConversation?.id === conv.id && "bg-accent"
+          )}
         >
-          <Avatar size="md">
-            <AvatarFallback fallback={conv.name} />
+          <Avatar>
+            <AvatarFallback>{conv.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <p className="font-medium text-sm truncate">{conv.name}</p>
-              <span className="text-[10px] text-muted-foreground">{formatTimeAgo(conv.time)}</span>
+              <span className="text-[10px] text-muted-foreground">
+                {formatTimeAgo(conv.lastMessageAt)}
+              </span>
             </div>
             <p className="text-xs text-muted-foreground truncate">{conv.lastMessage}</p>
           </div>
-          {conv.unread > 0 && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
-              {conv.unread}
+          {conv.unreadCount > 0 && (
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold px-1.5">
+              {conv.unreadCount}
             </span>
           )}
-        </Link>
+        </button>
       ))}
     </div>
   );
