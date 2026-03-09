@@ -26,9 +26,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const user = await authService.getCurrentUser();
           setState({ user, token, isAuthenticated: true, isLoading: false });
-        } catch (error) {
+        } catch { // Removed 'error' variable
           localStorage.removeItem("nena-token");
           setState({ user: null, token: null, isAuthenticated: false, isLoading: false });
+        } finally {
+          setState((prev) => ({ ...prev, isLoading: false })); // Ensure isLoading is false in all cases
         }
       } else {
         setState((prev) => ({ ...prev, isLoading: false }));
