@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, MessageSquare, Radio, Headphones, User } from "lucide-react";
+import { Home, Search, MessageSquare, Radio, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 
