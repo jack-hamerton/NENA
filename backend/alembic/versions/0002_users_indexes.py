@@ -8,8 +8,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '0003_users_indexes'
-down_revision = '0002_common_indexes_and_ai_storage'
+revision = '0002_users_indexes'
+down_revision = '0001_common_indexes_and_ai_storage'
 branch_labels = None
 depends_on = None
 

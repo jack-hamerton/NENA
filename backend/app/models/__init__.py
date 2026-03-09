@@ -15,3 +15,5 @@ from .room import Room, RoomParticipant
 from .room_message import RoomMessage
 from .document import Document
 from .challenge import Challenge
+from .collaboration import Collaboration
+from .trending_audio import TrendingAudio

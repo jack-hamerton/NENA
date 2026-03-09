@@ -29,6 +29,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Set all CORS enabled origins

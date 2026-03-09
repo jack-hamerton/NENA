@@ -1,13 +1,15 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAI } from '../hooks/useAI';
-import { Paper, TextField, Button, Typography, Box, IconButton, Switch } from '@mui/material';
+import { Paper, TextField, Button, Typography, Box, IconButton, Switch, Tabs, Tab } from '@mui/material';
+import { aiService } from '../services/aiService';
 
 const AIAssistant = () => {
   const [prompt, setPrompt] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
   const { conversation } = useAI();
   const [isConsentGiven, setIsConsentGiven] = useState(false);
 
@@ -60,14 +62,34 @@ const AIAssistant = () => {
     if (!prompt) return;
     setLoading(true);
     try {
-        const res = await conversation(prompt);
-        setResponse(res.data.response);
+      let res;
+      switch (activeTab) {
+        case 0: // Chat
+          res = await conversation(prompt);
+          break;
+        case 1: // Summarize
+          res = await aiService.summarizeText(prompt);
+          break;
+        case 2: // Next Steps
+          res = await aiService.suggestNextSteps(prompt);
+          break;
+        case 3: // Rewrite
+          res = await aiService.rewriteText(prompt, 'formal');
+          break;
+        default:
+          res = await conversation(prompt);
+      }
+      setResponse(res.response || res.data?.response || 'Response received');
     } catch (error) {
       console.error('Error communicating with AI:', error);
       setResponse('Error: Could not get a response from the AI.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
   };
 
   const handleButtonClick = () => {
@@ -106,7 +128,7 @@ const AIAssistant = () => {
             position: 'fixed',
             right: position.x,
             bottom: position.y,
-            width: 350,
+            width: 400,
             zIndex: 1300,
             display: 'flex',
             flexDirection: 'column',
@@ -136,6 +158,16 @@ const AIAssistant = () => {
                 <Typography>▼</Typography>
             </IconButton>
         </Box>
+        
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={activeTab} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
+                <Tab label="Chat" />
+                <Tab label="Summarize" />
+                <Tab label="Next Steps" />
+                <Tab label="Rewrite" />
+            </Tabs>
+        </Box>
+        
         <Box sx={{ p: 2, overflowY: 'auto', maxHeight: 400, backgroundColor: 'background.paper' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="body1">Enable Nena AI</Typography>
@@ -146,28 +178,49 @@ const AIAssistant = () => {
                     color="primary"
                 />
             </Box>
+            
             <TextField
                 fullWidth
-                label="Ask Nena to do something..."
+                label={
+                    activeTab === 0 ? "Ask Nena to do something..." :
+                    activeTab === 1 ? "Text to summarize..." :
+                    activeTab === 2 ? "Text for next steps..." :
+                    "Text to rewrite..."
+                }
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && !loading && handleSend()}
                 disabled={loading || !isConsentGiven}
                 multiline
-                rows={2}
+                rows={3}
                 variant="outlined"
+                sx={{ mb: 1 }}
             />
+            
             <Button
                 variant="contained"
                 onClick={handleSend}
                 disabled={loading || !prompt || !isConsentGiven}
-                sx={{ mt: 1, width: '100%' }}
+                sx={{ width: '100%', mb: 2 }}
             >
-                {loading ? 'Thinking...' : 'Send'}
+                {loading ? 'Thinking...' : 
+                 activeTab === 0 ? 'Send' :
+                 activeTab === 1 ? 'Summarize' :
+                 activeTab === 2 ? 'Suggest Steps' :
+                 'Rewrite'}
             </Button>
+            
             {response && (
-                <Box sx={{ mt: 2, whiteSpace: 'pre-wrap', wordBreak: 'break-word', p: 1, backgroundColor: '#2d2d2d', borderRadius: '4px' }}>
-                    <Typography variant="body1">{response}</Typography>
+                <Box sx={{ 
+                    p: 2, 
+                    backgroundColor: '#2d2d2d', 
+                    borderRadius: '4px',
+                    maxHeight: 200,
+                    overflowY: 'auto'
+                }}>
+                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                        {response}
+                    </Typography>
                 </Box>
             )}
         </Box>

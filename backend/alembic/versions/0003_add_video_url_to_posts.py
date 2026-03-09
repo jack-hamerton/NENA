@@ -9,8 +9,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '0004_add_video_url_to_posts'
-down_revision = '0003_users_indexes'
+revision = '0003_add_video_url_to_posts'
+down_revision = '0002_users_indexes'
 branch_labels = None
 depends_on = None
 

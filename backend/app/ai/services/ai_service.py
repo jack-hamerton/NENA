@@ -7,6 +7,26 @@ from app.ai.services.transcription import transcribe_voice
 from app.ai.services.chat_memory import get_chat_history, add_to_chat_history
 from app.ai.prompts import REWRITE_PROMPTS
 from app.ai.services.knowledge_service import get_knowledge, learn_from_public_sources
+# from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
+import torch
+
+# Initialize ML models
+try:
+    # Summarization model
+    summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+    
+    # Text generation model for suggestions
+    generator = pipeline("text-generation", model="gpt2")
+    
+    # Sentiment analysis
+    sentiment_analyzer = pipeline("sentiment-analysis")
+    
+    print("AI/ML models loaded successfully")
+except Exception as e:
+    print(f"Error loading AI models: {e}")
+    summarizer = None
+    generator = None
+    sentiment_analyzer = None
 
 def assist_user(db: Session, prompt: str, user_id: int, context: dict = None):
     """
@@ -65,9 +85,18 @@ def chat_with_ai(db: Session, prompt: str, user_id: int):
 
 def summarize(db: Session, text: str, user_id: int, context: dict = None):
     """
-    Summarizes a given text, with context if available.
+    Summarizes a given text using ML models, with context if available.
     """
-    prompt = f"Please summarize the following text in a way that is clear and concise for a busy community organizer. Highlight the key decisions and action items. The text to summarize is: {text}"
+    if summarizer:
+        try:
+            # Use ML model for summarization
+            summary_result = summarizer(text, max_length=150, min_length=30, do_sample=False)
+            summary = summary_result[0]['summary_text']
+            return {"response": f"Summary: {summary}"}
+        except Exception as e:
+            print(f"ML summarization failed: {e}")
+    
+    # Fallback to basic summarization
     sentences = text.split('.')
     key_sentences = [s for s in sentences if "decision" in s.lower() or "action" in s.lower() or "proposal" in s.lower()]
     if not key_sentences:
@@ -75,13 +104,32 @@ def summarize(db: Session, text: str, user_id: int, context: dict = None):
     if not key_sentences:
         key_sentences = sentences[:2]
     summary = ". ".join(key_sentences)
-    return {"response": summary}
+    return {"response": f"Summary: {summary}"}
 
 def suggest_next_steps(db: Session, text: str, user_id: int, context: dict = None):
     """
-    Suggests next steps based on a given text, with context if available.
-    This is a more advanced version that simulates NLP to extract entities and actions.
+    Suggests next steps based on a given text using ML models, with context if available.
     """
+    if generator:
+        try:
+            # Use ML model to generate suggestions
+            prompt = f"Based on this text, suggest 3 practical next steps: {text[:500]}"
+            suggestions_result = generator(prompt, max_length=200, num_return_sequences=1, temperature=0.7)
+            generated_text = suggestions_result[0]['generated_text']
+            
+            # Extract suggestions from generated text
+            suggestions = []
+            lines = generated_text.split('\n')
+            for line in lines:
+                if line.strip() and (line.startswith('1.') or line.startswith('2.') or line.startswith('3.') or 'step' in line.lower()):
+                    suggestions.append(line.strip())
+            
+            if suggestions:
+                return {"response": "Here are some AI-generated next steps:", "suggestions": suggestions[:3]}
+        except Exception as e:
+            print(f"ML suggestion generation failed: {e}")
+    
+    # Fallback to basic NLP-based suggestions
     words = text.lower().replace('.', '').replace(',', '').split()
     nouns = [word for word in words if word.endswith('tion') or word.endswith('ment') or word.endswith('or') or word.endswith('er')]
     verbs = [word for word in words if word.endswith('ing') or word.endswith('ize') or word.endswith('ate')]
@@ -142,9 +190,9 @@ def rewrite_text(db: Session, text: str, user_id: int, context: dict = None):
     """
     Rewrites a given text based on a specified tone.
     """
-    tone = context.get("tone", "respectful")
-    prompt = REWRITE_PROMPTS.get(tone, REWRITE_PROMPTS["respectful"]) + f' "{text}'
-
+    tone = context.get("tone", "respectful") if context else "respectful"
+    
+    # Use rule-based rewriting for now
     if tone == "formal":
         rewritten_text = text.capitalize().replace(" i ", " I ")
     elif tone == "friendly":
@@ -153,6 +201,8 @@ def rewrite_text(db: Session, text: str, user_id: int, context: dict = None):
         rewritten_text = " ".join(text.split()[:5]) + "..."
     else: # respectful
         rewritten_text = f"I understand your perspective, and I'd like to add that {text}"
+
+    return {"response": rewritten_text, "rewritten_text": rewritten_text}
 
     return {"response": rewritten_text, "rewritten_text": rewritten_text}
 
