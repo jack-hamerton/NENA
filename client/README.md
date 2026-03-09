@@ -23,34 +23,154 @@ The frontend is built with a modern, high-performance web stack:
 The project follows a scalable, domain-driven directory structure located entirely within the `src/` folder:
 
 ```text
-src/
-├── app/                  # Next.js App Router pages and layouts
-│   ├── (app)/            # Authenticated application routes (Home, Discover, Messages, etc.)
-│   ├── (auth)/           # Authentication routes (Login, Signup)
-│   ├── globals.css       # Global styles and Tailwind entry point
-│   ├── layout.tsx        # Root application layout
-│   └── page.tsx          # Public landing page
-├── components/           # Reusable React components
-│   ├── analytics/        # Analytics charts and metric cards
-│   ├── auth/             # Login and signup forms
-│   ├── feed/             # Activity feed, post cards, and post creation
-│   ├── layout/           # App shell, sidebar, topbar, and mobile navigation
-│   ├── messages/         # Chat interfaces
-│   ├── modals/           # Global modals (Campaign Hub, Create Post, Intents)
-│   ├── podcasts/         # Audio player interfaces
-│   ├── profile/          # User profile headers and stat displays
-│   ├── rooms/            # Live audio/video room layouts
-│   └── ui/               # Base UI primitives (shadcn/ui configured)
-├── context/              # React Context Providers (AuthContext, ThemeContext)
-├── hooks/                # Custom React hooks (useAuth, useLocalStorage, useMediaQuery)
-├── lib/                  # Utility functions
-│   ├── api.ts            # Axios instance and interceptors
-│   ├── constants.ts      # Global constants and configuration
-│   ├── utils.ts          # Helper functions (Tailwind class merging, formatting)
-│   └── validators.ts     # Zod validation schemas
-├── services/             # API communication layer
-│   └── *.service.ts      # Service files for discrete domains (auth, post, user, etc.)
-└── types/                # Core TypeScript interfaces and type definitions
+client/
+├── .env.local.example
+├── .gitignore
+├── components.json
+├── eslint.config.mjs
+├── next.config.ts
+├── package.json
+├── postcss.config.mjs
+├── tailwind.config.ts
+├── tsconfig.json
+│
+├── public/
+│   ├── favicon.ico
+│   ├── icons/
+│   ├── images/
+│   └── sounds/
+│
+└── src/
+    ├── app/
+    │   ├── globals.css
+    │   ├── layout.tsx
+    │   ├── loading.tsx
+    │   ├── not-found.tsx
+    │   ├── page.tsx                    # Landing page
+    │   │
+    │   ├── (auth)/
+    │   │   ├── layout.tsx
+    │   │   ├── login/page.tsx
+    │   │   └── signup/page.tsx
+    │   │
+    │   └── (app)/
+    │       ├── layout.tsx              # App shell
+    │       ├── home/page.tsx
+    │       ├── discover/page.tsx
+    │       ├── messages/
+    │       │   ├── page.tsx
+    │       │   └── [conversationId]/page.tsx
+    │       ├── rooms/
+    │       │   ├── page.tsx
+    │       │   └── [roomId]/page.tsx
+    │       ├── podcasts/
+    │       │   ├── page.tsx
+    │       │   └── [podcastId]/page.tsx
+    │       ├── profile/[userId]/page.tsx
+    │       ├── analytics/page.tsx
+    │       ├── calendar/page.tsx
+    │       ├── study/page.tsx
+    │       ├── settings/page.tsx
+    │       └── notifications/page.tsx
+    │
+    ├── components/
+    │   ├── ui/                         # shadcn/ui primitives
+    │   │   ├── button.tsx
+    │   │   ├── card.tsx
+    │   │   ├── input.tsx
+    │   │   ├── avatar.tsx
+    │   │   ├── badge.tsx
+    │   │   ├── skeleton.tsx
+    │   │   └── ...
+    │   │
+    │   ├── layout/
+    │   │   ├── AppShell.tsx
+    │   │   ├── Sidebar.tsx
+    │   │   ├── Topbar.tsx
+    │   │   └── MobileNav.tsx
+    │   │
+    │   ├── auth/
+    │   │   ├── LoginForm.tsx
+    │   │   └── SignupForm.tsx
+    │   │
+    │   ├── feed/
+    │   │   ├── FeedSwiper.tsx
+    │   │   ├── PostCard.tsx
+    │   │   ├── CreatePost.tsx
+    │   │   └── FeedFilters.tsx
+    │   │
+    │   ├── messages/
+    │   │   ├── ConversationList.tsx
+    │   │   ├── ChatBubble.tsx
+    │   │   └── MessageInput.tsx
+    │   │
+    │   ├── rooms/
+    │   │   ├── RoomCard.tsx
+    │   │   └── ControlsBar.tsx
+    │   │
+    │   ├── podcasts/
+    │   │   ├── PodcastCard.tsx
+    │   │   └── AudioPlayer.tsx
+    │   │
+    │   ├── profile/
+    │   │   ├── ProfileHeader.tsx
+    │   │   └── ProfileStats.tsx
+    │   │
+    │   ├── analytics/
+    │   │   ├── StatsCards.tsx
+    │   │   └── EngagementChart.tsx
+    │   │
+    │   ├── discover/
+    │   │   ├── SearchBar.tsx
+    │   │   └── TrendingTopics.tsx
+    │   │
+    │   └── notifications/
+    │       ├── NotificationList.tsx
+    │       └── NotificationItem.tsx
+    │
+    ├── context/
+    │   ├── AuthContext.tsx
+    │   ├── ThemeContext.tsx
+    │   └── index.tsx
+    │
+    ├── hooks/
+    │   ├── useAuth.ts
+    │   ├── useDebounce.ts
+    │   └── useLocalStorage.ts
+    │
+    ├── lib/
+    │   ├── utils.ts              # cn() helper
+    │   ├── api.ts                # Axios instance
+    │   ├── constants.ts           # App constants
+    │   └── validators.ts         # Zod schemas
+    │
+    ├── services/
+    │   ├── auth.service.ts
+    │   ├── post.service.ts
+    │   ├── user.service.ts
+    │   ├── chat.service.ts
+    │   ├── room.service.ts
+    │   ├── podcast.service.ts
+    │   ├── analytics.service.ts
+    │   ├── notification.service.ts
+    │   └── mocks/
+    │       ├── index.ts
+    │       ├── users.mock.ts
+    │       ├── posts.mock.ts
+    │       ├── conversations.mock.ts
+    │       ├── rooms.mock.ts
+    │       ├── podcasts.mock.ts
+    │       └── notifications.mock.ts
+    │
+    └── types/
+        ├── api.ts                # ApiResponse, PaginatedResponse
+        ├── auth.ts               # User, AuthState
+        ├── post.ts               # Post, Comment
+        ├── chat.ts               # Conversation, Message
+        ├── room.ts               # Room, Participant
+        ├── podcast.ts            # Podcast, Episode
+        ├── analytics.ts          # DashboardMetrics
+        └── calendar.ts           # CalendarEvent
 ```
 
 ##  Core Features & Layouts
