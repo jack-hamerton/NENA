@@ -7,14 +7,37 @@ export const postService = {
     return response.data;
   },
 
-  createPost: async (content: string, media?: File) => {
+  getForYouFeed: async () => {
+    const response = await api.get<Post[]>("/posts/for-you");
+    return response.data;
+  },
+
+  getFollowingFeed: async () => {
+    const response = await api.get<Post[]>("/posts/following");
+    return response.data;
+  },
+
+  getPostsByHashtag: async (hashtag: string) => {
+    const response = await api.get<Post[]>(`/posts/hashtag/${hashtag}`);
+    return response.data;
+  },
+
+  createPost: async (postData: { content: string; image_url?: string | null }) => {
+    const response = await api.post<Post>("/posts", postData);
+    return response.data;
+  },
+
+  uploadImage: async (file: File) => {
     const formData = new FormData();
-    formData.append("content", content);
-    if (media) formData.append("media", media);
-    const response = await api.post<Post>("/posts", formData, {
+    formData.append("image", file);
+    const response = await api.post<{ imageUrl: string }>("/posts/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
+  },
+
+  reportPost: async (postId: string) => {
+    await api.post(`/posts/${postId}/report`);
   },
 
   likePost: async (postId: string) => {
