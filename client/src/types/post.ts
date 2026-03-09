@@ -10,6 +10,7 @@ export interface Post {
   commentsCount: number;
   sharesCount: number;
   isLiked: boolean;
+  isReported?: boolean;
   hashtags: string[];
   createdAt: string;
 }
