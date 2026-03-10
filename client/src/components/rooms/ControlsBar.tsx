@@ -4,9 +4,21 @@ import { Mic, MicOff, VideoIcon, VideoOff, PhoneOff, ScreenShare, MoreVertical, 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export function ControlsBar() {
-  const [muted, setMuted] = useState(false);
-  const [videoOff, setVideoOff] = useState(false);
+interface ControlsBarProps {
+  onToggleAudio: () => void;
+  onToggleVideo: () => void;
+  onLeave: () => void;
+  isAudioMuted: boolean;
+  isVideoOff: boolean;
+}
+
+export function ControlsBar({
+  onToggleAudio,
+  onToggleVideo,
+  onLeave,
+  isAudioMuted,
+  isVideoOff,
+}: ControlsBarProps) {
 
   return (
     <div className="flex items-center justify-between border-t bg-background/80 p-4 backdrop-blur-md">
@@ -18,25 +30,30 @@ export function ControlsBar() {
 
       <div className="flex items-center gap-3">
         <Button 
-          variant={muted ? "destructive" : "secondary"} 
+          variant={isAudioMuted ? "destructive" : "secondary"} 
           size="icon" 
-          onClick={() => setMuted(!muted)} 
-          className="rounded-full"
+          onClick={onToggleAudio} 
+          className="rounded-full h-12 w-12"
         >
-          {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+          {isAudioMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
         </Button>
         <Button 
-          variant={videoOff ? "destructive" : "secondary"} 
+          variant={isVideoOff ? "destructive" : "secondary"} 
           size="icon" 
-          onClick={() => setVideoOff(!videoOff)}
-          className="rounded-full"
+          onClick={onToggleVideo}
+          className="rounded-full h-12 w-12"
         >
-          {videoOff ? <VideoOff className="h-5 w-5" /> : <VideoIcon className="h-5 w-5" />}
+          {isVideoOff ? <VideoOff className="h-5 w-5" /> : <VideoIcon className="h-5 w-5" />}
         </Button>
-        <Button variant="secondary" size="icon" className="rounded-full hidden sm:flex">
+        <Button variant="secondary" size="icon" className="rounded-full h-12 w-12 hidden sm:flex">
           <ScreenShare className="h-5 w-5" />
         </Button>
-        <Button variant="destructive" size="icon" className="rounded-full px-6 w-auto gap-2">
+        <Button 
+          variant="destructive" 
+          size="icon" 
+          onClick={onLeave}
+          className="rounded-full px-6 h-12 w-auto gap-2"
+        >
           <PhoneOff className="h-5 w-5" />
           <span className="hidden sm:inline text-xs font-bold">Leave</span>
         </Button>

@@ -1,4 +1,4 @@
-export interface Conversation {
+export interface ChatConversation {
   id: string;
   name: string;
   lastMessage: string;
@@ -7,7 +7,7 @@ export interface Conversation {
   avatarUrl?: string;
 }
 
-export interface Message {
+export interface ChatMessage {
   id: string;
   conversationId: string;
   senderId: string;

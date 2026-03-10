@@ -6,12 +6,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function MessageInput({ conversationId }: { conversationId: string }) {
+export function MessageInput({ 
+  conversationId, 
+  onSend 
+}: { 
+  conversationId: string;
+  onSend?: (message: string) => void;
+}) {
   const [message, setMessage] = useState("");
 
   const handleSend = () => {
     if (!message.trim()) return;
-    console.log(`Send to ${conversationId}:`, message);
+    if (onSend) {
+      onSend(message);
+    } else {
+      console.log(`Send to ${conversationId}:`, message);
+    }
     setMessage("");
   };
 

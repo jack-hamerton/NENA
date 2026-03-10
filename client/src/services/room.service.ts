@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import { Room, Participant } from "@/types";
+import { Room, Participant, CreateRoomInput } from "@/types/room";
 
 export const roomService = {
   getRooms: async () => {
@@ -7,8 +7,18 @@ export const roomService = {
     return response.data;
   },
 
-  getRoom: async (roomId: string) => {
+  getRoomById: async (roomId: string) => {
     const response = await api.get<Room>(`/rooms/${roomId}`);
+    return response.data;
+  },
+
+  createRoom: async (data: CreateRoomInput) => {
+    const response = await api.post<Room>("/rooms", data);
+    return response.data;
+  },
+
+  getParticipants: async (roomId: string) => {
+    const response = await api.get<Participant[]>(`/rooms/${roomId}/participants`);
     return response.data;
   },
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationMenu } from "@/components/notification/NotificationMenu";
 
 export function Topbar() {
   const { theme, setTheme } = useTheme();
@@ -26,6 +27,7 @@ export function Topbar() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
+          <NotificationMenu />
           <Button
             variant="ghost"
             size="icon"

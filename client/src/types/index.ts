@@ -1,5 +1,6 @@
 export * from "./api";
 export * from "./auth";
+export * from "./message";
 export * from "./post";
 export * from "./chat";
 export * from "./room";
@@ -7,4 +8,5 @@ export * from "./podcast";
 export * from "./analytics";
 export * from "./calendar";
 export * from "./study";
+export * from "./discover";
 export * from "@/lib/validators";
