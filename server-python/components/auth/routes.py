@@ -1,27 +1,27 @@
 from flask import Blueprint, request, jsonify
+from .services import AuthService
+from .decorators import login_required
 
 auth_bp = Blueprint('auth', __name__)
+auth_service = AuthService()
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    # Mock login
     data = request.json
-    username = data.get('username')
-    return jsonify({
-        "success": True,
-        "token": "mock-jwt-token",
-        "user": {
-            "id": "user_123",
-            "username": username,
-            "email": f"{username}@example.com"
-        }
-    })
+    result, status_code = auth_service.login(data)
+    return jsonify(result), status_code
 
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
-    # Mock signup
-    return jsonify({"success": True, "message": "User registered successfully"})
+    data = request.json
+    result, status_code = auth_service.signup(data)
+    return jsonify(result), status_code
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
-    return jsonify({"success": True})
+    return jsonify({"success": True}), 200
+
+@auth_bp.route('/me', methods=['GET'])
+@login_required
+def get_me():
+    return jsonify({"success": True, "user": request.user}), 200
