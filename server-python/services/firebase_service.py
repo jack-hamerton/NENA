@@ -76,24 +76,36 @@ class FirebaseService:
             {
                 "id": "post_1",
                 "authorId": "user_1",
+                "authorName": "Alice Wambui",
+                "authorUsername": "alice_w",
+                "authorAvatar": "/avatars/alice.png",
                 "title": "Welcome to NENA",
-                "content": "This is our new real-time post feed. Feel free to share your thoughts!",
+                "content": "This is our new real-time post feed. Feel free to share your thoughts! #welcome #nena",
                 "likesCount": 15,
                 "dislikesCount": 1,
-                "commentCount": 2,
+                "commentsCount": 2,
+                "sharesCount": 5,
                 "createdAt": datetime.now().isoformat(),
-                "imageUrl": None
+                "mediaUrl": None,
+                "hashtags": ["welcome", "nena"],
+                "isLiked": False
             },
             {
                 "id": "post_2",
                 "authorId": "user_2",
+                "authorName": "Bob Otieno",
+                "authorUsername": "bob_o",
+                "authorAvatar": "/avatars/bob.png",
                 "title": "AI in Coding",
-                "content": "What are your favorite tools for AI-assisted development?",
+                "content": "What are your favorite tools for AI-assisted development? #ai #coding",
                 "likesCount": 42,
                 "dislikesCount": 0,
-                "commentCount": 5,
+                "commentsCount": 5,
+                "sharesCount": 12,
                 "createdAt": datetime.now().isoformat(),
-                "imageUrl": "https://example.com/ai-image.jpg"
+                "mediaUrl": "https://example.com/ai-image.jpg",
+                "hashtags": ["ai", "coding"],
+                "isLiked": True
             }
         ]
 
@@ -102,13 +114,19 @@ class FirebaseService:
         post = {
             "id": f"post_{int(time.time())}",
             "authorId": data['authorId'],
+            "authorName": "Current User",
+            "authorUsername": "current_u",
+            "authorAvatar": None,
             "title": data['title'],
             "content": data['content'],
             "likesCount": 0,
             "dislikesCount": 0,
-            "commentCount": 0,
+            "commentsCount": 0,
+            "sharesCount": 0,
             "createdAt": datetime.now().isoformat(),
-            "imageUrl": data.get('imageUrl')
+            "mediaUrl": data.get('mediaUrl'),
+            "hashtags": [],
+            "isLiked": False
         }
         print(f"Created post: {post['title']}")
         return post
