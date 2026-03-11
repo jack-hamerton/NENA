@@ -7,8 +7,15 @@ class Comment:
     id: str
     postId: str
     authorId: str
+    authorName: str
+    authorUsername: str
+    authorAvatar: Optional[str]
     content: str
     createdAt: str
+    parentId: Optional[str] = None
+    likesCount: int = 0
+    dislikesCount: int = 0
+    isLiked: bool = False
 
     def to_dict(self):
         return asdict(self)
