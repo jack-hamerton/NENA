@@ -32,3 +32,23 @@ def like_post(post_id):
 def get_comments(post_id):
     comments = post_service.get_post_comments(post_id)
     return jsonify(comments), 200
+
+@posts_bp.route('/<post_id>/comments', methods=['POST'])
+def add_comment(post_id):
+    data = request.json
+    if not data or 'authorId' not in data or 'content' not in data:
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    data['postId'] = post_id
+    comment = post_service.add_comment_to_post(data)
+    return jsonify(comment), 201
+
+@posts_bp.route('/comments/<comment_id>/like', methods=['POST'])
+def like_comment(comment_id):
+    data = request.json
+    user_id = data.get('userId')
+    if not user_id:
+        return jsonify({"error": "Missing userId"}), 400
+    
+    success = post_service.like_existing_comment(comment_id, user_id)
+    return jsonify({"success": success}), 200

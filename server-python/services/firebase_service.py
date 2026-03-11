@@ -137,13 +137,58 @@ class FirebaseService:
         return True
 
     def fetch_comments(self, post_id):
-        # Simulate fetching comments for a specific post
+        # Simulate fetching comments (flat list, nesting handled via parentId)
         return [
             {
                 "id": "comment_1",
                 "postId": post_id,
                 "authorId": "user_3",
+                "authorName": "Jane Smith",
+                "authorUsername": "jane_s",
+                "authorAvatar": None,
                 "content": "Great post! Really looking forward to exploring this.",
-                "createdAt": datetime.now().isoformat()
+                "createdAt": datetime.now().isoformat(),
+                "parentId": None,
+                "likesCount": 5,
+                "dislikesCount": 0,
+                "isLiked": False
+            },
+            {
+                "id": "comment_2",
+                "postId": post_id,
+                "authorId": "user_4",
+                "authorName": "John Doe",
+                "authorUsername": "john_d",
+                "authorAvatar": None,
+                "content": "I agree with Jane!",
+                "createdAt": datetime.now().isoformat(),
+                "parentId": "comment_1",
+                "likesCount": 2,
+                "dislikesCount": 0,
+                "isLiked": True
             }
         ]
+
+    def create_comment(self, data):
+        # Simulate creating a comment/reply
+        comment = {
+            "id": f"comment_{int(time.time())}",
+            "postId": data['postId'],
+            "authorId": data['authorId'],
+            "authorName": "Current User",
+            "authorUsername": "current_u",
+            "authorAvatar": None,
+            "content": data['content'],
+            "createdAt": datetime.now().isoformat(),
+            "parentId": data.get('parentId'),
+            "likesCount": 0,
+            "dislikesCount": 0,
+            "isLiked": False
+        }
+        print(f"Created comment for post {data['postId']} (parent: {data.get('parentId')})")
+        return comment
+
+    def like_comment(self, comment_id, user_id):
+        # Simulate liking a comment
+        print(f"User {user_id} liked comment {comment_id}")
+        return True

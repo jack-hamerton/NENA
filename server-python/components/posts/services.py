@@ -15,3 +15,9 @@ class PostService:
 
     def get_post_comments(self, post_id):
         return self.firebase.fetch_comments(post_id)
+
+    def add_comment_to_post(self, comment_data):
+        return self.firebase.create_comment(comment_data)
+
+    def like_existing_comment(self, comment_id, user_id):
+        return self.firebase.like_comment(comment_id, user_id)
