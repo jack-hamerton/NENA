@@ -60,7 +60,7 @@ export function ConversationList({ onSelectConversation }: ConversationListProps
             selectedConversation?.id === conv.id && "bg-accent"
           )}
         >
-          <Avatar>
+          <Avatar className="h-10 w-10">
             <AvatarFallback>{conv.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
@@ -70,13 +70,20 @@ export function ConversationList({ onSelectConversation }: ConversationListProps
                 {formatTimeAgo(conv.lastMessageAt)}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground truncate">{conv.lastMessage}</p>
+            <div className="flex items-center justify-between mt-1">
+              <p className={cn(
+                "text-xs truncate max-w-[180px]",
+                conv.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"
+              )}>
+                {conv.lastMessage || "No messages yet"}
+              </p>
+              {conv.unreadCount > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold px-1.5">
+                  {conv.unreadCount}
+                </span>
+              )}
+            </div>
           </div>
-          {conv.unreadCount > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold px-1.5">
-              {conv.unreadCount}
-            </span>
-          )}
         </button>
       ))}
     </div>

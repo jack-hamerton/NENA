@@ -1,12 +1,5 @@
 import api from "@/lib/api";
-
-export interface Notification {
-  id: string;
-  type: string;
-  content: string;
-  read: boolean;
-  createdAt: string;
-}
+import { Notification } from "@/types/notification";
 
 export const notificationService = {
   getNotifications: async () => {
@@ -15,6 +8,12 @@ export const notificationService = {
   },
 
   markAsRead: async (notificationId: string) => {
-    await api.patch(`/notifications/${notificationId}/read`);
+    const response = await api.post(`/notifications/${notificationId}/read`);
+    return response.data;
+  },
+
+  clearReadNotifications: async () => {
+    const response = await api.delete("/notifications/read");
+    return response.data;
   },
 };

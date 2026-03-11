@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import { EngagementStats, ChartDataPoint } from "@/types";
+import { AdvocacyMatrix, UserEngagement, PostEngagement, EngagementStats, ChartDataPoint } from "@/types/analytics";
 
 export const analyticsService = {
   getStats: async () => {
@@ -9,6 +9,21 @@ export const analyticsService = {
 
   getChartData: async () => {
     const response = await api.get<ChartDataPoint[]>("/analytics/chart");
+    return response.data;
+  },
+
+  getAdvocacyMatrix: async (userId: string) => {
+    const response = await api.get<AdvocacyMatrix>(`/analytics/advocacy-matrix/${userId}`);
+    return response.data;
+  },
+
+  getUserEngagement: async () => {
+    const response = await api.get<UserEngagement[]>("/analytics/user-engagement");
+    return response.data;
+  },
+
+  getPostEngagement: async () => {
+    const response = await api.get<PostEngagement[]>("/analytics/post-engagement");
     return response.data;
   },
 };

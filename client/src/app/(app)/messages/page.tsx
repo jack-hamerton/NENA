@@ -28,7 +28,8 @@ function MessagesContent() {
           )}
         >
           <div className="p-4 border-b">
-            <h1 className="text-xl font-bold">Messages</h1>
+            <h1 className="text-xl font-bold">Your Messages</h1>
+            <p className="text-[10px] text-muted-foreground mt-1">Select a conversation or start a new one to begin chatting.</p>
           </div>
           <ConversationList onSelectConversation={() => isMobile && setShowChat(true)} />
         </div>

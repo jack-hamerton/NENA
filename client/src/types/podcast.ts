@@ -9,28 +9,46 @@ export interface TranscriptionItem {
   text: string;
 }
 
-export interface Podcast {
-  id: string;
-  title: string;
-  description: string;
-  host: PodcastHost | string; // Support string for backward compatibility
-  coverImageUrl?: string;
-  episodesCount: number;
-  tags: string[];
-  createdAt: string;
-  followersCount?: number;
-  recommendations?: Podcast[];
-}
-
 export interface Episode {
   id: string;
   podcastId: string;
   title: string;
-  description?: string;
-  duration: number; // in seconds
+  description: string;
   audioUrl: string;
   videoUrl?: string;
-  publishedAt: string;
+  duration: number; // in seconds
+  releaseDate: string;
+  publishedAt?: string; // Supporting both aliases
   notes?: string;
-  transcription?: TranscriptionItem[];
+  transcription?: string | TranscriptionItem[];
+}
+
+export interface Podcast {
+  id: string;
+  title: string;
+  description: string;
+  author: string;
+  authorId: string;
+  host?: PodcastHost | string; // Supporting both for compatibility
+  imageUrl: string;
+  coverImageUrl?: string;
+  category: string;
+  episodes: Episode[];
+  episodesCount: number;
+  tags: string[];
+  followersCount?: number;
+  recommendations?: string[] | Podcast[]; // IDs or full objects
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PodcastSummary {
+  id: string;
+  title: string;
+  author: string;
+  imageUrl: string;
+  thumbnailUrl?: string;
+  category: string;
+  episodeCount: number;
+}
 }

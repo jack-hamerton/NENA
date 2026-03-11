@@ -6,6 +6,8 @@ export interface Room {
   participantsCount: number;
   isLive: boolean;
   createdAt: string;
+  thumbnail?: string;
+  category?: string;
 }
 
 export interface Participant {
@@ -14,8 +16,26 @@ export interface Participant {
   username: string;
   displayName?: string;
   avatarUrl?: string;
+  avatar?: string;
   role: "host" | "speaker" | "listener";
-  isMuted?: boolean;
-  isVideoOff?: boolean;
+  isMuted: boolean;
+  isVideoOff: boolean;
   isHandRaised?: boolean;
+  isSpeaking?: boolean;
+  peerId?: string; // WebRTC peer ID
+}
+
+export interface CreateRoomInput {
+  name: string;
+  description?: string;
+  category?: string;
+  isPrivate?: boolean;
+}
+
+export interface RoomMessage {
+  id: string;
+  username: string;
+  avatarUrl?: string;
+  content: string;
+  createdAt: string;
 }

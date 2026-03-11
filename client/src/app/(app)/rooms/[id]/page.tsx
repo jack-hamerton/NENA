@@ -1,223 +1,258 @@
 "use client";
 
-import React, { useState, useReducer } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState, useRef, useReducer } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { roomService } from "@/services/room.service";
+import { WebRTCManager } from "@/services/webrtc.service";
+import { Room, Participant, RoomMessage } from "@/types/room";
+import { RoomVideoGrid } from "@/components/rooms/RoomVideoGrid";
+import { ControlsBar } from "@/components/rooms/ControlsBar";
+import { RoomSidebar } from "@/components/rooms/RoomSidebar";
+import { Loader2, ChevronLeft, Radio, ShieldCheck, Settings, PanelRightOpen, PanelRightClose } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ParticipantGrid } from "@/components/rooms/ParticipantGrid";
-import { RoomControls } from "@/components/rooms/RoomControls";
-import { RoomSidebar } from "@/components/rooms/RoomSidebar";
-import { 
-  Radio, 
-  ChevronLeft, 
-  PanelRightOpen, 
-  PanelRightClose,
-  ShieldCheck,
-  Settings
-} from "lucide-react";
+import { authService } from "@/services/auth.service";
 import { cn } from "@/lib/utils";
-import { Participant } from "@/types";
 
-interface RoomMessage {
-  id: string;
-  username: string;
-  content: string;
-  createdAt: string;
+// State management for UI interactions
+interface RoomUIState {
+  isSidebarOpen: boolean;
+  activeTab: string;
 }
 
-// Mimicking copy's useReducer state management for cleaner organization
-interface RoomState {
-  name: string;
-  topic: string;
-  category: string;
-  hostName: string;
-  participants: Participant[];
-  messages: RoomMessage[];
-}
+type RoomUIAction = 
+  | { type: 'TOGGLE_SIDEBAR' }
+  | { type: 'SET_TAB'; payload: string };
 
-type RoomAction = 
-  | { type: 'ADD_MESSAGE'; payload: RoomMessage }
-  | { type: 'TOGGLE_HAND' }
-  | { type: 'TOGGLE_MUTE' };
-
-function roomReducer(state: RoomState, action: RoomAction): RoomState {
+function roomUIReducer(state: RoomUIState, action: RoomUIAction): RoomUIState {
   switch (action.type) {
-    case 'ADD_MESSAGE':
-      return { ...state, messages: [...state.messages, action.payload] };
-    case 'TOGGLE_HAND':
-      return {
-        ...state,
-        participants: state.participants.map((p: Participant) => 
-          p.username === 'you' ? { ...p, isHandRaised: !p.isHandRaised } : p
-        )
-      };
-    case 'TOGGLE_MUTE':
-      return {
-        ...state,
-        participants: state.participants.map((p: Participant) => 
-          p.username === 'you' ? { ...p, isMuted: !p.isMuted } : p
-        )
-      };
+    case 'TOGGLE_SIDEBAR':
+      return { ...state, isSidebarOpen: !state.isSidebarOpen };
+    case 'SET_TAB':
+      return { ...state, activeTab: action.payload };
     default:
       return state;
   }
 }
 
-// Mock room data (from copy)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockRoomData: Record<string, any> = {
-  "room-1": {
-    name: "African Design Systems",
-    topic: "Exploring how traditional African design patterns can influence modern UI/UX",
-    category: "tech",
-    hostName: "Alice Wambui",
-    participants: [
-      { id: "p1", username: "alice_w", displayName: "Alice Wambui", role: "host", isMuted: false, avatarUrl: "/avatars/alice.png" },
-      { id: "p2", username: "bob_o", displayName: "Bob Otieno", role: "speaker", isMuted: false, avatarUrl: "/avatars/bob.png" },
-      { id: "p3", username: "grace_m", displayName: "Grace Muthoni", role: "speaker", isMuted: true },
-      { id: "p4", username: "james_k", displayName: "James Kamau", role: "listener", isMuted: true },
-      { id: "you", username: "you", displayName: "You", role: "listener", isMuted: true },
-      { id: "p6", username: "daniel_n", displayName: "Daniel Nzomo", role: "listener", isMuted: true },
-      { id: "p7", username: "sarah_o", displayName: "Sarah Odera", role: "listener", isMuted: true, isHandRaised: true },
-    ],
-    messages: [
-      { id: "m1", username: "alice_w", content: "Welcome everyone! Today we're exploring African design patterns 🎨", createdAt: new Date(Date.now() - 600000).toISOString() },
-      { id: "m2", username: "bob_o", content: "So excited for this discussion! I've been researching Adinkra symbols.", createdAt: new Date(Date.now() - 540000).toISOString() },
-    ],
-  }
-};
-
-const defaultRoom = {
-  name: "Community Room",
-  topic: "Live community discussion",
-  category: "general",
-  hostName: "NENA Host",
-  participants: [
-    { id: "you", username: "you", displayName: "You", role: "host", isMuted: true },
-  ],
-  messages: [],
-};
-
-export default function RoomPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = React.use(params);
+export default function ActiveRoomPage() {
+  const { id } = useParams() as { id: string };
   const router = useRouter();
-  const roomId = resolvedParams.id;
+  
+  const [room, setRoom] = useState<Room | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [messages, setMessages] = useState<RoomMessage[]>([]);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(new Map());
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [isVideoOff, setIsVideoOff] = useState(false);
+  
+  const [uiState, dispatchUI] = useReducer(roomUIReducer, { isSidebarOpen: true, activeTab: 'chat' });
+  
+  const webrtcManager = useRef<WebRTCManager | null>(null);
+  const [localParticipant, setLocalParticipant] = useState<Participant | null>(null);
 
-  const initialData = mockRoomData[roomId] || { ...defaultRoom, name: `Room ${roomId}` };
-  const [state, dispatch] = useReducer(roomReducer, initialData);
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const [roomData, user] = await Promise.all([
+          roomService.getRoomById(id),
+          authService.getCurrentUser()
+        ]);
+        
+        setRoom(roomData);
+        
+        // Setup local media
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+        setLocalStream(stream);
 
-  const [isMuted, setIsMuted] = useState(true);
-  const [isVideoOff, setIsVideoOff] = useState(true);
-  const [isHandRaised, setIsHandRaised] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+        const self: Participant = {
+          id: user.id,
+          userId: user.id,
+          username: user.name || user.handle,
+          role: roomData.hostId === user.id ? "host" : "listener",
+          isMuted: false,
+          isVideoOff: false,
+        };
+        setLocalParticipant(self);
+
+        // Initialize WebRTC
+        webrtcManager.current = new WebRTCManager(id, {
+          onRemoteStream: (peerId, remoteStream) => {
+            setRemoteStreams((prev) => {
+              const next = new Map(prev);
+              next.set(peerId, remoteStream);
+              return next;
+            });
+          },
+          onPeerJoined: async (peerId) => {
+             console.log("Peer joined:", peerId);
+          },
+          onPeerLeft: (peerId) => {
+            setRemoteStreams((prev) => {
+              const next = new Map(prev);
+              next.delete(peerId);
+              return next;
+            });
+            setParticipants(prev => prev.filter(p => p.id !== peerId));
+          },
+        });
+
+        await webrtcManager.current.setLocalStream(stream);
+        webrtcManager.current.connect(user.id);
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Failed to initialize room:", error);
+        setIsLoading(false);
+      }
+    };
+
+    init();
+
+    return () => {
+      webrtcManager.current?.disconnect();
+      localStream?.getTracks().forEach(t => t.stop());
+    };
+  }, [id]);
+
+  const toggleAudio = () => {
+    if (localStream) {
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsAudioMuted(!audioTrack.enabled);
+      }
+    }
+  };
+
+  const toggleVideo = () => {
+    if (localStream) {
+      const videoTrack = localStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsVideoOff(!videoTrack.enabled);
+      }
+    }
+  };
+
+  const handleLeave = async () => {
+    await roomService.leaveRoom(id);
+    router.push("/rooms");
+  };
 
   const handleSendMessage = (content: string) => {
-    dispatch({
-      type: 'ADD_MESSAGE',
-      payload: {
-        id: `m-${Date.now()}`,
-        username: "you",
-        content,
-        createdAt: new Date().toISOString(),
-      }
-    });
+    const newMsg: RoomMessage = {
+      id: `m-${Date.now()}`,
+      username: localParticipant?.username || "You",
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, newMsg]);
+    // In real app, emit via socket/webrtc
   };
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-    dispatch({ type: 'TOGGLE_MUTE' });
-  };
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background min-h-screen">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground animate-pulse font-medium">Setting up your connection...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const toggleHand = () => {
-    setIsHandRaised(!isHandRaised);
-    dispatch({ type: 'TOGGLE_HAND' });
-  };
+  if (!room || !localParticipant) return null;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-screen bg-background overflow-hidden">
-      {/* Premium Navigation/Top Bar (Improved Header) */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-card/10 backdrop-blur-md flex-shrink-0 z-20">
+    <div className="flex flex-col h-screen bg-slate-950 overflow-hidden relative">
+      {/* Premium Navigation Top Bar */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/40 backdrop-blur-xl flex-shrink-0 z-20">
         <div className="flex items-center gap-4 min-w-0">
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 flex-shrink-0 hover:bg-muted"
-            onClick={() => router.push("/rooms")}
+            className="h-9 w-9 flex-shrink-0 text-white hover:bg-white/10"
+            onClick={handleLeave}
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div className="min-w-0">
             <div className="flex items-center gap-3">
-              <h1 className="text-base font-bold truncate tracking-tight">{state.name}</h1>
+              <h1 className="text-white font-bold truncate tracking-tight">{room.name}</h1>
               <Badge variant="destructive" className="gap-1.5 text-[10px] px-2 py-0.5 h-5 flex-shrink-0 rounded-full bg-red-500/10 text-red-500 border-red-500/20">
                 <Radio className="h-3 w-3 animate-pulse" /> LIVE
               </Badge>
-              <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
+              <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-white/40 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
                 <ShieldCheck className="h-3 w-3 text-green-500" />
                 Encrypted
               </div>
             </div>
-            {state.topic && (
-              <p className="text-[11px] text-muted-foreground truncate italic mt-0.5">{state.topic}</p>
-            )}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-           <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
+           <Button variant="ghost" size="icon" className="h-9 w-9 text-white/60 hover:text-white hover:bg-white/10">
              <Settings className="h-4 w-4" />
            </Button>
            <Button
             variant="ghost"
             size="icon"
             className={cn(
-              "h-9 w-9 transition-colors",
-              isSidebarOpen ? "text-primary" : "text-muted-foreground"
+              "h-9 w-9 transition-colors hover:bg-white/10",
+              uiState.isSidebarOpen ? "text-primary" : "text-white/60"
             )}
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            onClick={() => dispatchUI({ type: 'TOGGLE_SIDEBAR' })}
           >
-            {isSidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRightOpen className="h-5 w-5" />}
+            {uiState.isSidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRightOpen className="h-5 w-5" />}
           </Button>
         </div>
       </header>
 
-      {/* Modern Layout Mimicring NENA Copy */}
       <main className="flex flex-1 overflow-hidden relative">
-        {/* Main Workspace (Participant Grid) */}
-        <section className="flex-1 flex flex-col min-w-0 bg-gradient-to-br from-background via-background to-primary/5">
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="max-w-5xl mx-auto py-8">
-              <ParticipantGrid participants={state.participants} />
-            </div>
-          </div>
-        </section>
+        <div className="flex-1 relative">
+          <RoomVideoGrid
+            participants={participants}
+            remoteStreams={remoteStreams}
+            localStream={localStream}
+            localParticipant={localParticipant}
+          />
+        </div>
 
-        {/* Improved Sidebar (mimicking copy's tabbed sidebar) */}
+        {/* Improved Workspace Sidebar */}
         <aside
           className={cn(
-            "border-l border-border/50 transition-all duration-500 ease-in-out bg-card/5 z-10",
-            isSidebarOpen ? "w-full md:w-[350px] lg:w-[400px]" : "w-0 overflow-hidden"
+            "border-l border-white/5 transition-all duration-500 ease-in-out bg-black/20 backdrop-blur-md z-10",
+            uiState.isSidebarOpen ? "w-full md:w-[350px] lg:w-[400px]" : "w-0 overflow-hidden"
           )}
         >
-          {isSidebarOpen && (
+          {uiState.isSidebarOpen && (
             <RoomSidebar 
-              messages={state.messages} 
+              roomId={id}
+              messages={messages} 
               onSendMessage={handleSendMessage} 
-              roomParticipants={state.participants}
+              roomParticipants={[localParticipant, ...participants]}
             />
           )}
         </aside>
       </main>
 
-      {/* Control Bar */}
-      <RoomControls
-        isMuted={isMuted}
+      <ControlsBar
+        isAudioMuted={isAudioMuted}
         isVideoOff={isVideoOff}
-        isHandRaised={isHandRaised}
-        onToggleMute={toggleMute}
-        onToggleVideo={() => setIsVideoOff(!isVideoOff)}
-        onToggleHand={toggleHand}
-        onLeave={() => router.push("/rooms")}
+        onToggleAudio={toggleAudio}
+        onToggleVideo={toggleVideo}
+        onLeave={handleLeave}
+      />
+    </div>
+  );
+}
       />
     </div>
   );
