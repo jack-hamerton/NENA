@@ -3,22 +3,27 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 interface Post {
-  id: str;
-  authorId: str;
-  title: str;
-  content: str;
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorUsername: string;
+  authorAvatar?: string;
+  title: string;
+  content: string;
   likesCount: number;
   dislikesCount: number;
-  commentCount: number;
+  commentsCount: number;
   createdAt: string;
-  imageUrl?: string;
+  mediaUrl?: string;
+  hashtags?: string[];
+  isLiked?: boolean;
 }
 
 interface Comment {
-  id: str;
-  postId: str;
-  authorId: str;
-  content: str;
+  id: string;
+  postId: string;
+  authorId: string;
+  content: string;
   createdAt: string;
 }
 
