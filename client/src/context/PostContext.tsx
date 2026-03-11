@@ -1,45 +1,23 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-
-interface Post {
-  id: string;
-  authorId: string;
-  authorName: string;
-  authorUsername: string;
-  authorAvatar?: string;
-  title: string;
-  content: string;
-  likesCount: number;
-  dislikesCount: number;
-  commentsCount: number;
-  createdAt: string;
-  mediaUrl?: string;
-  hashtags?: string[];
-  isLiked?: boolean;
-}
-
-interface Comment {
-  id: string;
-  postId: string;
-  authorId: string;
-  content: string;
-  createdAt: string;
-}
+import { Post as PostType, Comment } from '@/types';
 
 interface PostContextType {
-  posts: Post[];
+  posts: PostType[];
   isLoading: boolean;
   fetchPosts: () => Promise<void>;
   createPost: (title: string, content: string, imageUrl?: string) => Promise<void>;
   likePost: (postId: string) => Promise<void>;
   getComments: (postId: string) => Promise<Comment[]>;
+  addComment: (postId: string, content: string, parentId?: string) => Promise<void>;
+  likeComment: (commentId: string) => Promise<void>;
 }
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
 
 export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchPosts = useCallback(async () => {
@@ -60,7 +38,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await fetch('http://localhost:5001/api/posts/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authorId: 'current_user', title, content, imageUrl }),
+        body: JSON.stringify({ authorId: 'user_1', title, content, mediaUrl: imageUrl }),
       });
       const newPost = await response.json();
       setPosts((prev) => [newPost, ...prev]);
@@ -74,10 +52,10 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await fetch(`http://localhost:5001/api/posts/${postId}/like`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: 'current_user' }),
+        body: JSON.stringify({ userId: 'user_1' }),
       });
       setPosts((prev) =>
-        prev.map((p) => (p.id === postId ? { ...p, likesCount: p.likesCount + 1 } : p))
+        prev.map((p) => (p.id === postId ? { ...p, likesCount: p.likesCount + 1, isLiked: true } : p))
       );
     } catch (error) {
       console.error('Failed to like post:', error);
@@ -94,19 +72,41 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const addComment = async (postId: string, content: string, parentId?: string) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ authorId: 'user_1', content, parentId }),
+      });
+      const newComment = await response.json();
+      // Since comments are fetched per post via getComments(), 
+      // we don't necessarily need to update a global comments state here 
+      // unless we want to cache them.
+      return newComment;
+    } catch (error) {
+      console.error('Failed to add comment:', error);
+    }
+  };
+
+  const likeComment = async (commentId: string) => {
+    try {
+      await fetch(`http://localhost:5001/api/posts/comments/${commentId}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: 'user_1' }),
+      });
+    } catch (error) {
+      console.error('Failed to like comment:', error);
+    }
+  };
+
   useEffect(() => {
     fetchPosts();
-    
-    // Simulating Firebase real-time listener
-    const timer = setInterval(() => {
-      // Logic for real-time polling or websocket updates would go here
-    }, 10000);
-    
-    return () => clearInterval(timer);
   }, [fetchPosts]);
 
   return (
-    <PostContext.Provider value={{ posts, isLoading, fetchPosts, createPost, likePost, getComments }}>
+    <PostContext.Provider value={{ posts, isLoading, fetchPosts, createPost, likePost, getComments, addComment, likeComment }}>
       {children}
     </PostContext.Provider>
   );
