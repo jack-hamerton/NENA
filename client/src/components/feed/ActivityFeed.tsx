@@ -34,7 +34,6 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
           key={post.id} 
           post={post} 
           onReportPost={() => onReportPost(post.id)}
-          onUsernameLongPress={() => onUsernameLongPress(post.authorId)}
           onHashtagClick={onHashtagClick}
           onCampaignClick={onCampaignClick}
         />
