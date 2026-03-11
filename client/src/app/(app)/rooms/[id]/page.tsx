@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { authService } from "@/services/auth.service";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 // State management for UI interactions
 interface RoomUIState {
@@ -53,14 +54,13 @@ export default function ActiveRoomPage() {
   
   const webrtcManager = useRef<WebRTCManager | null>(null);
   const [localParticipant, setLocalParticipant] = useState<Participant | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const init = async () => {
       try {
-        const [roomData, user] = await Promise.all([
-          roomService.getRoomById(id),
-          authService.getCurrentUser()
-        ]);
+        if (!user) return;
+        const roomData = await roomService.getRoomById(id);
         
         setRoom(roomData);
         
@@ -74,7 +74,7 @@ export default function ActiveRoomPage() {
         const self: Participant = {
           id: user.id,
           userId: user.id,
-          username: user.name || user.handle,
+          username: user.displayName || user.username || "User",
           role: roomData.hostId === user.id ? "host" : "listener",
           isMuted: false,
           isVideoOff: false,
@@ -249,10 +249,6 @@ export default function ActiveRoomPage() {
         onToggleAudio={toggleAudio}
         onToggleVideo={toggleVideo}
         onLeave={handleLeave}
-      />
-    </div>
-  );
-}
       />
     </div>
   );
