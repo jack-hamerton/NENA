@@ -3,6 +3,7 @@ from flask import Flask
 from flask_cors import CORS
 from components.communication.routes import communication_bp
 from components.auth.routes import auth_bp
+from components.posts.routes import posts_bp
 
 def create_app():
     app = Flask(__name__)
@@ -11,6 +12,7 @@ def create_app():
     # Register Blueprints
     app.register_blueprint(communication_bp, url_prefix='/api/communication')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(posts_bp, url_prefix='/api/posts')
 
     @app.route('/health')
     def health_check():
