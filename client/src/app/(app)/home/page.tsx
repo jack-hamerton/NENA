@@ -1,49 +1,39 @@
+"use client";
+
 import { PostCard } from "@/components/feed/PostCard";
 import { CreatePost } from "@/components/feed/CreatePost";
+import { PostProvider, usePosts } from "@/context/PostContext";
 
-const mockPosts = [
-  {
-    id: "1",
-    authorId: "u1",
-    authorName: "Alice Wambui",
-    authorUsername: "alice_w",
-    authorAvatar: "/avatars/alice.png",
-    content: "Just finished my latest digital painting! What do you guys think? #art #creativity",
-    likesCount: 24,
-    commentsCount: 5,
-    sharesCount: 2,
-    isLiked: false,
-    hashtags: ["art", "creativity"],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    authorId: "u2",
-    authorName: "Bob Otieno",
-    authorUsername: "bob_o",
-    authorAvatar: "/avatars/bob.png",
-    content: "Excited to be hosting a live room tonight on the future of design in Africa. Join us! #design #africa",
-    likesCount: 15,
-    commentsCount: 3,
-    sharesCount: 8,
-    isLiked: true,
-    hashtags: ["design", "africa"],
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-];
+function HomeFeed() {
+  const { posts, isLoading } = usePosts();
+
+  if (isLoading) {
+    return <div className="text-center py-10 text-muted-foreground">Loading feed...</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+          {posts.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground">No posts yet. Start the conversation!</div>
+          ) : (
+            posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))
+          )}
+    </div>
+  );
+}
 
 export default function HomePage() {
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Home Feed</h1>
-        <CreatePost />
+    <PostProvider>
+      <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Home Feed</h1>
+          <CreatePost />
+        </div>
+        <HomeFeed />
       </div>
-      <div className="space-y-4">
-        {mockPosts.map((post) => (
-          <PostCard key={post.id} post={post} />
-        ))}
-      </div>
-    </div>
+    </PostProvider>
   );
 }

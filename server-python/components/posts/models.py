@@ -28,7 +28,7 @@ class Post:
     content: str
     likesCount: int = 0
     dislikesCount: int = 0
-    commentCount: int = 0
+    commentsCount: int = 0
     createdAt: str = datetime.utcnow().isoformat()
     imageUrl: Optional[str] = None
 

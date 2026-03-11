@@ -41,7 +41,7 @@ export function CommentItem({ comment, allComments, depth = 0 }: CommentItemProp
   return (
     <div className={`flex flex-col gap-2 ${depth > 0 ? 'ml-6 border-l border-border pl-4 mt-2' : 'mt-4'}`}>
       <div className="flex items-start gap-3">
-        <Avatar size="xs">
+        <Avatar className="h-6 w-6">
           <AvatarImage src={comment.authorAvatar} />
           <AvatarFallback fallback={comment.authorUsername} />
         </Avatar>
@@ -79,8 +79,8 @@ export function CommentItem({ comment, allComments, depth = 0 }: CommentItemProp
                 className="text-sm min-h-[60px]"
               />
               <div className="flex justify-end gap-2">
-                <Button size="xs" variant="ghost" onClick={() => setIsReplying(false)}>Cancel</Button>
-                <Button size="xs" onClick={handleReply} disabled={!replyContent.trim()}>Reply</Button>
+                <Button size="sm" variant="ghost" onClick={() => setIsReplying(false)}>Cancel</Button>
+                <Button size="sm" onClick={handleReply} disabled={!replyContent.trim()}>Reply</Button>
               </div>
             </div>
           )}
