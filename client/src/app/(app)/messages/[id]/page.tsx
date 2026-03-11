@@ -72,7 +72,6 @@ export default function ConversationPage() {
       <ChatHeader conversation={conversation} />
       <MessageList messages={messages} currentUserId={currentUserId} />
       <MessageInput 
-        conversationId={id} 
         onSend={handleSendMessage} 
       />
     </div>
