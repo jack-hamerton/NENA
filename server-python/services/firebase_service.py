@@ -13,7 +13,48 @@ class FirebaseService:
             "messagingSenderId": "123456789",
             "appId": "1:123456789:web:abcdef"
         }
+        # Simulate Firestore collections
+        self._users = {
+            "user_1": {
+                "id": "user_1",
+                "username": "alice_w",
+                "email": "alice@nena.app",
+                "fullName": "Alice Wambui",
+                "avatarUrl": "/avatars/alice.png",
+                "bio": "NENA platform enthusiast",
+                "createdAt": datetime.now().isoformat()
+            }
+        }
         print(f"Firebase initialized with project: {self.config['projectId']}")
+
+    def create_user(self, data):
+        """Simulate creating a user in Firebase Auth and Firestore."""
+        user_id = f"user_{int(time.time())}"
+        new_user = {
+            "id": user_id,
+            "username": data.get('username'),
+            "email": data.get('email'),
+            "fullName": data.get('fullName', ''),
+            "avatarUrl": data.get('avatarUrl', None),
+            "bio": data.get('bio', ''),
+            "createdAt": datetime.now().isoformat()
+        }
+        self._users[user_id] = new_user
+        print(f"Created Firebase user: {new_user['username']}")
+        return new_user
+
+    def get_user(self, user_id):
+        """Fetch user data from simulation."""
+        return self._users.get(user_id)
+
+    def verify_token(self, id_token):
+        """Simulate verifying a Firebase ID token."""
+        # For dummy implementation, we'll assume the token is the user_id
+        if id_token in self._users:
+            return {"uid": id_token, "email": self._users[id_token]['email']}
+        if id_token == "mock-jwt-token": # Backward compatibility for existing mock
+            return {"uid": "user_1", "email": "alice@nena.app"}
+        return None
 
     def fetch_messages(self, user1_id, user2_id):
         # Simulate fetching from Firestore
