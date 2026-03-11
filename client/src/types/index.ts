@@ -6,4 +6,5 @@ export * from "./room";
 export * from "./podcast";
 export * from "./analytics";
 export * from "./calendar";
+export * from "./study";
 export * from "@/lib/validators";
