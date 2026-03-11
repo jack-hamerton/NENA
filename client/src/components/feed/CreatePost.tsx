@@ -46,14 +46,14 @@ export function CreatePost() {
             <Input 
               placeholder="Title" 
               value={title} 
-              onChange={(e) => setTitle(e.target.value)} 
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} 
             />
           </div>
           <div className="space-y-2">
             <Textarea 
               placeholder="What's on your mind?" 
               value={content} 
-              onChange={(e) => setContent(e.target.value)} 
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)} 
               rows={4}
             />
           </div>
