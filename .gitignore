@@ -25,6 +25,10 @@ NENA(copy)/
 NENA (copy)/
 /out/
 
+# Backup copies
+frontend (Copy)/
+NENA (Copy)/
+
 # production
 /build
 dist/
