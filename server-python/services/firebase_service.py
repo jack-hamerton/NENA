@@ -23,6 +23,15 @@ class FirebaseService:
                 "avatarUrl": "/avatars/alice.png",
                 "bio": "NENA platform enthusiast",
                 "createdAt": datetime.now().isoformat()
+            },
+            "user_dev": {
+                "id": "user_dev",
+                "username": "developer",
+                "email": "dev@nena.app",
+                "fullName": "System Developer",
+                "avatarUrl": None,
+                "bio": "Pre-seeded developer account",
+                "createdAt": datetime.now().isoformat()
             }
         }
         print(f"Firebase initialized with project: {self.config['projectId']}")
