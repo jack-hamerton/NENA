@@ -1,34 +1,18 @@
 "use client";
 
 import { Heart, MessageCircle, Share2, MoreHorizontal } from "lucide-react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatTimeAgo } from "@/lib/utils";
 import { usePosts } from "@/context/PostContext";
-
-// Interface logic updated to use Post from Context
-interface LocalPost {
-  id: string;
-  authorId: string;
-  authorName: string;
-  authorUsername: string;
-  authorAvatar?: string;
-  title: string;
-  content: string;
-  likesCount: number;
-  dislikesCount: number;
-  commentsCount: number;
-  sharesCount: number;
-  createdAt: string;
-  mediaUrl?: string;
-  hashtags?: string[];
-  isLiked?: boolean;
-}
+import { Post as PostType } from "@/types";
+import { CommentThread } from "./CommentThread";
 
 interface PostCardProps {
-  post: LocalPost;
+  post: PostType;
   onReportPost?: () => void;
   onUsernameLongPress?: () => void;
   onHashtagClick?: (hashtag: string) => void;
@@ -43,11 +27,13 @@ export function PostCard({
   onCampaignClick 
 }: PostCardProps) {
   const { likePost } = usePosts();
+  const [showComments, setShowComments] = useState(false);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
     await likePost(post.id);
   };
+
   const renderContent = (content: string) => {
     const parts = content.split(/(#[\w-]+)/g);
     return parts.map((part, i) => {
@@ -146,7 +132,12 @@ export function PostCard({
               <Heart className={post.isLiked ? "h-4 w-4 fill-primary text-primary" : "h-4 w-4"} />
               <span className="text-xs">{post.likesCount}</span>
             </Button>
-            <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-primary">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className={`gap-2 ${showComments ? 'text-primary' : 'text-muted-foreground'} hover:text-primary`}
+              onClick={() => setShowComments(!showComments)}
+            >
               <MessageCircle className="h-4 w-4" />
               <span className="text-xs">{post.commentsCount}</span>
             </Button>
@@ -156,6 +147,8 @@ export function PostCard({
             <span className="text-xs">{post.sharesCount}</span>
           </Button>
         </div>
+
+        {showComments && <CommentThread postId={post.id} />}
       </CardContent>
     </Card>
   );
