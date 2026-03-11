@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 export function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const router = useRouter();
 
   const {
@@ -29,23 +29,11 @@ export function SignupForm() {
     setIsLoading(true);
     setError(null);
     try {
-      // Mocking account creation and auto-login
-      const mockResponse = {
-        user: {
-          id: "1",
-          email: data.email,
-          username: data.username,
-          displayName: data.username,
-          isVerified: true,
-          createdAt: new Date().toISOString(),
-        },
-        token: "mock-token",
-      };
-      
-      login(mockResponse);
-      router.push("/home");
+      await signup(data);
+      router.push("/");
     } catch (err: unknown) {
-      const errorMsg = (err as { response?: { data?: { message?: string } } }).response?.data?.message || "Something went wrong. Please try again.";
+      console.error("Signup error:", err);
+      const errorMsg = (err as { message?: string }).message || "Something went wrong. Please try again.";
       setError(errorMsg);
     } finally {
       setIsLoading(false);
