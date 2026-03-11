@@ -6,9 +6,10 @@ import { podcastService } from "@/services/podcast.service";
 import { Podcast, Episode } from "@/types/podcast";
 import { PodcastPlayer } from "@/components/podcast/PodcastPlayer";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Share2, Heart, MessageSquare, Info } from "lucide-react";
+import { ChevronLeft, Share2, Heart, MessageSquare, Info, Play } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 export default function PodcastPlayerPage() {
   const { id } = useParams() as { id: string };
@@ -22,7 +23,7 @@ export default function PodcastPlayerPage() {
       try {
         const data = await podcastService.getPodcastById(id);
         setPodcast(data);
-        if (data.episodes && data.episodes.length > 0) {
+        if (data && data.episodes && data.episodes.length > 0) {
           setSelectedEpisode(data.episodes[0]);
         }
       } catch (error) {
@@ -123,7 +124,7 @@ export default function PodcastPlayerPage() {
                <div className="space-y-4">
                  <h3 className="text-lg font-bold">Transcription</h3>
                  <div className="h-64 overflow-y-auto p-4 rounded-xl bg-muted/30 text-sm text-muted-foreground leading-loose">
-                   {selectedEpisode.transcription}
+                   {typeof selectedEpisode.transcription === 'string' ? selectedEpisode.transcription : "Transcription available."}
                  </div>
                </div>
             )}
@@ -172,6 +173,3 @@ export default function PodcastPlayerPage() {
     </div>
   );
 }
-
-// Fixed import for Play
-import { Play } from "lucide-react";
