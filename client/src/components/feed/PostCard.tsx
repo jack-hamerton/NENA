@@ -5,11 +5,30 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Post } from "@/types";
 import { formatTimeAgo } from "@/lib/utils";
+import { usePosts } from "@/context/PostContext";
+
+// Interface logic updated to use Post from Context
+interface LocalPost {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorUsername: string;
+  authorAvatar?: string;
+  title: string;
+  content: string;
+  likesCount: number;
+  dislikesCount: number;
+  commentsCount: number;
+  sharesCount: number;
+  createdAt: string;
+  mediaUrl?: string;
+  hashtags?: string[];
+  isLiked?: boolean;
+}
 
 interface PostCardProps {
-  post: Post;
+  post: LocalPost;
   onReportPost?: () => void;
   onUsernameLongPress?: () => void;
   onHashtagClick?: (hashtag: string) => void;
@@ -23,6 +42,12 @@ export function PostCard({
   onHashtagClick, 
   onCampaignClick 
 }: PostCardProps) {
+  const { likePost } = usePosts();
+
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await likePost(post.id);
+  };
   const renderContent = (content: string) => {
     const parts = content.split(/(#[\w-]+)/g);
     return parts.map((part, i) => {
@@ -112,7 +137,12 @@ export function PostCard({
 
         <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-primary">
+            <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2 text-muted-foreground hover:text-primary"
+                onClick={handleLike}
+            >
               <Heart className={post.isLiked ? "h-4 w-4 fill-primary text-primary" : "h-4 w-4"} />
               <span className="text-xs">{post.likesCount}</span>
             </Button>
