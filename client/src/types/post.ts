@@ -4,14 +4,16 @@ export interface Post {
   authorName: string;
   authorUsername: string;
   authorAvatar?: string;
+  title?: string;
   content: string;
   mediaUrl?: string;
   likesCount: number;
+  dislikesCount?: number;
   commentsCount: number;
   sharesCount: number;
   isLiked: boolean;
   isReported?: boolean;
-  hashtags: string[];
+  hashtags?: string[];
   createdAt: string;
 }
 
