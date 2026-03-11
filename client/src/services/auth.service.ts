@@ -32,7 +32,7 @@ export const authService = {
     }
     
     // Also notify our backend to create user profile in Firestore simulation
-    await api.post("/auth/signup", {
+    await api.post("auth/signup", {
       uid: userCredential.user.uid,
       email: data.email,
       username: data.username
@@ -46,7 +46,7 @@ export const authService = {
   },
 
   getCurrentUser: async (token: string) => {
-    const response = await api.get<User>("/auth/me", {
+    const response = await api.get<User>("auth/me", {
       headers: {
         Authorization: `Bearer ${token}`
       }
