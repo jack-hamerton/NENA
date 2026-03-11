@@ -29,24 +29,11 @@ export function LoginForm() {
     setIsLoading(true);
     setError(null);
     try {
-      // In a real app, this would be: const response = await authService.login(data);
-      // For now, we mock success:
-      const mockResponse = {
-        user: {
-          id: "1",
-          email: data.email,
-          username: "johndoe",
-          displayName: "John Doe",
-          isVerified: true,
-          createdAt: new Date().toISOString(),
-        },
-        token: "mock-token",
-      };
-      
-      login(mockResponse);
-      router.push("/home");
+      await login(data);
+      router.push("/");
     } catch (err: unknown) {
-      const errorMsg = (err as { response?: { data?: { message?: string } } }).response?.data?.message || "Invalid email or password";
+      console.error("Login error:", err);
+      const errorMsg = (err as { message?: string }).message || "Invalid email or password";
       setError(errorMsg);
     } finally {
       setIsLoading(false);
