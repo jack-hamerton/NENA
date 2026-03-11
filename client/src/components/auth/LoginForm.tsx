@@ -30,7 +30,7 @@ export function LoginForm() {
     setError(null);
     try {
       await login(data);
-      router.push("/");
+      router.push("/home");
     } catch (err: unknown) {
       console.error("Login error:", err);
       const errorMsg = (err as { message?: string }).message || "Invalid email or password";

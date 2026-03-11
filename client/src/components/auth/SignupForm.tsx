@@ -30,7 +30,7 @@ export function SignupForm() {
     setError(null);
     try {
       await signup(data);
-      router.push("/");
+      router.push("/home");
     } catch (err: unknown) {
       console.error("Signup error:", err);
       const errorMsg = (err as { message?: string }).message || "Something went wrong. Please try again.";

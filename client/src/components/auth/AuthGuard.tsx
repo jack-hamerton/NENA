@@ -16,7 +16,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       if (!isAuthenticated && !PUBLIC_PATHS.includes(pathname)) {
         router.push("/login");
       } else if (isAuthenticated && PUBLIC_PATHS.includes(pathname)) {
-        router.push("/");
+        router.push("/home");
       }
     }
   }, [isAuthenticated, isLoading, pathname, router]);
