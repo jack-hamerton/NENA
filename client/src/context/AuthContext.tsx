@@ -1,12 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, AuthState } from "@/types";
+import { User, AuthState, LoginInput, SignupInput } from "@/types";
+import { auth } from "@/lib/firebase/config";
+import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { authService } from "@/services/auth.service";
 
 interface AuthContextType extends AuthState {
-  login: (userData: { user: User; token: string }) => void;
-  logout: () => void;
+  login: (data: LoginInput) => Promise<void>;
+  signup: (data: SignupInput) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,37 +23,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    const initAuth = async () => {
-      const token = localStorage.getItem("nena-token");
-      if (token) {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
         try {
-          const user = await authService.getCurrentUser();
-          setState({ user, token, isAuthenticated: true, isLoading: false });
-        } catch { // Removed 'error' variable
-          localStorage.removeItem("nena-token");
+          const token = await firebaseUser.getIdToken();
+          // Fetch additional user data from our backend
+          const userData = await authService.getCurrentUser(token);
+          setState({
+            user: userData,
+            token: token,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } catch (error) {
+          console.error("Error fetching user data:", error);
           setState({ user: null, token: null, isAuthenticated: false, isLoading: false });
-        } finally {
-          setState((prev) => ({ ...prev, isLoading: false })); // Ensure isLoading is false in all cases
         }
       } else {
-        setState((prev) => ({ ...prev, isLoading: false }));
+        setState({ user: null, token: null, isAuthenticated: false, isLoading: false });
       }
-    };
-    initAuth();
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = ({ user, token }: { user: User; token: string }) => {
-    localStorage.setItem("nena-token", token);
-    setState({ user, token, isAuthenticated: true, isLoading: false });
+  const login = async (data: LoginInput) => {
+    await authService.login(data);
+    // onAuthStateChanged will handle state update
   };
 
-  const logout = () => {
-    localStorage.removeItem("nena-token");
+  const signup = async (data: SignupInput) => {
+    await authService.signup(data);
+    // onAuthStateChanged will handle state update
+  };
+
+  const logout = async () => {
+    await authService.logout();
     setState({ user: null, token: null, isAuthenticated: false, isLoading: false });
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ ...state, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
