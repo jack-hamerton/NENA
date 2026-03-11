@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppProviders } from "@/context";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export const metadata: Metadata = {
   title: "NENA | Empowerment & Connectivity",
@@ -16,7 +17,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased selection:bg-primary/30 selection:text-primary">
         <AppProviders>
-          {children}
+          <AuthGuard>
+            {children}
+          </AuthGuard>
         </AppProviders>
       </body>
     </html>
