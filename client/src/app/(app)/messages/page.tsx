@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { ChatProvider } from "@/context/ChatContext";
 import { ConversationList } from "@/components/messages/ConversationList";
 import { ChatView } from "@/components/messages/ChatView";
 import { cn } from "@/lib/utils";
@@ -18,36 +17,34 @@ function MessagesContent() {
   }, [isMobile]);
 
   return (
-    <ChatProvider>
-      <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
-        {/* Conversation List Sidebar */}
-        <div
-          className={cn(
-            "w-full md:w-80 lg:w-96 border-r bg-background flex-shrink-0",
-            isMobile && showChat ? "hidden" : "block"
-          )}
-        >
-          <div className="p-4 border-b">
-            <h1 className="text-xl font-bold">Your Messages</h1>
-            <p className="text-[10px] text-muted-foreground mt-1">Select a conversation or start a new one to begin chatting.</p>
-          </div>
-          <ConversationList onSelectConversation={() => isMobile && setShowChat(true)} />
-        </div>
-
-        {/* Chat View */}
-        {isMobile ? (
-          showChat && (
-            <div className="w-full absolute inset-0 z-50 bg-background">
-              <ChatView onBack={() => setShowChat(false)} />
-            </div>
-          )
-        ) : (
-          <div className="flex-1 hidden md:block">
-            <ChatView />
-          </div>
+    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
+      {/* Conversation List Sidebar */}
+      <div
+        className={cn(
+          "w-full md:w-80 lg:w-96 border-r bg-background flex-shrink-0",
+          isMobile && showChat ? "hidden" : "block"
         )}
+      >
+        <div className="p-4 border-b">
+          <h1 className="text-xl font-bold">Your Messages</h1>
+          <p className="text-[10px] text-muted-foreground mt-1">Select a conversation or start a new one to begin chatting.</p>
+        </div>
+        <ConversationList onSelectConversation={() => isMobile && setShowChat(true)} />
       </div>
-    </ChatProvider>
+
+      {/* Chat View */}
+      {isMobile ? (
+        showChat && (
+          <div className="w-full absolute inset-0 z-50 bg-background">
+            <ChatView onBack={() => setShowChat(false)} />
+          </div>
+        )
+      ) : (
+        <div className="flex-1 hidden md:block">
+          <ChatView />
+        </div>
+      )}
+    </div>
   );
 }
 

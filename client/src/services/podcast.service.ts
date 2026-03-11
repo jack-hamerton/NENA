@@ -1,6 +1,6 @@
 import api from "@/lib/api";
 import { Podcast, Episode, PodcastSummary } from "@/types/podcast";
-import { MOCK_PODCASTS, MOCK_EPISODES } from "../mock/podcasts";
+// import { MOCK_PODCASTS, MOCK_EPISODES } from "../mock/podcasts";
 
 /**
  * Service for handling podcast-related API calls and mock data.
@@ -15,6 +15,7 @@ export const podcastService = {
       return response.data;
     } catch {
       // Fallback to mock for development
+      /*
       return MOCK_PODCASTS.map(p => ({
         id: p.id,
         title: p.title,
@@ -23,6 +24,8 @@ export const podcastService = {
         duration: "0:00",
         category: p.tags?.[0] || "General"
       }));
+      */
+      return [];
     }
   },
 
@@ -34,7 +37,8 @@ export const podcastService = {
       const response = await api.get<Podcast>(`/podcasts/${id}`);
       return response.data;
     } catch {
-      return MOCK_PODCASTS.find(p => p.id === id) || null;
+      // return MOCK_PODCASTS.find(p => p.id === id) || null;
+      return null;
     }
   },
 
@@ -46,7 +50,8 @@ export const podcastService = {
       const response = await api.get<Episode[]>(`/podcasts/${podcastId}/episodes`);
       return response.data;
     } catch {
-      return MOCK_EPISODES[podcastId] || [];
+      // return MOCK_EPISODES[podcastId] || [];
+      return [];
     }
   },
 
@@ -88,7 +93,5 @@ export const podcastService = {
       },
     });
     return response.data;
-  }
-};
   }
 };
