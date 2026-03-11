@@ -62,5 +62,10 @@ next-env.d.ts
 *.swo
 
 
+# python
+venv/
+__pycache__/
+*.pyc
+
 ..
 real-time-forum-master
