@@ -48,13 +48,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (data: LoginInput) => {
-    await authService.login(data);
-    // onAuthStateChanged will handle state update
+    const result = await authService.login(data);
+    if (result && 'token' in result) {
+      setState({
+        user: result.user,
+        token: result.token,
+        isAuthenticated: true,
+        isLoading: false
+      });
+    }
   };
 
   const signup = async (data: SignupInput) => {
-    await authService.signup(data);
-    // onAuthStateChanged will handle state update
+    const result = await authService.signup(data);
+    if (result && 'id' in result) {
+       // Auto-login after signup for dummy mode
+       setState({
+         user: result as User,
+         token: result.id,
+         isAuthenticated: true,
+         isLoading: false
+       });
+    }
   };
 
   const logout = async () => {
